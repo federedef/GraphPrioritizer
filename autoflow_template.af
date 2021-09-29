@@ -1,0 +1,15 @@
+calc_similatiry){
+# Eso va a coger un archivo de dos columnas (separadas por tab)
+# Primera columna: gen y la segunda: elementos de ontologia separados por ","
+# Por otro lado, un archivo de ontologia .obo (por eso necesitamos el semtools).
+# Calculo con linn
+?
+}
+
+calc_kernel){
+# input: matrix de similitud semantica
+# calculamos el kernel (de momento, de un solo tipo que quiera)
+# Guardarlo en formato binario
+#
+?
+}
