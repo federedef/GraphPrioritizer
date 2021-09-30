@@ -4,6 +4,7 @@ calc_similatiry){
 # Por otro lado, un archivo de ontologia .obo (por eso necesitamos el semtools).
 # Calculo con linn
 ?
+semtools.rb -i $net -o $annotations_files_folder/similarity_matrix -S '\t' -O $ont...
 }
 
 calc_kernel){
@@ -11,5 +12,7 @@ calc_kernel){
 # calculamos el kernel (de momento, de un solo tipo que quiera)
 # Guardarlo en formato binario
 #
+source ~soft_bio_267/initializes/init_ruby
 ?
+NetAnalyzer.rb -i 
 }
