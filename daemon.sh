@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+. ~soft_bio_267/initializes/init_autoflow
 exec_mode=$1
 export annotations_files_folder=$SCRATCH/executions/backupgenes
 export results_files=/mnt/home/users/bio_267_uma/federogc/projects/backupgenes/report
