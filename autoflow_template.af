@@ -3,8 +3,7 @@ calc_similatiry){
 # Columna 1: gen	Columna 2: Elementos de ontologia separados por ","
 # Calculo con linn
 ?
-semtools.rb -i $net -o $annotations_files_folder/similarity_matrix -S '\t' -O $ont...
-semtools.rb ... > similarity_matrix.txt
+semtools.rb -i $net -o ./similarity_matrix.txt -S '\t' -O $ont
 }
 
 calc_kernel){
