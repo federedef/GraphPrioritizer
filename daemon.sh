@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 exec_mode=$1
-export annotations_files_folder = $SCRATCH/executions/backupgenes
+export annotations_files_folder=$SCRATCH/executions/backupgenes
+export results_files=/mnt/home/users/bio_267_uma/federogc/projects/backupgenes/report
 
 if [ "$exec_mode" == "download" ] ; then
     #STAGE 1 DOWNLOADING REFERENCE 
@@ -12,4 +13,5 @@ elif [ "$exec_mode" == "autoflow" ] ; then
 elif [ "$exec_mode" == "report" ] ; then 
 	#STAGE 3 GENERATE REPORT fROM RESULTS
 fi
+
 
