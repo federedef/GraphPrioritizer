@@ -1,18 +1,31 @@
-calc_similatiry){
+calc_similatiry_[$nets]){
 # Input: Archivo gen-ont bicolumna en /t + Archivo .obo
 # Columna 1: gen	Columna 2: Elementos de ontologia separados por ","
 # Calculo con linn
+# source ~soft_bio_267/initializes/init_ruby # De momento, no podemos usar esto (no esta subido)
+source ~josecordoba/software/initializes/init_semtools # Usaremos esto de momento.
+echo -e "(*)\t$kernel" > tracker
 ?
-semtools.rb -i $net -o ./similarity_matrix.txt -S '\t' -O $ont
+semtools.rb -i $input_path/(*) -o similarity_pair.txt -S ',' -O -s # Pair 
 }
 
-calc_kernel){
-# input: Siilarity matrix
+%calc_kernel_[$nets]){
+# input: Similarity matrix
 # Calculate kernel
 # Save in binary format
-#
 source ~soft_bio_267/initializes/init_ruby
-?
-NetAnalyzer.rb -i calc_similarity)/similatity_matrix.txt -f m -k $kernel -K ./kernel_matrix.txt
+ln -s !calc_similarity_*!/tracker tracker
+#Poner con awk los headers.
 text2binary_matrix.rb kernel_matrix.txt -o kernel_matrix.bin -t matrix > results_files/kernel.bin
+?
+NetAnalyzer.rb -i !calc_similarity_*!/similatity_pair.txt -k $kernel -K ./kernel_matrix.txt # Puede que se pase a binario directamente.
+
+}
+
+%integrate_kernel){
+?
+script.rb -i `echo !calc_kernel_!/kernel_matrix | tr " " ","`
+# cogemos todos los binarios y con todo cargado creamos la matriz completa.
+# luego adaptamos.
+# luego integramos.
 }
