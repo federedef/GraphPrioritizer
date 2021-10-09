@@ -3,23 +3,25 @@ calc_similatiry_[$nets]){
 # Columna 1: gen	Columna 2: Elementos de ontologia separados por ","
 # Calculo con linn
 # source ~soft_bio_267/initializes/init_ruby # De momento, no podemos usar esto (no esta subido)
-source ~josecordoba/software/initializes/init_semtools # Usaremos esto de momento.
+source ~josecordoba/software/initializes/init_semtools_script # Usaremos esto de momento.
 echo -e "(*)\t$kernel" > tracker
 ?
-semtools.rb -i $input_path/(*) -o similarity_pair.txt -S ',' -O -s # Pair 
+semtools.rb -i $input_path/(*) -o ./results.txt -k "HP:" -O $input_path/$ont -s lin # Pair 
 }
 
-%calc_kernel_[$nets]){
+calc_kernel_[$nets]){
 # input: Similarity matrix
 # Calculate kernel
 # Save in binary format
 source ~soft_bio_267/initializes/init_ruby
 ln -s !calc_similarity_*!/tracker tracker
-#Poner con awk los headers.
-text2binary_matrix.rb kernel_matrix.txt -o kernel_matrix.bin -t matrix > results_files/kernel.bin
+cat calc_similarity_small_pro/small_pro_semantic_similarity > ey.txt
+#text2binary_matrix.rb kernel_matrix.txt -o kernel_matrix.bin -t matrix > results_files/kernel.bin
 ?
-NetAnalyzer.rb -i !calc_similarity_*!/similatity_pair.txt -k $kernel -K ./kernel_matrix.txt # Puede que se pase a binario directamente.
+gawk 'BEGIN{FS="\t"}{gsub(/*:/,"A:",$1);gsub(/*:/,"B:",$2);print}' !calc_similarity_*!/*_semantic_similarity > (*)_semantic_similatity_modified.txt
 
+#NetAnalyzer.rb -i (*)_semantic_similatity_modified.txt -k $kernel -K ./kernel_matrix.txt # Puede que se pase a binario directamente.
+# !calc_similarity_*!_semantic_similatity
 }
 
 %integrate_kernel){
