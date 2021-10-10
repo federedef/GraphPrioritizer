@@ -1,9 +1,0 @@
-Format not allowed. Loading process will not be performed
-/mnt/home/users/bio_267_uma/josecordoba/software/semtools/bin/semtools.rb:11:in `initialize': No such file or directory @ rb_sysopen - /mnt/home/users/bio_267_uma/federogc/projects/backupgenes/gene_phen_mini.paco (Errno::ENOENT)
-	from /mnt/home/users/bio_267_uma/josecordoba/software/semtools/bin/semtools.rb:11:in `open'
-	from /mnt/home/users/bio_267_uma/josecordoba/software/semtools/bin/semtools.rb:11:in `load_tabular_file'
-	from /mnt/home/users/bio_267_uma/josecordoba/software/semtools/bin/semtools.rb:175:in `<main>'
-
-real	0m0.158s
-user	0m0.090s
-sys	0m0.063s
