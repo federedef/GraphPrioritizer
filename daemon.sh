@@ -8,7 +8,7 @@ export results_files=/mnt/home/users/bio_267_uma/federogc/projects/backupgenes/r
 
 #Custom variables.
 ont=hp.obo
-net=small_pro #;loquesea.paco;...
+net=small_pro #;loquesea.paco;... gen_phen_mini; small_pro
 kernel=ct
 input_path=`pwd`
 
