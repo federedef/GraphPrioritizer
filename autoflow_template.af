@@ -20,7 +20,7 @@ awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/.*:/,"A:",$1);gsub(/.*:/,"B:",$2);print}' !ca
 LAYERS='geneA,A:;geneB,B:'
 #text2binary_matrix.rb kernel_matrix.txt -o kernel_matrix.bin -t matrix > results_files/kernel.bin
 ?
-NetAnalyzer.rb -i (*)_semantic_similatity_modified.txt -l $LAYERS -k $kernel -K ./kernel_matrix.txt # Puede que se pase a binario directamente.
+NetAnalyzer.rb -i (*)_semantic_similatiry_modified.txt -l $LAYERS -k $kernel -K ./kernel_matrix.txt # Puede que se pase a binario directamente.
 }
 
 %integrate_kernel){
