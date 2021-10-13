@@ -16,11 +16,12 @@ semtools.rb -i $input_path/(*) -o ./results.txt -k "HP:" -O $input_path/$ont -s 
 # Save in binary format ########### semantic_similarity_list(or matrix)
 source ~soft_bio_267/initializes/init_netanalyzer
 ln -s !calc_similarity_*!/tracker tracker
-awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/.*:/,"A:",$1);gsub(/.*:/,"B:",$2);print}' !calc_similarity_*!/*semantic_similarity> (*)_semantic_similatity_modified.txt
+sed -i '1s/^/colA\tcolB\tcolC\n/' file
+#awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/.*:/,"A:",$1);gsub(/.*:/,"B:",$2);print}' !calc_similarity_*!/*semantic_similarity > semantic_similarity
 LAYERS='geneA,A:;geneB,B:'
-#text2binary_matrix.rb kernel_matrix.txt -o kernel_matrix.bin -t matrix > results_files/kernel.bin
+text2binary_matrix.rb semantic_similarity -o semantic_matrix.bin -t pair 
 ?
-NetAnalyzer.rb -i (*)_semantic_similatiry_modified.txt -l $LAYERS -k $kernel -K ./kernel_matrix.txt # Puede que se pase a binario directamente.
+NetAnalyzer.rb -i semantic_similarity -l $LAYERS -k $kernel -K ./kernel_matrix.txt # Puede que se pase a binario directamente.
 }
 
 %integrate_kernel){
