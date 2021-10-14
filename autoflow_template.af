@@ -1,27 +1,28 @@
-calc_similarity_[$nets]){
+%calc_similarity_[$nets]){
 # Input: Archivo gen-ont bicolumna en /t + Archivo .obo
 # Columna 1: gen	Columna 2: Elementos de ontologia separados por ";"
 # Calculo con linn
 # source ~soft_bio_267/initializes/init_ruby # De momento, no podemos usar esto (no esta subido)
-#source ~josecordoba/software/initializes/init_semtools_script # Usaremos esto de momento.
-source ~federogc/software/initializes/init_minisemtools_script
+source ~josecordoba/software/initializes/init_semtools_script # Usaremos esto de momento.
+#source ~federogc/software/initializes/init_minisemtools_script
 echo -e "(*)\t$kernel" > tracker
 ?
-semtools.rb -i $input_path/(*) -o ./results.txt -k "HP:" -O $input_path/$ont -s lin -W "M" -S ";" # Pair 
+semtools.rb -i $input_path/(*) -o ./results.txt -k "HP:" -O $input_path/$ont -s lin -S ";" # Pair 
 }
 
-%calc_kernel_[$nets]){
+calc_kernel_[$nets]){
 # input: Similarity matrix
 # Calculate kernel
 # Save in binary format ########### semantic_similarity_list(or matrix)
 source ~soft_bio_267/initializes/init_netanalyzer
+source ~soft_bio_267/initializes/init_ruby
 ln -s !calc_similarity_*!/tracker tracker
 sed -i '1s/^/colA\tcolB\tcolC\n/' file
 #awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/.*:/,"A:",$1);gsub(/.*:/,"B:",$2);print}' !calc_similarity_*!/*semantic_similarity > semantic_similarity
-LAYERS='geneA,A:;geneB,B:'
-text2binary_matrix.rb semantic_similarity -o semantic_matrix.bin -t pair 
+LAYERS='geneA,colA;geneB,colB'
 ?
-NetAnalyzer.rb -i semantic_similarity -l $LAYERS -k $kernel -K ./kernel_matrix.txt # Puede que se pase a binario directamente.
+text2binary_matrix.rb -i !calc_similarity_*!/*semantic_similarity_list -o semantic_matrix_bin -t pair 
+NetAnalyzer.rb -i semantic_matrix.bin -f bin -l 'genes' -k $kernel -n semantic_matrix_bin.lst -u 'genes' -K ./kernel_binmatrix
 }
 
 %integrate_kernel){

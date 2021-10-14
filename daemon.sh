@@ -25,7 +25,7 @@ if [ "$exec_mode" == "download" ] ; then
 
 elif [ "$exec_mode" == "autoflow" ] ; then
   #STAGE 2 AUTOFLOW EXECUTION
-  AutoFlow -w autoflow_template.af -V $autoflow_vars -o $annotations_files_folder/exec # $add_opt Confirmar con Pepe
+  AutoFlow -w autoflow_template.af -V $autoflow_vars -o $annotations_files_folder/exec $add_opt 
 
 elif [ "$exec_mode" == "report" ] ; then 
   #STAGE 3 GENERATE REPORT fROM RESULTS
