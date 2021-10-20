@@ -7,16 +7,17 @@ export results_files=/mnt/home/users/bio_267_uma/federogc/projects/backupgenes/r
 
 
 #Custom variables.
-ont=hp.obo
-net=small_pro #;loquesea.paco;... gen_phen_mini; small_pro
-kernel=ct
+#ont=hp.obo
+net="small_pro;gen_phen_mini" #;loquesea.paco;... gen_phen_mini; small_pro
+kernel="ka;rf"
 input_path=`pwd`
+net2ont=$input_path'/net2ont' 
 
 autoflow_vars=`echo " 
-\\$ont=$ont,
 \\$nets=$net,
 \\$kernel=$kernel,
-\\$input_path=$input_path
+\\$input_path=$input_path,
+\\$net2ont=$net2ont
 " | tr -d [:space:]`
 
 if [ "$exec_mode" == "download" ] ; then
