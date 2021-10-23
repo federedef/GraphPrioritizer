@@ -11,7 +11,9 @@ calc_similarity_[$nets]){
 	semtools.rb -i $input_path/(*) -o ./results.txt -k "HP:" -O $input_path/$ont -s lin -S ";" # Pair 
 }
 
-compare_kernel_[$kernel]){
+#Kernels o kernel?
+
+compare_kernel_[$kernel]){ 
 	?
 	calc_kernel_[$nets]){
 	# input: Similarity matrix
@@ -26,12 +28,16 @@ compare_kernel_[$kernel]){
 	echo -e "(*)\tcompare_kernel_(+)" > tracker
 	text2binary_matrix.rb -i !calc_similarity_*!/*semantic_similarity_list -o semantic_matrix_bin -t pair 
 	?
-	NetAnalyzer.rb -i semantic_matrix_bin -f bin -l 'genes' -k compare_kernel_(+) -n semantic_matrix_bin.lst -u 'genes' -K ./kernel_binmatrix
+	NetAnalyzer.rb -i semantic_matrix_bin -f bin -l 'genes' -k compare_kernel_(+) -n semantic_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
 	}
 
 	%integrate_kernel){
+	source ~soft_bio_267/initializes/init_ruby
 	?
-	script.rb -i `echo !calc_kernel_!/kernel_matrix | tr " " ","`
+	integrate_kernel.rb -k !calc_kernel_!/kernel_matrix_bin -n !calc_kernel_!/semantic_matrix_bin.lst
+	echo -e " !calc_kernel_!/kernel_matrix_bin" > k.txt
+	echo -e " !calc_kernel_!/semantic_matrix_bin.lst " > n.txt
+	#script.rb -i `echo !calc_kernel_!/kernel_matrix | tr " " ","`
 	# cogemos todos los binarios y con todo cargado creamos la matriz completa.
 	# luego adaptamos.
 	# luego integramos.

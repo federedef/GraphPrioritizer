@@ -8,8 +8,8 @@ export results_files=/mnt/home/users/bio_267_uma/federogc/projects/backupgenes/r
 
 #Custom variables.
 #ont=hp.obo
-net="small_pro;gen_phen_mini" #;loquesea.paco;... gen_phen_mini; small_pro
-kernel="ka;rf"
+net="small_pro;small_pro_two" #;loquesea.paco;... gen_phen_mini; small_pro
+kernel="ct;rf"
 input_path=`pwd`
 net2ont=$input_path'/net2ont' 
 
