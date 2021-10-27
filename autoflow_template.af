@@ -1,4 +1,4 @@
-calc_similarity_[$nets]){
+%calc_similarity_[$nets]){
 	# Input: Archivo gen-ont bicolumna en /t + Archivo .obo
 	# Columna 1: gen	Columna 2: Elementos de ontologia separados por ";"
 	# Calculo con linn
@@ -15,7 +15,7 @@ calc_similarity_[$nets]){
 
 compare_kernel_[$kernel]){ 
 	?
-	calc_kernel_[$nets]){
+	%calc_kernel_[$nets]){
 	# input: Similarity matrix
 	# Calculate kernel
 	# Save in binary format ########### semantic_similarity_list(or matrix)
@@ -31,12 +31,14 @@ compare_kernel_[$kernel]){
 	NetAnalyzer.rb -i semantic_matrix_bin -f bin -l 'genes' -k compare_kernel_(+) -n semantic_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
 	}
 
-	%integrate_kernel){
+	integrate_kernel){
 	source ~soft_bio_267/initializes/init_ruby
+	source ~federogc/software/initializes/init_integrate_kernel
 	?
-	integrate_kernel_v3.rb -k !calc_kernel_!/kernel_matrix_bin -n !calc_kernel_!/semantic_matrix_bin.lst -I $nets #Comentar a Pepe (es una chapuza?)
+	ruby $input_path/integrate_kernel_v3.rb -t !calc_kernel_!/kernel_matrix_bin -n !calc_kernel_!/semantic_matrix_bin.lst -I $nets #Comentar a Pepe (es una chapuza?)
 	echo -e " !calc_kernel_!/kernel_matrix_bin" > k.txt
 	echo -e " !calc_kernel_!/semantic_matrix_bin.lst " > n.txt
+	echo -e " $nets" > v.txt
 	#script.rb -i `echo !calc_kernel_!/kernel_matrix | tr " " ","`
 	# cogemos todos los binarios y con todo cargado creamos la matriz completa.
 	# luego adaptamos.

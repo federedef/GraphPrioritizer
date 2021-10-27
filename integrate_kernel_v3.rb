@@ -54,10 +54,43 @@ class Kernels
 	end
 
 	def integrate_mean
-		matrixes = @kernels_in_genmatrix.each_value{|kernel| kernel[0]}
-		integrated_gen_mat = matrixes.sum * (1/matrixes.length.to_f)
-		gen_nodes = kernels.first.nodes
+		gen_nodes = []
+		matrixes = []
+
+		@kernels_in_genmatrix.each do |key, kernel|
+			matrixes.append(kernel[0])
+			gen_nodes = kernel[1] if gen_nodes.empty?
+		end
+
+		matrix = matrixes.sum()
+		integrated_gen_mat = (1/matrix.length.to_f) * matrix
+
 		@integrated_kernel = [integrated_gen_mat, gen_nodes]
+	end
+
+	def integrate_mean_by_presence
+		general_nodes = []
+		matrixes = []
+
+		@kernels_in_genmatrix.each do |key, kernel|
+			matrixes.append(kernel[0])
+			general_nodes = kernel[1] if gen_nodes.empty?
+		end
+
+		integrated_general_matrix = Numo::DFloat.zeros(general_nodes.length,general_nodes.length)
+		kernel_values = []
+		(0..general_nodes.length-1).each do |i|
+			(0..general_nodes.length-1).each do |j|
+				matrixes.each do |matrix|
+					kernel_values.append(matrix[i,j])
+				end
+				number_present_in_kernel = kernel_values.length - kernel_values.count(0)
+				integrated_general_matrix[i,j] = kernel_values.sum()/number_present_in_kernel
+				kernel_values=[]
+			end
+		end
+
+		@integrated_kernel = [integrated_general_matrix, gen_nodes]
 	end
 
 
@@ -119,7 +152,6 @@ end.parse!
 
 ########################### MAIN ############################
 #############################################################
-puts "#{options[:kernel_files]}"
 kernels = Kernels.new()
 
 if options[:input_format] == "bin"
@@ -132,20 +164,16 @@ end
 
 kernels.kernels2generalMatrix
 
-#if options[:integration_type] == "mean"
-#	kernels.kernels2generalMatrix
-#	kernels.integrate_mean
-#end
-
-if !options[:output_matrix_file].nil?
-	Npy.save(options[:output_matrix_file], kernels.kernels_in_genmatrix[0][0])
-	File.open(options[:output_matrix_file] +'.lst', 'w'){|f| f.print kernels.kernels_in_genmatrix[0][1].join("\n")}
+if options[:integration_type] == "mean"
+	kernels.kernels2generalMatrix
+	kernels.integrate_mean
 end
 
-#if !options[:output_matrix_file].nil?
-#	Npy.save(options[:output_matrix_file], kernels.integrated_kernel[0])
-#	File.open(options[:output_matrix_file] +'.lst', 'w'){|f| f.print kernels.integrated_kernel[1].join("\n")}
-#end
+if !options[:output_matrix_file].nil?
+	Npy.save(options[:output_matrix_file], kernels.integrated_kernel[0] )
+	File.open(options[:output_matrix_file] +'.lst', 'w'){|f| f.print kernels.integrated_kernel[1].join("\n")}
+end
+
 
 
 		
