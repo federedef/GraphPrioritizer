@@ -24,13 +24,20 @@ class Kernels
 	end
 
 	def minmax_normalize
-
 		@kernels_raw.each do |kern, value|
 			matrix = value[0]
-			normalize_matrix = (1.to_f/(matrix.max-matrix.min)) * matrix 
+			diag_max = (1/matrix.max(1)).diag
+			normalize_matrix = diag_max.dot(matrix)
 			@kernels_raw[kern][0] = normalize_matrix 
 		end
 	end
+
+	#def minmax_normalize(kernel)
+	#	matrix = kernel
+	#	diag_max = (1/matrix.max(1)).diag
+	#	normalize_matrix = diag_max.dot(matrix)
+	#  return normalize_matrix
+	#end
 
 	def kernels2generalMatrix
 
@@ -55,19 +62,32 @@ class Kernels
 		end
 	end
 
+	def integrate(integration_type = "mean")
+		if integration_type == "mean"
+			integrate_mean()
+		elsif integration_type == "integration_mean_by_presence"
+			integrate_mean_by_presence()
+		end
+	end
+
+	## AUXILIAR METHODS
+	##############################
+	private
+
 	def integrate_mean
-		gen_nodes = []
+		general_nodes = []
 		matrixes = []
 
 		@kernels_in_genmatrix.each do |key, kernel|
 			matrixes.append(kernel[0])
-			gen_nodes = kernel[1] if gen_nodes.empty?
+			general_nodes = kernel[1] if general_nodes.empty?
 		end
 
 		matrix = matrixes.sum()
-		integrated_gen_mat = (1/matrix.length.to_f) * matrix
+		integrated_gen_mat = (1/matrixes.length.to_f) * matrix
+		
 
-		@integrated_kernel = [integrated_gen_mat, gen_nodes]
+		@integrated_kernel = [integrated_gen_mat, general_nodes]
 	end
 
 	def integrate_mean_by_presence
@@ -76,7 +96,7 @@ class Kernels
 
 		@kernels_in_genmatrix.each do |key, kernel|
 			matrixes.append(kernel[0])
-			general_nodes = kernel[1] if gen_nodes.empty?
+			general_nodes = kernel[1] if general_nodes.empty?
 		end
 
 		integrated_general_matrix = Numo::DFloat.zeros(general_nodes.length,general_nodes.length)
@@ -92,13 +112,8 @@ class Kernels
 			end
 		end
 
-		@integrated_kernel = [integrated_general_matrix, gen_nodes]
+		@integrated_kernel = [integrated_general_matrix, general_nodes]
 	end
-
-
-	## AUXILIAR METHODS
-	##############################
-	private
 
 	def lst2arr(lst_file)
 		nodes = []
@@ -140,7 +155,7 @@ OptionParser.new do |opts|
   	options[:input_format] = format_inp
   end
 
-  options[:integration_type] = "mean"
+  options[:integration_type] = nil
   opts.on("-i","-integration_type TYPE", "It specifies how to integrate the kernels") do |integration_type|
   	options[:integration_type] = integration_type
   end
@@ -150,6 +165,11 @@ OptionParser.new do |opts|
   	options[:output_matrix_file] = output_matrix_file
   end
 
+  #options[:normalization] = "min_max"
+  #opts.on("-z","-norma_type NORMA", "The type of normalization") do |norma_type|
+  #	options[:normalization] = norma_type
+  #end
+
 end.parse!
 
 ########################### MAIN ############################
@@ -158,6 +178,7 @@ kernels = Kernels.new()
 
 if options[:kernel_ids].nil?
 	options[:kernel_ids] = (0..options[:kernel_files].length-1).to_a
+	options[:kernel_ids].map!{|k| k.to_s}
 end
 
 
@@ -165,22 +186,18 @@ if options[:input_format] == "bin"
 	kernels.load_kernels_by_bin_matrixes(options[:kernel_files], options[:node_files], options[:kernel_ids])
 end
 
-if options[:normalization] == "min_max"
-	kernels.minmax_normalize
-end
+
+kernels.minmax_normalize
 
 kernels.kernels2generalMatrix
 
-if options[:integration_type] == "mean"
+if !options[:integration_type].nil?
 	kernels.kernels2generalMatrix
-	kernels.integrate_mean
+	kernels.integrate(options[:integration_type])
 end
 
 if !options[:output_matrix_file].nil?
+	Npy.save("prueba", kernels.kernels_in_genmatrix[options[:kernel_ids][1]][0])
 	Npy.save(options[:output_matrix_file], kernels.integrated_kernel[0] )
 	File.open(options[:output_matrix_file] +'.lst', 'w'){|f| f.print kernels.integrated_kernel[1].join("\n")}
 end
-
-
-
-		
