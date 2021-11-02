@@ -19,18 +19,16 @@ class Kernels
 		kernels_names.each.with_index do |kernel_name, pos|
 			kernel = Npy.load(input_matrix[pos])
 			node = lst2arr(input_nodes[pos])
-			@kernels_raw[kernel_name] = [kernel, node]
+			@kernels_raw[kernel_name.to_sym] = [kernel, node]
 	  end
 	end
 
-	def normalize(normalization_type)
-		@kernels_raw.each do |kernel_id, kernel|
-			matrix = kernel[0]
-			if normalization_type == "min_max"
-				@kernels_raw[kernel_id][0] = minmax_normalize(matrix)
-			elsif normalization_type == "max_by_column"
-				@kernels_raw[kernel_id][0] = minmax_normalize_by_column(matrix)
-			end
+	def minmax_normalize
+
+		@kernels_raw.each do |kern, value|
+			matrix = value[0]
+			normalize_matrix = (1.to_f/(matrix.max-matrix.min)) * matrix 
+			@kernels_raw[kern][0] = normalize_matrix 
 		end
 	end
 
@@ -57,41 +55,19 @@ class Kernels
 		end
 	end
 
-	def integrate(integration_type = "mean")
-		if integration_type == "mean"
-			integrate_mean()
-		elsif integration_type == "integration_mean_by_presence"
-			integrate_mean_by_presence()
-		end
-	end
-
-	## AUXILIAR METHODS
-	##############################
-	private
-
-	def minmax_normalize(kernel)
-		normalized_kernel = (1.to_f/(kernel.max-kernel.min)) * kernel 
-		return normalized_kernel
-	end
-
-	def minmax_normalize_by_column(kernel)
-		diag_max = (1/kernel.max(1)).diag
-		normalized_kernel = diag_max.dot(kernel)
-		return normalized_kernel
-	end
-
 	def integrate_mean
-		general_nodes = []
+		gen_nodes = []
 		matrixes = []
 
 		@kernels_in_genmatrix.each do |key, kernel|
 			matrixes.append(kernel[0])
-			general_nodes = kernel[1] if general_nodes.empty?
+			gen_nodes = kernel[1] if gen_nodes.empty?
 		end
 
 		matrix = matrixes.sum()
-		integrated_gen_mat = (1/matrixes.length.to_f) * matrix
-		@integrated_kernel = [integrated_gen_mat, general_nodes]
+		integrated_gen_mat = (1/matrix.length.to_f) * matrix
+
+		@integrated_kernel = [integrated_gen_mat, gen_nodes]
 	end
 
 	def integrate_mean_by_presence
@@ -100,7 +76,7 @@ class Kernels
 
 		@kernels_in_genmatrix.each do |key, kernel|
 			matrixes.append(kernel[0])
-			general_nodes = kernel[1] if general_nodes.empty?
+			general_nodes = kernel[1] if gen_nodes.empty?
 		end
 
 		integrated_general_matrix = Numo::DFloat.zeros(general_nodes.length,general_nodes.length)
@@ -116,8 +92,13 @@ class Kernels
 			end
 		end
 
-		@integrated_kernel = [integrated_general_matrix, general_nodes]
+		@integrated_kernel = [integrated_general_matrix, gen_nodes]
 	end
+
+
+	## AUXILIAR METHODS
+	##############################
+	private
 
 	def lst2arr(lst_file)
 		nodes = []
@@ -129,7 +110,6 @@ class Kernels
 
 		return nodes
 	end
-	
 end
 
 
@@ -160,7 +140,7 @@ OptionParser.new do |opts|
   	options[:input_format] = format_inp
   end
 
-  options[:integration_type] = nil
+  options[:integration_type] = "mean"
   opts.on("-i","-integration_type TYPE", "It specifies how to integrate the kernels") do |integration_type|
   	options[:integration_type] = integration_type
   end
@@ -169,6 +149,7 @@ OptionParser.new do |opts|
   opts.on("-o","-output_matrix TYPE", "The name of the matrix output") do |output_matrix_file|
   	options[:output_matrix_file] = output_matrix_file
   end
+
 end.parse!
 
 ########################### MAIN ############################
@@ -177,7 +158,6 @@ kernels = Kernels.new()
 
 if options[:kernel_ids].nil?
 	options[:kernel_ids] = (0..options[:kernel_files].length-1).to_a
-	options[:kernel_ids].map!{|k| k.to_s}
 end
 
 
@@ -185,17 +165,22 @@ if options[:input_format] == "bin"
 	kernels.load_kernels_by_bin_matrixes(options[:kernel_files], options[:node_files], options[:kernel_ids])
 end
 
-#kernels.normalize("max_by_column")
+if options[:normalization] == "min_max"
+	kernels.minmax_normalize
+end
 
 kernels.kernels2generalMatrix
 
-if !options[:integration_type].nil?
+if options[:integration_type] == "mean"
 	kernels.kernels2generalMatrix
-	kernels.integrate(options[:integration_type])
+	kernels.integrate_mean
 end
 
 if !options[:output_matrix_file].nil?
-	Npy.save("prueba", kernels.kernels_in_genmatrix[options[:kernel_ids][1]][0])
 	Npy.save(options[:output_matrix_file], kernels.integrated_kernel[0] )
 	File.open(options[:output_matrix_file] +'.lst', 'w'){|f| f.print kernels.integrated_kernel[1].join("\n")}
 end
+
+
+
+		

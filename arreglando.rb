@@ -76,7 +76,7 @@ class Kernels
 
 	def minmax_normalize_by_column(kernel)
 		diag_max = (1/kernel.max(1)).diag
-		normalized_kernel = diag_max.dot(kernel)
+		normalized_kernel = kernel.dot(diag_max)
 		return normalized_kernel
 	end
 
@@ -180,12 +180,14 @@ if options[:kernel_ids].nil?
 	options[:kernel_ids].map!{|k| k.to_s}
 end
 
+File.open("probando" +'.txt', 'w'){|f| f.print options[:node_files]}
 
 if options[:input_format] == "bin"
 	kernels.load_kernels_by_bin_matrixes(options[:kernel_files], options[:node_files], options[:kernel_ids])
 end
 
-#kernels.normalize("max_by_column")
+kernels.normalize("max_by_column")
+
 
 kernels.kernels2generalMatrix
 

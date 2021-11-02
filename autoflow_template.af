@@ -1,4 +1,4 @@
-%calc_similarity_[$nets]){
+calc_similarity_[$nets]){
 	# Input: Archivo gen-ont bicolumna en /t + Archivo .obo
 	# Columna 1: gen	Columna 2: Elementos de ontologia separados por ";"
 	# Calculo con linn
@@ -9,13 +9,18 @@
 	ont=`grep -P '^(*)' $net2ont | cut -f 2`
 	?
 	semtools.rb -i $input_path/(*) -o ./results.txt -k "HP:" -O $input_path/$ont -s lin -S ";" # Pair 
+	if [ ! -s results.txt ] ; then
+		exit 1
+	fi 
 }
 
 #Kernels o kernel?
+# Poner los comandos if con el exit para cada nodo
+# uno tras el netanalyzer
 
 compare_kernel_[$kernel]){ 
 	?
-	%calc_kernel_[$nets]){
+	calc_kernel_[$nets]){
 	# input: Similarity matrix
 	# Calculate kernel
 	# Save in binary format ########### semantic_similarity_list(or matrix)
@@ -26,16 +31,31 @@ compare_kernel_[$kernel]){
 	#awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/.*:/,"A:",$1);gsub(/.*:/,"B:",$2);print}' !calc_similarity_*!/*semantic_similarity > semantic_similarity
 	#LAYERS='geneA,colA;geneB,colB'
 	echo -e "(*)\tcompare_kernel_(+)" > tracker
-	text2binary_matrix.rb -i !calc_similarity_*!/*semantic_similarity_list -o semantic_matrix_bin -t pair 
+	text2binary_matrix.rb -i !calc_similarity_*!/*semantic_similarity_list -o semantic_matrix_bin -t pair -s > similaritym_metrics
 	?
 	NetAnalyzer.rb -i semantic_matrix_bin -f bin -l 'genes' -k compare_kernel_(+) -n semantic_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
+	text2binary_matrix.rb -i kernel_matrix_bin -o kernel_matrix_undo -t bin -s > kernel_metrics
+	# Poner el if de control tras el netanalyzer, comprobar que kernel_matrix_undo exist, si sí... lo borras, que no pues exit 1.
+	# Asi vemos que el ultimo paso bien, por ello todos.
+	if [ -s kernel_matrix_undo ] ; then
+		rm kernel_matrix_undo
+	else 
+  		exit 1
+  	fi
 	}
 
 	integrate_kernel){
 	source ~soft_bio_267/initializes/init_ruby
 	source ~federogc/software/initializes/init_integrate_kernel
 	?
-	ruby $input_path/kernel_combined.rb -i "mean" -t " !calc_kernel_!/kernel_matrix_bin " -n " !calc_kernel_!/semantic_matrix_bin.lst " # -I $nets
+	ruby $input_path/kernel_combined.rb -i "mean" -t " !calc_kernel_!/kernel_matrix_bin " -n " !calc_kernel_!/semantic_matrix_bin.lst " -o general_matrix 
+	text2binary_matrix.rb -i general_matrix -o general_matrix_undo -t bin -s > generalkernel_metrics
+	# Aqui volvemos a hacer un proceso analogo al cluster anterior, comprobando el undo.
+	if [ -s general_matrix_undo ] ; then
+		rm general_matrix_undo
+	else 
+  		exit 1
+  	fi
 	echo -e " !calc_kernel_!/kernel_matrix_bin" > k.txt
 	echo -e " !calc_kernel_!/semantic_matrix_bin.lst " > n.txt
 	echo -e " $nets" > v.txt
@@ -45,3 +65,7 @@ compare_kernel_[$kernel]){
 	# luego integramos.
 	}
 }
+
+# Hay que añadir un nodo nuevo que coja una matriz general_kernel de cada metodo de kernel y un grupo de genes semilla. Ahora queremos rankear por cada gen. 
+# Devuelto en ranking por formato cuantil (1,2,3...). 
+

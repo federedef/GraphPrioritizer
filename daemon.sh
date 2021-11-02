@@ -23,11 +23,11 @@ autoflow_vars=`echo "
 if [ "$exec_mode" == "download" ] ; then
   #STAGE 1 DOWNLOADING REFERENCE
   pwd
-
 elif [ "$exec_mode" == "autoflow" ] ; then
   #STAGE 2 AUTOFLOW EXECUTION
   AutoFlow -w autoflow_template.af -V $autoflow_vars -o $annotations_files_folder/exec $add_opt 
-
+elif [ "$exec_mode" == "check" ] ; then
+  flow_logger -w -e $annotations_files_folder/exec -r all
 elif [ "$exec_mode" == "report" ] ; then 
   #STAGE 3 GENERATE REPORT fROM RESULTS
   pwd
