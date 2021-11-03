@@ -12,12 +12,14 @@ net="small_pro;small_pro_two" #;loquesea.paco;... gen_phen_mini; small_pro
 kernel="ct;rf"
 input_path=`pwd`
 net2ont=$input_path'/net2ont' 
+gens_seed=$input_path'/gens_seed' #New
 
 autoflow_vars=`echo " 
 \\$nets=$net,
 \\$kernel=$kernel,
 \\$input_path=$input_path,
-\\$net2ont=$net2ont
+\\$net2ont=$net2ont,
+\\$gens_seed=$gens_seed
 " | tr -d [:space:]`
 
 if [ "$exec_mode" == "download" ] ; then
