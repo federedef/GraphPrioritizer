@@ -14,9 +14,6 @@
 	fi 
 }
 
-#Kernels o kernel?
-# Poner los comandos if con el exit para cada nodo
-# uno tras el netanalyzer
 
 compare_kernel_[$kernel]){ 
 	?
@@ -44,7 +41,7 @@ compare_kernel_[$kernel]){
   	fi
 	}
 
-	integrate_kernel){
+	%integrate_kernel){
 	source ~soft_bio_267/initializes/init_ruby
 	source ~federogc/software/initializes/init_integrate_kernel
 	?
@@ -65,11 +62,11 @@ compare_kernel_[$kernel]){
 	# luego integramos.
 	}
 
-	%rank_genes){
+	rank_genes){
 	source ~soft_bio_267/initializes/init_ruby
 	?
 	# Producir cada una de las listas para cada gen.
-	ruby $input_path/ranker_genes.rb -k integrate_kernel)/general_matrix -s $gens_seed
+	ruby $input_path/ranker_genes.rb -k integrate_kernel)/general_matrix -n integrate_kernel)/general_matrix.lst -s $gens_seed
 	}
 }
 
