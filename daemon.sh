@@ -4,6 +4,7 @@ exec_mode=$1 # Modificar como Pepe lo tiene en su daemon aux_sh/trim_and_map.sh
 add_opt=$2 # Un string que damos como segundo argumento.
 export annotations_files_folder=$SCRATCH/executions/backupgenes
 export results_files=/mnt/home/users/bio_267_uma/federogc/projects/backupgenes/report
+# Añadir el export para el path.
 
 
 #Custom variables.
@@ -11,6 +12,7 @@ export results_files=/mnt/home/users/bio_267_uma/federogc/projects/backupgenes/r
 net="small_pro;small_pro_two" #;loquesea.paco;... gen_phen_mini; small_pro
 kernel="ct;rf"
 input_path=`pwd`
+export PATH=$input_path/aux_scripts:$PATH # Crea la carpeta aux_scripts.
 net2ont=$input_path'/net2ont' 
 gens_seed=$input_path'/gens_seed' #New
 
