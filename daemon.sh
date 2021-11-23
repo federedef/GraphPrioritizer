@@ -11,6 +11,7 @@ export results_files=/mnt/home/users/bio_267_uma/federogc/projects/backupgenes/r
 #ont=hp.obo
 net="small_pro;small_pro_two" #;loquesea.paco;... gen_phen_mini; small_pro
 kernel="ct;rf"
+integration_types="mean;" #...;integration_mean_by_presence;...
 input_path=`pwd`
 export PATH=$input_path/aux_scripts:$PATH # Crea la carpeta aux_scripts.
 net2ont=$input_path'/net2ont' 
@@ -20,6 +21,7 @@ autoflow_vars=`echo "
 \\$nets=$net,
 \\$kernel=$kernel,
 \\$input_path=$input_path,
+\\$integration_types=$integration_types,
 \\$net2ont=$net2ont,
 \\$gens_seed=$gens_seed
 " | tr -d [:space:]`
