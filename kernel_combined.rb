@@ -1,3 +1,4 @@
+#! /usr/bin/env ruby
 require 'optparse'
 require 'npy'
 require 'numo/narray'

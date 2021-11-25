@@ -13,7 +13,7 @@ net="small_pro;small_pro_two" #;loquesea.paco;... gen_phen_mini; small_pro
 kernel="ct;rf"
 integration_types="mean;" #...;integration_mean_by_presence;...
 input_path=`pwd`
-export PATH=$input_path/aux_scripts:$PATH # Crea la carpeta aux_scripts.
+export PATH=$input_path/aux_scripts:$PATH 
 net2ont=$input_path'/net2ont' 
 gens_seed=$input_path'/gens_seed' #New
 
@@ -36,7 +36,8 @@ elif [ "$exec_mode" == "check" ] ; then
   flow_logger -w -e $annotations_files_folder/exec -r all
 elif [ "$exec_mode" == "report" ] ; then 
   #STAGE 3 GENERATE REPORT fROM RESULTS
-  pwd
+  create_metric_table.rb $annotations_files_folder/exec/uncomb_kernel_metrics Net,kernel parsed_uncomb_kmetrics
+  create_metric_table.rb $annotations_files_folder/exec/comb_kernel_metrics Integration,kernel parsed_comb_kmetrics
 fi
 
 

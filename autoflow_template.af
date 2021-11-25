@@ -1,4 +1,4 @@
-calc_similarity_[$nets]){
+%calc_similarity_[$nets]){
 	# Input: Archivo gen-ont bicolumna en /t + Archivo .obo
 	# Columna 1: gen	Columna 2: Elementos de ontologia separados por ";"
 	# Calculo con linn
@@ -17,7 +17,7 @@ calc_similarity_[$nets]){
 
 compare_kernel_[$kernel]){ 
 	?
-	calc_kernel_[$nets]){
+	%calc_kernel_[$nets]){
 	# input: Similarity matrix
 	# Calculate kernel
 	# Save in binary format ########### semantic_similarity_list(or matrix)
@@ -45,7 +45,7 @@ compare_kernel_[$kernel]){
 	source ~federogc/software/initializes/init_integrate_kernel
 	tracker="(*)\tcompare_kernel_(+)"
 	?
-	ruby $input_path/kernel_combined.rb -i (*) -t " !calc_kernel_!/kernel_matrix_bin " -n " !calc_kernel_!/semantic_matrix_bin.lst " -o general_matrix 
+	kernel_combined.rb -i (*) -t " !calc_kernel_!/kernel_matrix_bin " -n " !calc_kernel_!/semantic_matrix_bin.lst " -o general_matrix 
 	text2binary_matrix.rb -i general_matrix -o general_matrix_undo -t bin -s > generalkernel_metrics
 	if [ -s general_matrix_undo ] ; then
 		rm general_matrix_undo
@@ -69,7 +69,7 @@ compare_kernel_[$kernel]){
 	?
 	# Producir cada una de las listas para cada gen.
 	# Devuelto en ranking por formato cuantil (1,2,3...). 
-	ruby $input_path/ranker_genes.rb -k !integrate_kernel_*!/general_matrix -n !integrate_kernel_*!/general_matrix.lst -s $gens_seed
+	ranker_genes.rb -k !integrate_kernel_*!/general_matrix -n !integrate_kernel_*!/general_matrix.lst -s $gens_seed
 	}
 }
 
