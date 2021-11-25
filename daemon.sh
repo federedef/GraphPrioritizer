@@ -2,8 +2,12 @@
 . ~soft_bio_267/initializes/init_autoflow 
 exec_mode=$1 # Modificar como Pepe lo tiene en su daemon aux_sh/trim_and_map.sh
 add_opt=$2 # Un string que damos como segundo argumento.
-export annotations_files_folder=$SCRATCH/executions/backupgenes
-export results_files=/mnt/home/users/bio_267_uma/federogc/projects/backupgenes/report
+input_path=`pwd`
+export PATH=$input_path/aux_scripts:$PATH 
+
+output_folder=$SCRATCH/executions/backupgenes
+autoflow_output=$output_folder/exec
+results_files=$output_folder/report
 # Añadir el export para el path.
 
 
@@ -12,8 +16,6 @@ export results_files=/mnt/home/users/bio_267_uma/federogc/projects/backupgenes/r
 net="small_pro;small_pro_two" #;loquesea.paco;... gen_phen_mini; small_pro
 kernel="ct;rf"
 integration_types="mean;" #...;integration_mean_by_presence;...
-input_path=`pwd`
-export PATH=$input_path/aux_scripts:$PATH 
 net2ont=$input_path'/net2ont' 
 gens_seed=$input_path'/gens_seed' #New
 
@@ -26,18 +28,23 @@ autoflow_vars=`echo "
 \\$gens_seed=$gens_seed
 " | tr -d [:space:]`
 
+
 if [ "$exec_mode" == "download" ] ; then
   #STAGE 1 DOWNLOADING REFERENCE
   pwd
 elif [ "$exec_mode" == "autoflow" ] ; then
   #STAGE 2 AUTOFLOW EXECUTION
-  AutoFlow -w autoflow_template.af -V $autoflow_vars -o $annotations_files_folder/exec $add_opt 
+  AutoFlow -w autoflow_template.af -V $autoflow_vars -o $autoflow_output $add_opt 
 elif [ "$exec_mode" == "check" ] ; then
-  flow_logger -w -e $annotations_files_folder/exec -r all
+  flow_logger -w -e $autoflow_output -r all
 elif [ "$exec_mode" == "report" ] ; then 
   #STAGE 3 GENERATE REPORT fROM RESULTS
-  create_metric_table.rb $annotations_files_folder/exec/uncomb_kernel_metrics Net,kernel parsed_uncomb_kmetrics
-  create_metric_table.rb $annotations_files_folder/exec/comb_kernel_metrics Integration,kernel parsed_comb_kmetrics
+  source ~soft_bio_267/initializes/init_ruby
+  mkdir $results_files
+  echo $autoflow_output/uncomb_kernel_metrics
+  create_metric_table.rb $autoflow_output/uncomb_kernel_metrics Net,kernel $results_files/parsed_uncomb_kmetrics
+  create_metric_table.rb $autoflow_output/comb_kernel_metrics Integration,kernel $results_files/parsed_comb_kmetrics
+  report_html -t report.erb -d parsed_uncomb_kmetrics,parsed_comb_kmetrics -o report_metrics
 fi
 
 
