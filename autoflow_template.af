@@ -1,4 +1,4 @@
-calc_similarity_[$nets]){
+%calc_similarity_[$nets]){
 	# Input: Archivo gen-ont bicolumna en /t + Archivo .obo
 	# Columna 1: gen	Columna 2: Elementos de ontologia separados por ";"
 	# Calculo con linn
@@ -9,8 +9,8 @@ calc_similarity_[$nets]){
 	ont=`grep -P '^(*)' $net2ont | cut -f 2`
 	?
 	semtools.rb -i $input_path/(*) -o ./results.txt -k "HP:" -O $input_path/$ont -s lin -S ";" # Pair 
+	text2binary_matrix.rb -i *semantic_similarity_list -o semantic_matrix_bin -t pair -s > similarity_metrics
 	if [ -s *semantic_similarity_list ] ; then 
-		text2binary_matrix.rb -i *semantic_similarity_list -o semantic_matrix_bin -t pair -s > similarity_metrics
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' similarity_metrics >> ../similarity_metrics
 	else
 		exit 1
@@ -28,9 +28,8 @@ compare_kernel_[$kernel]){
 	source ~soft_bio_267/initializes/init_ruby
 	#ln -s !calc_similarity_*!/tracker tracker
 	#LAYERS='geneA,colA;geneB,colB'
-	echo -e "(*)\tcompare_kernel_(+)" > tracker
+	echo -e "(*)_compare_kernel_(+)\t(*)\tcompare_kernel_(+)" > tracker
 	cp !calc_similarity_*!/semantic_matrix_bin.lst kernel_bin.lst
-	#text2binary_matrix.rb -i !calc_similarity_*!/*semantic_similarity_list -o semantic_matrix_bin -t pair -s > similaritym_metrics # Preguntar a Pepe 23/11/2021, si hacerlo tambien.
 	?
 	NetAnalyzer.rb -i !calc_similarity_*!/semantic_matrix_bin -f bin -l 'genes' -k compare_kernel_(+) -n kernel_bin.lst -u 'genes' -K ./kernel_matrix_bin
 	text2binary_matrix.rb -i kernel_matrix_bin -o kernel_matrix_undo -t bin -s > kernel_metrics
@@ -46,7 +45,7 @@ compare_kernel_[$kernel]){
 	source ~soft_bio_267/initializes/init_ruby
 	source ~soft_bio_267/initializes/init_netanalyzer
 	source ~federogc/software/initializes/init_integrate_kernel
-	echo -e "(*)\tcompare_kernel_(+)" > tracker
+	echo -e "(*)_compare_kernel_(+)\t(*)\tcompare_kernel_(+)" > tracker
 	?
 	kernel_combined.rb -i (*) -t " !calc_kernel_!/kernel_matrix_bin " -n " !calc_kernel_!/kernel_bin.lst " -o general_matrix 
 	text2binary_matrix.rb -i general_matrix -o general_matrix_undo -t bin -s > generalkernel_metrics
@@ -64,7 +63,7 @@ compare_kernel_[$kernel]){
 	# luego integramos.
 	}
 
-	rank_genes){
+	%rank_genes){
 	source ~soft_bio_267/initializes/init_ruby
 	?
 	# Producir cada una de las listas para cada gen.

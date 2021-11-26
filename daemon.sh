@@ -42,9 +42,9 @@ elif [ "$exec_mode" == "report" ] ; then
   source ~soft_bio_267/initializes/init_ruby
   mkdir $results_files
   echo $autoflow_output/uncomb_kernel_metrics
-  create_metric_table.rb $autoflow_output/uncomb_kernel_metrics Net,kernel $results_files/parsed_uncomb_kmetrics
-  create_metric_table.rb $autoflow_output/comb_kernel_metrics Integration,kernel $results_files/parsed_comb_kmetrics
-  report_html -t report.erb -d parsed_uncomb_kmetrics,parsed_comb_kmetrics -o report_metrics
+  create_metric_table.rb $autoflow_output/uncomb_kernel_metrics sample,net,kernel $results_files/parsed_uncomb_kmetrics
+  create_metric_table.rb $autoflow_output/comb_kernel_metrics sample,integration,kernel $results_files/parsed_comb_kmetrics
+  report_html -t report.erb -d $results_files/parsed_uncomb_kmetrics,$results_files/parsed_comb_kmetrics -o report_metrics
 fi
 
 

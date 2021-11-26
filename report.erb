@@ -1,4 +1,45 @@
-<%=
-table ( id : ’parsed_comb_kmetrics’, header : true , styled : ’dt’, attrib : {’class ’ = > ’table ’}) do | data_array | 
-end
-% >
+<%
+        ######################################################################
+        ## DATA
+        ######################################################################
+        data_header = @hash_vars['parsed_uncomb_kmetrics'].first
+        #Order by sample name
+        tab_header = @hash_vars['parsed_uncomb_kmetrics'].shift
+        @hash_vars['parsed_uncomb_kmetrics'].sort!{|s1, s2| s1.first.reverse <=> s2.first.reverse }
+        @hash_vars['parsed_uncomb_kmetrics'].unshift(tab_header)
+
+%>
+
+<div style="overflow: hidden">
+        <%= barplot(id: "parsed_uncomb_kmetrics", fields: [4, 5, 6, 7, 8, 9], header: true, row_names: false,
+                responsive: false,
+                height: '400px', width: '400px',
+                title: "Prueba",
+                xlabel: "medidas",
+                config: {
+                        'showLegend' => false,
+                        #'xAxis' => x_axis,
+                        #'yAxis' => y_axis,
+                        'graphOrientation' => 'vertical',
+                        })
+        %>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
