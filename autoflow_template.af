@@ -1,14 +1,12 @@
 %calc_similarity_[$nets]){
-	# Input: Archivo gen-ont bicolumna en /t + Archivo .obo
-	# Columna 1: gen	Columna 2: Elementos de ontologia separados por ";"
-	# Calculo con linn
-	# source ~soft_bio_267/initializes/init_ruby # De momento, no podemos usar esto (no esta subido)
-	source ~josecordoba/software/initializes/init_semtools_script # Usaremos esto de momento.
-	#source ~federogc/software/initializes/init_minisemtools_script
+	# Input: Tab file gen\tOnto_element1;Onto_element2;... + Archivo .obo
+	# Output: Similarity binary Matrix + Metrics
+	# source ~soft_bio_267/initializes/init_ruby # the source we'll use in the future.
+	source ~josecordoba/software/initializes/init_semtools_script # the source we use at the moment.
 	echo -e "(*)" > tracker
 	ont=`grep -P '^(*)' $net2ont | cut -f 2`
 	?
-	semtools.rb -i $input_path/(*) -o ./results.txt -k "HP:" -O $input_path/$ont -s lin -S ";" # Pair 
+	semtools.rb -i $input_path/(*) -o ./results.txt -k "HP:" -O $input_path/$ont -s lin -S ";" # Return linn similitud by pairs. 
 	text2binary_matrix.rb -i *semantic_similarity_list -o semantic_matrix_bin -t pair -s > similarity_metrics
 	if [ -s *semantic_similarity_list ] ; then 
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' similarity_metrics >> ../similarity_metrics
@@ -21,15 +19,12 @@
 compare_kernel_[$kernel]){ 
 	?
 	calc_kernel_[$nets]){
-	# input: Similarity matrix
-	# Calculate kernel
-	# Save in binary format ########### semantic_similarity_list(or matrix)
+	# input: Similarity binary matrix
+	# output: binary Kernel from similarity matrix + metrics
 	source ~soft_bio_267/initializes/init_netanalyzer
 	source ~soft_bio_267/initializes/init_ruby
-	#ln -s !calc_similarity_*!/tracker tracker
-	#LAYERS='geneA,colA;geneB,colB'
 	echo -e "(*)_compare_kernel_(+)\t(*)\tcompare_kernel_(+)" > tracker
-	cp !calc_similarity_*!/semantic_matrix_bin.lst kernel_bin.lst
+	cp !calc_similarity_*!/semantic_matrix_bin.lst kernel_bin.lst # To pass the list of node names.
 	?
 	NetAnalyzer.rb -i !calc_similarity_*!/semantic_matrix_bin -f bin -l 'genes' -k compare_kernel_(+) -n kernel_bin.lst -u 'genes' -K ./kernel_matrix_bin
 	text2binary_matrix.rb -i kernel_matrix_bin -o kernel_matrix_undo -t bin -s > kernel_metrics
@@ -42,6 +37,8 @@ compare_kernel_[$kernel]){
 	}
 
 	integrate_kernel_[$integration_types]){
+	# input: kernel matrix from every net.
+	# output: A combined binary kernel + metrics. 
 	source ~soft_bio_267/initializes/init_ruby
 	source ~soft_bio_267/initializes/init_netanalyzer
 	source ~federogc/software/initializes/init_integrate_kernel
@@ -51,23 +48,18 @@ compare_kernel_[$kernel]){
 	text2binary_matrix.rb -i general_matrix -o general_matrix_undo -t bin -s > generalkernel_metrics
 	if [ -s general_matrix_undo ] ; then
 		rm general_matrix_undo
-		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' generalkernel_metrics >> ../comb_kernel_metrics
-		# hacerle un cat a las métricas y enivarlas a >> ../comb_kernel_metrics.
-		# Un vez este todo, ya con esos datos y los anteriores se le pasara un script.
-		# create_metric_table.rb
+		# Now we prepare to create_metric_table.rb
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' generalkernel_metrics >> ../comb_kernel_metrics 
 	else 
   		exit 1
   	fi
-	# cogemos todos los binarios y con todo cargado creamos la matriz completa.
-	# luego adaptamos.
-	# luego integramos.
 	}
 
-	%rank_genes){
+	rank_genes){
+	# Input: seed_gens + kernel.
+	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_ruby
 	?
-	# Producir cada una de las listas para cada gen.
-	# Devuelto en ranking por formato cuantil (1,2,3...). 
 	ranker_genes.rb -k !integrate_kernel_*!/general_matrix -n !integrate_kernel_*!/general_matrix.lst -s $gens_seed
 	}
 }
