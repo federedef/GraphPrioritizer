@@ -1,7 +1,5 @@
 <%
-        ######################################################################
-        ## DATA
-        ######################################################################
+        # TODO:Retocar esta seccion. De momento sólo es una mera copia del ejemplo.
         data_header = @hash_vars['parsed_uncomb_kmetrics'].first
         #Order by sample name
         tab_header = @hash_vars['parsed_uncomb_kmetrics'].shift
@@ -10,16 +8,17 @@
 
 %>
 
-<div style="width:90%; background-color:#F4F8FC; margin:50 auto; align-content: center;">
-        <h1 style="text-align:center; background-color:#ecf0f1, color: powderblue; ">Analysis from KeRank: From kernels to backup genes.</h1>
+<div style="width:90%; background-color:#FFFFFF; margin:50 auto; align-content: center;">
+        <h1 style="text-align:center; background-color:#ecf0f1, color: powderblue; ">Analysis of the algorithm: From kernels to backup genes.</h1>
 
         <h2 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Kernelization section </h2>
 
-        <p> The algorithm transformed the semantic similarity matrix to make it compatible with a kernel. Once this was done for each network and kernel type, it was integrated by kernel type. Below is a general analysis of the properties of each matrix in the different phases of the process. </p>
+        <p> The algorithm transformed the semantic similarity matrix to make it compatible with a kernel. Once this was done for each network and kernel type, it was integrated by kernel type. Below there is a general analysis of the properties of each matrix in the different phases of the process. </p>
 
         <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Matrix properties </h3>
 
         <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Table 1.</b> Similarity matrixes </p> 
                 <%= 
                 table(id: "parsed_similarity_metrics", text: true, header: true, 
                         fields: [0,1,2,3],
@@ -35,6 +34,7 @@
         </div>
 
         <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Table 2.</b> Uncombined kernel matrixes </p> 
                 <%= 
                 table(id: "parsed_uncomb_kmetrics", text: true, header: true, 
                         fields: [1,2,3,4,5],
@@ -50,6 +50,7 @@
         </div>
 
         <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Table 3.</b> Integrated kernel matrixes </p>
                 <%= 
                 table(id: "parsed_comb_kmetrics", text: true, header: true, 
                         fields: [1,2,3,4,5],
@@ -67,10 +68,21 @@
         <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Weight values </h3>
 
         <div style="overflow: hidden">
+
+                <%= barplot(id: "parsed_similarity_metrics", fields: [0, 12, 13, 14], header: true, row_names: true,
+                        responsive: false,
+                        height: '400px', width: '400px', x_label: 'Weight',
+                        title: "Weight's similarity values",
+                        config: {
+                                'showLegend' => true,
+                                'graphOrientation' => 'vertical',
+                                })
+                %>
+
                 <%= barplot(id: "parsed_uncomb_kmetrics", fields: [0, 12, 13, 14], header: true, row_names: true,
                         responsive: false,
-                        height: '400px', width: '400px',
-                        title: "Weight's values before integration",
+                        height: '400px', width: '400px', x_label: 'Weight',
+                        title: "Weight's kernelized values before integration",
                         config: {
                                 'showLegend' => true,
                                 'graphOrientation' => 'vertical',
@@ -80,17 +92,13 @@
                 <%= barplot(id: "parsed_comb_kmetrics", fields: [0, 12, 13, 14], header: true, row_names: true,
                         responsive: false,
                         height: '400px', width: '400px',
-                        title: "Weight's values after integration",
-                        xlabel: "medidas",
+                        title: "Weight's kernelized values after integration", x_label: 'Weight',
                         config: {
                                 'showLegend' => true,
                                 'graphOrientation' => 'vertical',
                                 })
                 %>
         </div>
-
-        <h2 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Ranker section </h2>
-
 </div>
 
 
