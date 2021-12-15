@@ -1,4 +1,4 @@
-calc_similarity_[$nets]){
+%calc_similarity_[$nets]){
 	# Input: Tab file gen\tOnto_element1;Onto_element2;... + Archivo .obo
 	# Output: Similarity binary Matrix + Metrics
 	# source ~soft_bio_267/initializes/init_ruby # the source we'll use in the future.
@@ -18,7 +18,7 @@ calc_similarity_[$nets]){
 
 compare_kernel_[$kernel]){ 
 	?
-	calc_kernel_[$nets]){
+	%calc_kernel_[$nets]){
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
 	source ~soft_bio_267/initializes/init_netanalyzer
@@ -36,13 +36,14 @@ compare_kernel_[$kernel]){
   	fi
 	}
 
-	integrate_kernel_[$integration_types]){
+	%integrate_kernel_[$integration_types]){
 	# input: kernel matrix from every net.
 	# output: A combined binary kernel + metrics. 
 	source ~soft_bio_267/initializes/init_ruby
 	source ~soft_bio_267/initializes/init_netanalyzer
-	source ~federogc/software/initializes/init_integrate_kernel
+	source ~federogc/software/initializes/init_integrate_kernel #TODO: Test this is useless
 	echo -e "(*)_compare_kernel_(+)\t(*)\tcompare_kernel_(+)" > tracker
+	integrate_path=`pwd`
 	?
 	kernel_combined.rb -i (*) -t " !calc_kernel_!/kernel_matrix_bin " -n " !calc_kernel_!/kernel_bin.lst " -o general_matrix 
 	text2binary_matrix.rb -i general_matrix -o general_matrix_undo -t bin -s > generalkernel_metrics
@@ -50,12 +51,14 @@ compare_kernel_[$kernel]){
 		rm general_matrix_undo
 		# Now we prepare to create_metric_table.rb
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' generalkernel_metrics >> ../comb_kernel_metrics 
+		# Now we need to save the path of the integrated matrix.
+		echo "$integrate_path/general_matrix" >> ../integrate_tracker
 	else 
   		exit 1
   	fi
 	}
 
-	rank_genes){
+	%rank_genes){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_ruby
@@ -64,5 +67,11 @@ compare_kernel_[$kernel]){
 	}
 }
 
+corr_int_kern){
+	source ~soft_bio_267/initializes/init_R
+	path_kernel_int=`cat ../integrate_tracker | tr '\n' ','`
+	?
+	correlate_matrices.R -d $path_kernel_int -o "../../report"
 
+}
 

@@ -4,7 +4,7 @@
 exec_mode=$1 
 add_opt=$2 # flags to autoflow
 input_path=`pwd`
-export PATH=$input_path/aux_scripts:$PATH 
+export PATH=$input_path/aux_scripts:~soft_bio_267/programs/x86_64/scripts:$PATH # To test
 
 output_folder=$SCRATCH/executions/backupgenes
 autoflow_output=$output_folder/exec
@@ -43,6 +43,10 @@ elif [ "$exec_mode" == "report" ] ; then
 
   if [ ! -s $results_files ] ; then
     mkdir $results_files
+  fi
+
+  if [ ! -s ./matrices_correlation.pdf ] ; then
+    cp $results_files/matrices_correlation.pdf matrices_correlation.pdf
   fi
 
   #echo $autoflow_output/uncomb_kernel_metrics
