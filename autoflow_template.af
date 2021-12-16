@@ -58,7 +58,7 @@ compare_kernel_[$kernel]){
   	fi
 	}
 
-	%rank_genes){
+	rank_genes){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_ruby
