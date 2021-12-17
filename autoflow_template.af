@@ -69,7 +69,7 @@ compare_kernel_[$kernel]){
 
 corr_int_kern){
 	source ~soft_bio_267/initializes/init_R
-	path_kernel_int=`cat ../integrate_tracker | tr '\n' ','`
+	path_kernel_int=`cat ../integrate_tracker | sort | uniq | tr '\n' ','` # Prueba nueva, para conseguir que sean los unicos. TODO: Poner los nombres de cada grafica.
 	?
 	correlate_matrices.R -d $path_kernel_int -o "../../report"
 

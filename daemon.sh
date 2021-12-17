@@ -5,11 +5,11 @@ exec_mode=$1
 add_opt=$2 # flags to autoflow
 input_path=`pwd`
 export PATH=$input_path/aux_scripts:~soft_bio_267/programs/x86_64/scripts:$PATH # To test
+export PATH=/mnt/home/users/bio_267_uma/josecordoba/software/clin_db_manager/bin:$PATH # To incorporate in the download section.
 
 output_folder=$SCRATCH/executions/backupgenes
 autoflow_output=$output_folder/exec
 results_files=$output_folder/report
-
 
 
 #Custom variables.
@@ -31,7 +31,11 @@ autoflow_vars=`echo "
 
 if [ "$exec_mode" == "download" ] ; then
   #STAGE 1 DOWNLOADING REFERENCE
-  pwd
+  . ~soft_bio_267/initializes/init_R
+  . ~soft_bio_267/initializes/init_ruby
+  downloader.rb -i ./input_data/source_data 
+  source_parser.rb -i ./input_data/source_data 
+  #pwd
 elif [ "$exec_mode" == "autoflow" ] ; then
   #STAGE 2 AUTOFLOW EXECUTION
   AutoFlow -w autoflow_template.af -V $autoflow_vars -o $autoflow_output $add_opt 
