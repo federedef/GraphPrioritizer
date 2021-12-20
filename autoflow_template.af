@@ -36,9 +36,11 @@ compare_kernel_[$kernel]){
   	fi
 	}
 
+
 	%integrate_kernel_[$integration_types]){
 	# input: kernel matrix from every net.
 	# output: A combined binary kernel + metrics. 
+	# TODO: 
 	source ~soft_bio_267/initializes/init_ruby
 	source ~soft_bio_267/initializes/init_netanalyzer
 	source ~federogc/software/initializes/init_integrate_kernel #TODO: Test this is useless
@@ -53,11 +55,14 @@ compare_kernel_[$kernel]){
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' generalkernel_metrics >> ../comb_kernel_metrics 
 		# Now we need to save the path of the integrated matrix.
 		echo "$integrate_path/general_matrix" >> ../integrate_tracker
+		# Añadir una correlation de los mismos kernels sin integrar.
+		# Hacer un ln -s a la matriz y la renombro con 
 	else 
   		exit 1
   	fi
 	}
 
+	# Colocar aqui lo del integrate corr de R.
 	rank_genes){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
@@ -71,7 +76,6 @@ corr_int_kern){
 	source ~soft_bio_267/initializes/init_R
 	path_kernel_int=`cat ../integrate_tracker | sort | uniq | tr '\n' ','` # Prueba nueva, para conseguir que sean los unicos. TODO: Poner los nombres de cada grafica.
 	?
-	correlate_matrices.R -d $path_kernel_int -o "../../report"
-
+	correlate_matrices.R -d $path_kernel_int -o "../../report" # -t `echo -e $integration_types | tr ';' ','`
 }
 

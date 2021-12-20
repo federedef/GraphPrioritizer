@@ -33,8 +33,15 @@ if [ "$exec_mode" == "download" ] ; then
   #STAGE 1 DOWNLOADING REFERENCE
   . ~soft_bio_267/initializes/init_R
   . ~soft_bio_267/initializes/init_ruby
-  downloader.rb -i ./input_data/source_data 
-  source_parser.rb -i ./input_data/source_data 
+
+  if [ ! -s ./input_raw ] ; then
+    downloader.rb -i .source_data -o ./data_downloaded
+    cp -r ./data_downloaded/raw/monarch/tsv/all_associations ./input_raw
+  fi
+
+  
+
+  #source_parser.rb -i ./input_data/source_data 
   #pwd
 elif [ "$exec_mode" == "autoflow" ] ; then
   #STAGE 2 AUTOFLOW EXECUTION

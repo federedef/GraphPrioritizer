@@ -1,4 +1,4 @@
-2021-12-17 15:20:36 URL:https://archive.monarchinitiative.org/202010/tsv/all_associations/gene_phenotype.all.tsv.gz [11708264/11708264] -> "data/raw/monarch/tsv/all_associations/gene_phenotype.all.tsv.gz" [1]
-FINISHED --2021-12-17 15:20:36--
-Total wall clock time: 9.1s
-Downloaded: 1 files, 11M in 8.1s (1.38 MB/s)
+2021-12-20 14:42:50 URL:https://archive.monarchinitiative.org/202010/tsv/all_associations/gene_function.all.tsv.gz [50913276/50913276] -> "data/raw/monarch/tsv/all_associations/gene_function.all.tsv.gz" [1]
+FINISHED --2021-12-20 14:42:50--
+Total wall clock time: 5.8s
+Downloaded: 1 files, 49M in 4.9s (9.98 MB/s)
