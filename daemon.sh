@@ -39,28 +39,26 @@ if [ "$exec_mode" == "download" ] ; then
     cp -r ./data_downloaded/raw/monarch/tsv/all_associations ./input_raw
   fi
 
-  
-
   #source_parser.rb -i ./input_data/source_data 
   #pwd
 elif [ "$exec_mode" == "autoflow" ] ; then
   #STAGE 2 AUTOFLOW EXECUTION
   AutoFlow -w autoflow_template.af -V $autoflow_vars -o $autoflow_output $add_opt 
+
 elif [ "$exec_mode" == "check" ] ; then
+  #STAGE 3 CHECK EXECUTION
   flow_logger -w -e $autoflow_output -r all
+
 elif [ "$exec_mode" == "report" ] ; then 
-  #STAGE 3 GENERATE REPORT fROM RESULTS
+  #STAGE 4 GENERATE REPORT fROM RESULTS
   source ~soft_bio_267/initializes/init_ruby
-
-  if [ ! -s $results_files ] ; then
-    mkdir $results_files
+  
+  if [ ! -s ./correlations ] ; then 
+    mkdir ./correlations
+    cp -r $results_files/uncomb_corr ./correlations/
+    cp $results_files/int_kern_correlation.pdf ./correlations/int_kern_correlation.pdf
   fi
-
-  if [ ! -s ./matrices_correlation.pdf ] ; then
-    cp $results_files/matrices_correlation.pdf matrices_correlation.pdf
-  fi
-
-  #echo $autoflow_output/uncomb_kernel_metrics
+  
   create_metric_table.rb $autoflow_output/similarity_metrics Net $results_files/parsed_similarity_metrics
   create_metric_table.rb $autoflow_output/uncomb_kernel_metrics Sample,Net,Kernel $results_files/parsed_uncomb_kmetrics
   create_metric_table.rb $autoflow_output/comb_kernel_metrics Sample,Integration,Kernel $results_files/parsed_comb_kmetrics

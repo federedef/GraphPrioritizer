@@ -16,6 +16,7 @@
 }
 
 
+
 compare_kernel_[$kernel]){ 
 	?
 	%calc_kernel_[$nets]){
@@ -25,12 +26,14 @@ compare_kernel_[$kernel]){
 	source ~soft_bio_267/initializes/init_ruby
 	echo -e "(*)_compare_kernel_(+)\t(*)\tcompare_kernel_(+)" > tracker
 	cp !calc_similarity_*!/semantic_matrix_bin.lst kernel_bin.lst # To pass the list of node names.
+	kern_net_path=`pwd`
 	?
 	NetAnalyzer.rb -i !calc_similarity_*!/semantic_matrix_bin -f bin -l 'genes' -k compare_kernel_(+) -n kernel_bin.lst -u 'genes' -K ./kernel_matrix_bin
 	text2binary_matrix.rb -i kernel_matrix_bin -o kernel_matrix_undo -t bin -s > kernel_metrics
 	if [ -s kernel_matrix_undo ] ; then
 		rm kernel_matrix_undo
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' kernel_metrics >> ../uncomb_kernel_metrics 
+		echo -e "(*)_compare_kernel_(+)\t(*)\t$kern_net_path/kernel_matrix_bin" >> ../kernel_net_tracker
 	else 
   		exit 1
   	fi
@@ -54,7 +57,7 @@ compare_kernel_[$kernel]){
 		# Now we prepare to create_metric_table.rb
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' generalkernel_metrics >> ../comb_kernel_metrics 
 		# Now we need to save the path of the integrated matrix.
-		echo "$integrate_path/general_matrix" >> ../integrate_tracker
+		echo -e "(*)_compare_kernel_(+)\t$integrate_path/general_matrix" >> ../integrate_tracker
 		# Añadir una correlation de los mismos kernels sin integrar.
 		# Hacer un ln -s a la matriz y la renombro con 
 	else 
@@ -63,7 +66,7 @@ compare_kernel_[$kernel]){
 	}
 
 	# Colocar aqui lo del integrate corr de R.
-	rank_genes){
+	%rank_genes){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_ruby
@@ -72,10 +75,26 @@ compare_kernel_[$kernel]){
 	}
 }
 
+corr_kern_[$nets]){
+	source ~soft_bio_267/initializes/init_R
+	path_kernel=`cat ../kernel_net_tracker | grep -w '(*)' | sort | uniq | cut -f3 | tr '\n' ','` 
+	names_kernel=`cat ../kernel_net_tracker | grep -w '(*)' | sort | uniq | cut -f1 | tr '\n' ','`
+	if [ ! -s ../../report/uncomb_corr ] ; then
+    mkdir ../../report/uncomb_corr
+    fi
+	?
+	correlate_matrices.R -d $path_kernel -o "./" # -t $names_kernel
+	mv ./matrices_correlation.pdf ../../report/uncomb_corr/(*)_correlation.pdf
+}
+
+
 corr_int_kern){
 	source ~soft_bio_267/initializes/init_R
-	path_kernel_int=`cat ../integrate_tracker | sort | uniq | tr '\n' ','` # Prueba nueva, para conseguir que sean los unicos. TODO: Poner los nombres de cada grafica.
+	path_kernel_int=`cat ../integrate_tracker | sort | uniq | cut -f2 | tr '\n' ','` 
+	names_kernel_int=`cat ../integrate_tracker | sort | uniq | cut -f1 | tr '\n' ','`
 	?
-	correlate_matrices.R -d $path_kernel_int -o "../../report" # -t `echo -e $integration_types | tr ';' ','`
+	correlate_matrices.R -d $path_kernel_int -o "./" # -t $names_kernel_int
+	mv ./matrices_correlation.pdf ../../report/int_kern_correlation.pdf
 }
+
 
