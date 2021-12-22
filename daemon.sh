@@ -5,7 +5,7 @@ exec_mode=$1
 add_opt=$2 # flags to autoflow
 input_path=`pwd`
 export PATH=$input_path/aux_scripts:~soft_bio_267/programs/x86_64/scripts:$PATH # To test
-export PATH=/mnt/home/users/bio_267_uma/josecordoba/software/clin_db_manager/bin:$PATH # To incorporate in the download section.
+export PATH=/mnt/home/users/bio_267_uma/federogc/clin_db_manager/bin:$PATH # To incorporate in the download section.
 
 output_folder=$SCRATCH/executions/backupgenes
 autoflow_output=$output_folder/exec
@@ -35,12 +35,23 @@ if [ "$exec_mode" == "download" ] ; then
   . ~soft_bio_267/initializes/init_ruby
 
   if [ ! -s ./input_raw ] ; then
-    downloader.rb -i .source_data -o ./data_downloaded
-    cp -r ./data_downloaded/raw/monarch/tsv/all_associations ./input_raw
+    mkdir ./input_raw
   fi
 
-  #source_parser.rb -i ./input_data/source_data 
-  #pwd
+  # PASS RAW DOWNLOADED FILES.
+  downloader.rb -i ./input_data/source_data -o ./data_downloaded
+  cp -r ./data_downloaded/raw/monarch/tsv/all_associations ./input_raw
+
+  # PROCESS THE FILES.
+  if [ ! -s ./processed_data ] ; then
+    mkdir ./processed_data
+  fi
+  cp -r ./data_downloaded/aux ./obos
+
+  zgrep 'HP:' input_raw/all_associations/gene_phenotype.all.tsv.gz | grep 'NCBITaxon:9606' | aggregate_column_data.rb -i - -x 0 -a 4 > processed_data/gene_phenotype
+  zgrep 'MONDO:' input_raw/all_associations/gene_disease.all.tsv.gz | grep 'NCBITaxon:9606' | aggregate_column_data.rb -i - -x 0 -a 4 > processed_data/gene_disease
+  zgrep 'GO:' input_raw/all_associations/gene_function.all.tsv.gz | grep 'NCBITaxon:9606' | aggregate_column_data.rb -i - -x 0 -a 4 > processed_data/gene_function
+
 elif [ "$exec_mode" == "autoflow" ] ; then
   #STAGE 2 AUTOFLOW EXECUTION
   AutoFlow -w autoflow_template.af -V $autoflow_vars -o $autoflow_output $add_opt 
