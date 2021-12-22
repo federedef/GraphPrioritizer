@@ -75,16 +75,21 @@ compare_kernel_[$kernel]){
 	}
 }
 
-corr_kern_[$nets]){
+corr_uncomb_[$nets]){
 	source ~soft_bio_267/initializes/init_R
 	path_kernel=`cat ../kernel_net_tracker | grep -w '(*)' | sort | uniq | cut -f3 | tr '\n' ','` 
 	names_kernel=`cat ../kernel_net_tracker | grep -w '(*)' | sort | uniq | cut -f1 | tr '\n' ','`
+	path_sim=!calc_similarity_*!/semantic_matrix_bin
+	names_sim=similarity_(*)
+	all_paths="$path_sim,$path_kernel"
+	all_names="$names_sim,$names_kernel"
+	corr_methd='spearman' 
 	if [ ! -s ../../report/uncomb_corr ] ; then
     mkdir ../../report/uncomb_corr
+    # Poner un mkdir del report.
     fi
 	?
-	correlate_matrices.R -d $path_kernel -o "./" # -t $names_kernel
-	mv ./matrices_correlation.pdf ../../report/uncomb_corr/(*)_correlation.pdf
+	correlate_matrices.R -d $all_paths -m $corr_methd -o "../../report/uncomb_corr/" -n $all_names -O (*)_"$corr_methd"_correlation
 }
 
 
@@ -92,9 +97,10 @@ corr_int_kern){
 	source ~soft_bio_267/initializes/init_R
 	path_kernel_int=`cat ../integrate_tracker | sort | uniq | cut -f2 | tr '\n' ','` 
 	names_kernel_int=`cat ../integrate_tracker | sort | uniq | cut -f1 | tr '\n' ','`
+	corr_methd='spearman'
 	?
-	correlate_matrices.R -d $path_kernel_int -o "./" # -t $names_kernel_int
-	mv ./matrices_correlation.pdf ../../report/int_kern_correlation.pdf
+	correlate_matrices.R -d $path_kernel_int  -m $corr_methd -o "../../report/" -n $names_kernel_int -O int_kern_correlation
+	#mv ./matrices_correlation.pdf ../../report/int_kern_correlation.pdf
 }
 
 
