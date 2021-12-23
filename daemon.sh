@@ -13,7 +13,7 @@ results_files=$output_folder/report
 
 
 #Custom variables.
-net="small_pro;small_pro_two" #;loquesea.paco;... gen_phen_mini; small_pro
+net="gene2phenotype;gene2disease;gene2molecular_function;gene2biological_process;gene2cellular_sublocation" #"small_pro;small_pro_two" #;loquesea.paco;... gen_phen_mini; small_pro
 kernel="ct;rf"
 integration_types="mean;" #...;integration_mean_by_presence;...
 net2ont=$input_path'/net2ont' 
@@ -34,23 +34,27 @@ if [ "$exec_mode" == "download" ] ; then
   . ~soft_bio_267/initializes/init_R
   . ~soft_bio_267/initializes/init_ruby
 
-  if [ ! -s ./input_raw ] ; then
-    mkdir ./input_raw
-  fi
-
   # PASS RAW DOWNLOADED FILES.
-  downloader.rb -i ./input_data/source_data -o ./data_downloaded
+  downloader.rb -i ./input_source/source_data -o ./data_downloaded
   cp -r ./data_downloaded/raw/monarch/tsv/all_associations ./input_raw
 
   # PROCESS THE FILES.
-  if [ ! -s ./processed_data ] ; then
-    mkdir ./processed_data
+  if [ ! -s ./input_processed ] ; then
+    mkdir ./input_processed
   fi
-  cp -r ./data_downloaded/aux ./obos
 
-  zgrep 'HP:' input_raw/all_associations/gene_phenotype.all.tsv.gz | grep 'NCBITaxon:9606' | aggregate_column_data.rb -i - -x 0 -a 4 > processed_data/gene_phenotype
-  zgrep 'MONDO:' input_raw/all_associations/gene_disease.all.tsv.gz | grep 'NCBITaxon:9606' | aggregate_column_data.rb -i - -x 0 -a 4 > processed_data/gene_disease
-  zgrep 'GO:' input_raw/all_associations/gene_function.all.tsv.gz | grep 'NCBITaxon:9606' | aggregate_column_data.rb -i - -x 0 -a 4 > processed_data/gene_function
+  #TODO: Quitar el head cuando probemos
+  #TODO: Evitar que se aglomeren muchos .obo.
+
+  zgrep 'HP:' input_raw/gene_phenotype.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 50 > input_processed/gene2phenotype 
+  zgrep 'MONDO:' input_raw/gene_disease.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 60 > input_processed/gene2disease
+  zgrep 'GO:' input_raw/gene_function.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 50 > input_processed/gene2function
+  cp -r ./data_downloaded/aux ./input_processed/obos
+
+  cp input_processed/gene2function input_processed/gene2molecular_function
+  cp input_processed/gene2function input_processed/gene2cellular_sublocation
+  cp input_processed/gene2function input_processed/gene2biological_process
+  rm input_processed/gene2function
 
 elif [ "$exec_mode" == "autoflow" ] ; then
   #STAGE 2 AUTOFLOW EXECUTION
@@ -66,9 +70,10 @@ elif [ "$exec_mode" == "report" ] ; then
   
   if [ ! -s ./correlations ] ; then 
     mkdir ./correlations
-    cp -r $results_files/uncomb_corr ./correlations/
-    cp $results_files/int_kern_correlation.pdf ./correlations/int_kern_correlation.pdf
   fi
+
+  cp -r $results_files/uncomb_corr ./correlations/
+  cp $results_files/int_kern_correlation.png ./correlations/int_kern_correlation.png
   
   create_metric_table.rb $autoflow_output/similarity_metrics Net $results_files/parsed_similarity_metrics
   create_metric_table.rb $autoflow_output/uncomb_kernel_metrics Sample,Net,Kernel $results_files/parsed_uncomb_kmetrics

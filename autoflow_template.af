@@ -1,12 +1,13 @@
-%calc_similarity_[$nets]){
+calc_similarity_[$nets]){
 	# Input: Tab file gen\tOnto_element1;Onto_element2;... + Archivo .obo
 	# Output: Similarity binary Matrix + Metrics
 	# source ~soft_bio_267/initializes/init_ruby # the source we'll use in the future.
 	source ~josecordoba/software/initializes/init_semtools_script # the source we use at the moment.
 	echo -e "(*)" > tracker
 	ont=`grep -P '^(*)' $net2ont | cut -f 2`
+	parent_id=`grep -P '^(*)' $net2ont | cut -f 3`
 	?
-	semtools.rb -i $input_path/(*) -o ./results.txt -k "HP:" -O $input_path/$ont -s lin -S ";" # Return linn similitud by pairs. 
+	semtools.rb -i $input_path/input_processed/(*) -o ./results.txt -O $input_path//input_processed/obos/$ont -s lin -S "," -T "$parent_id" # -k "HP:" Return linn similitud by pairs. 
 	text2binary_matrix.rb -i *semantic_similarity_list -o semantic_matrix_bin -t pair -s > similarity_metrics
 	if [ -s *semantic_similarity_list ] ; then 
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' similarity_metrics >> ../similarity_metrics
@@ -75,7 +76,7 @@ compare_kernel_[$kernel]){
 	}
 }
 
-corr_uncomb_[$nets]){
+%corr_uncomb_[$nets]){
 	source ~soft_bio_267/initializes/init_R
 	path_kernel=`cat ../kernel_net_tracker | grep -w '(*)' | sort | uniq | cut -f3 | tr '\n' ','` 
 	names_kernel=`cat ../kernel_net_tracker | grep -w '(*)' | sort | uniq | cut -f1 | tr '\n' ','`
@@ -93,7 +94,7 @@ corr_uncomb_[$nets]){
 }
 
 
-corr_int_kern){
+%corr_int_kern){
 	source ~soft_bio_267/initializes/init_R
 	path_kernel_int=`cat ../integrate_tracker | sort | uniq | cut -f2 | tr '\n' ','` 
 	names_kernel_int=`cat ../integrate_tracker | sort | uniq | cut -f1 | tr '\n' ','`
