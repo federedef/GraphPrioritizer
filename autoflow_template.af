@@ -82,12 +82,15 @@ compare_kernel_[$kernel]){
 	names_kernel=`cat ../kernel_net_tracker | grep -w '(*)' | sort | uniq | cut -f1 | tr '\n' ','`
 	path_sim=!calc_similarity_*!/semantic_matrix_bin
 	names_sim=similarity_(*)
+	# all paths and names from kernels and similarities.
 	all_paths="$path_sim,$path_kernel"
 	all_names="$names_sim,$names_kernel"
 	corr_methd='spearman' 
-	if [ ! -s ../../report/uncomb_corr ] ; then
+	# Create the necesssary folders.
+	if [ ! -s ../../report ] ; then
+    mkdir ../../report
+    elif [ ! -s ../../report/uncomb_corr ] ; then
     mkdir ../../report/uncomb_corr
-    # Poner un mkdir del report.
     fi
 	?
 	correlate_matrices.R -d $all_paths -m $corr_methd -o "../../report/uncomb_corr/" -n $all_names -O (*)_"$corr_methd"_correlation

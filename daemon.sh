@@ -35,6 +35,12 @@ if [ "$exec_mode" == "download" ] ; then
   . ~soft_bio_267/initializes/init_ruby
 
   # PASS RAW DOWNLOADED FILES.
+
+  if [ -s ./data_downloaded/aux ] ; then
+    echo "removing pre-existed obos files"
+    find ./data_downloaded/aux -name "*.obo*" -delete 
+  fi
+
   downloader.rb -i ./input_source/source_data -o ./data_downloaded
   cp -r ./data_downloaded/raw/monarch/tsv/all_associations ./input_raw
 
@@ -44,12 +50,19 @@ if [ "$exec_mode" == "download" ] ; then
   fi
 
   #TODO: Quitar el head cuando probemos
-  #TODO: Evitar que se aglomeren muchos .obo.
+  #TODO: Evitar que se aglomeren muchos .obo.                  CHECKED
 
   zgrep 'HP:' input_raw/gene_phenotype.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 50 > input_processed/gene2phenotype 
   zgrep 'MONDO:' input_raw/gene_disease.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 60 > input_processed/gene2disease
   zgrep 'GO:' input_raw/gene_function.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 50 > input_processed/gene2function
-  cp -r ./data_downloaded/aux ./input_processed/obos
+  cp -r ./data_downloaded/aux ./input_processed/
+
+  if [ -s ./input_processed/obos ] ; then
+    echo "removing pre-existed obos folder"
+    rm -r ./input_processed/obos
+  fi
+
+  mv ./input_processed/aux ./input_processed/obos
 
   cp input_processed/gene2function input_processed/gene2molecular_function
   cp input_processed/gene2function input_processed/gene2cellular_sublocation
