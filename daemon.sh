@@ -41,6 +41,7 @@ if [ "$exec_mode" == "download" ] ; then
     find ./data_downloaded/aux -name "*.obo*" -delete 
   fi
 
+  # Descarga de ontologías.
   downloader.rb -i ./input_source/source_data -o ./data_downloaded
   cp -r ./data_downloaded/raw/monarch/tsv/all_associations ./input_raw
 
@@ -50,11 +51,10 @@ if [ "$exec_mode" == "download" ] ; then
   fi
 
   #TODO: Quitar el head cuando probemos
-  #TODO: Evitar que se aglomeren muchos .obo.                  CHECKED
 
-  zgrep 'HP:' input_raw/gene_phenotype.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 50 > input_processed/gene2phenotype 
-  zgrep 'MONDO:' input_raw/gene_disease.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 60 > input_processed/gene2disease
-  zgrep 'GO:' input_raw/gene_function.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 50 > input_processed/gene2function
+  zgrep 'HP:' input_raw/gene_phenotype.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 100 > input_processed/gene2phenotype 
+  zgrep 'MONDO:' input_raw/gene_disease.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 100 > input_processed/gene2disease
+  zgrep 'GO:' input_raw/gene_function.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 100 > input_processed/gene2function
   cp -r ./data_downloaded/aux ./input_processed/
 
   if [ -s ./input_processed/obos ] ; then
