@@ -13,7 +13,7 @@ results_files=$output_folder/report
 
 
 #Custom variables.
-net="gene2phenotype;gene2disease;gene2molecular_function;gene2biological_process;gene2cellular_sublocation" #"small_pro;small_pro_two" #;loquesea.paco;... gen_phen_mini; small_pro
+net="gene2phenotype;gene2disease" #;gene2molecular_function;gene2biological_process;gene2cellular_sublocation" "small_pro;small_pro_two" #;loquesea.paco;... gen_phen_mini; small_pro
 kernel="ct;rf"
 integration_types="mean;" #...;integration_mean_by_presence;...
 net2ont=$input_path'/net2ont' 
@@ -43,7 +43,7 @@ if [ "$exec_mode" == "download" ] ; then
 
   # Descarga de ontologías.
   downloader.rb -i ./input_source/source_data -o ./data_downloaded
-  cp -r ./data_downloaded/raw/monarch/tsv/all_associations ./input_raw
+  cp ./data_downloaded/raw/monarch/tsv/all_associations/* ./input_raw
 
   # PROCESS THE FILES.
   if [ ! -s ./input_processed ] ; then
@@ -51,19 +51,26 @@ if [ "$exec_mode" == "download" ] ; then
   fi
 
   #TODO: Quitar el head cuando probemos
-
   zgrep 'HP:' input_raw/gene_phenotype.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 100 > input_processed/gene2phenotype 
   zgrep 'MONDO:' input_raw/gene_disease.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 100 > input_processed/gene2disease
   zgrep 'GO:' input_raw/gene_function.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 100 > input_processed/gene2function
-  cp -r ./data_downloaded/aux ./input_processed/
+  # Adiciones para comprobar.
+  zgrep "REACT:" input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | cut -f 1,5 | head -n 10000 > input_processed/gene2pathway
+  zgrep "RO:0002434" input_raw/gene_interaction.all.tsv.gz | grep 'NCBITaxon:9606' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 ~ /HGNC:/ && $5 ~ /HGNC:/) print $1,$5}' | head -n 10000 > input_processed/gene2interaction
+  # RO:0002434 <=> interacts with
 
-  if [ -s ./input_processed/obos ] ; then
-    echo "removing pre-existed obos folder"
-    rm -r ./input_processed/obos
-  fi
+  mv ./data_downloaded/aux/* ./input_processed/obos
 
-  mv ./input_processed/aux ./input_processed/obos
-
+  #cp -r ./data_downloaded/aux ./input_processed/
+  #
+  #if [ -s ./input_processed/obos ] ; then
+  #  echo "removing pre-existed obos folder"
+  #  rm -r ./input_processed/obos
+  #fi
+  #
+  #mv ./input_processed/aux/* ./input_processed/obos
+  
+  # Creating paco files for each go branch.
   cp input_processed/gene2function input_processed/gene2molecular_function
   cp input_processed/gene2function input_processed/gene2cellular_sublocation
   cp input_processed/gene2function input_processed/gene2biological_process
@@ -89,7 +96,9 @@ elif [ "$exec_mode" == "report" ] ; then
   cp $results_files/int_kern_correlation.png ./correlations/int_kern_correlation.png
   
   create_metric_table.rb $autoflow_output/similarity_metrics Net $results_files/parsed_similarity_metrics
+  awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($1 == N[net]) print $0}' $results_files/parsed_similarity_metrics
   create_metric_table.rb $autoflow_output/uncomb_kernel_metrics Sample,Net,Kernel $results_files/parsed_uncomb_kmetrics
+  awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($2 == N[net] ) print $0}' $results_files/parsed_uncomb_kmetrics
   create_metric_table.rb $autoflow_output/comb_kernel_metrics Sample,Integration,Kernel $results_files/parsed_comb_kmetrics
   report_html -t report.erb -d $results_files/parsed_uncomb_kmetrics,$results_files/parsed_comb_kmetrics,$results_files/parsed_similarity_metrics -o report_metrics
 fi

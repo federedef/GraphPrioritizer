@@ -8,7 +8,8 @@ calc_similarity_[$nets]){
 	parent_id=`grep -P '^(*)' $net2ont | cut -f 3`
 	?
 	semtools.rb -i $input_path/input_processed/(*) -o ./results.txt -O $input_path//input_processed/obos/$ont -s lin -S "," -T "$parent_id" # -k "HP:" Return linn similitud by pairs. 
-	text2binary_matrix.rb -i *semantic_similarity_list -o semantic_matrix_bin -t pair -s > similarity_metrics
+	awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' (*)_semantic_similarity_list > semantic_similarity_list_(*) # State diagonal values to 0. TODO: Maybe 'd better to change to the first position the (*)'
+	text2binary_matrix.rb -i semantic_similarity_list_(*) -o semantic_matrix_bin -t pair -s > similarity_metrics
 	if [ -s *semantic_similarity_list ] ; then 
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' similarity_metrics >> ../similarity_metrics
 	else
@@ -17,10 +18,9 @@ calc_similarity_[$nets]){
 }
 
 
-
 compare_kernel_[$kernel]){ 
 	?
-	%calc_kernel_[$nets]){
+	calc_kernel_[$nets]){
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
 	source ~soft_bio_267/initializes/init_netanalyzer
@@ -40,8 +40,7 @@ compare_kernel_[$kernel]){
   	fi
 	}
 
-
-	%integrate_kernel_[$integration_types]){
+	integrate_kernel_[$integration_types]){
 	# input: kernel matrix from every net.
 	# output: A combined binary kernel + metrics. 
 	# TODO: 
@@ -76,7 +75,8 @@ compare_kernel_[$kernel]){
 	}
 }
 
-%corr_uncomb_[$nets]){
+
+corr_uncomb_[$nets]){
 	source ~soft_bio_267/initializes/init_R
 	path_kernel=`cat ../kernel_net_tracker | grep -w '(*)' | sort | uniq | cut -f3 | tr '\n' ','` 
 	names_kernel=`cat ../kernel_net_tracker | grep -w '(*)' | sort | uniq | cut -f1 | tr '\n' ','`
@@ -97,7 +97,7 @@ compare_kernel_[$kernel]){
 }
 
 
-%corr_int_kern){
+corr_int_kern){
 	source ~soft_bio_267/initializes/init_R
 	path_kernel_int=`cat ../integrate_tracker | sort | uniq | cut -f2 | tr '\n' ','` 
 	names_kernel_int=`cat ../integrate_tracker | sort | uniq | cut -f1 | tr '\n' ','`
