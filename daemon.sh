@@ -90,6 +90,9 @@ elif [ "$exec_mode" == "report" ] ; then
   
   if [ ! -s ./correlations ] ; then 
     mkdir ./correlations
+  elif [ -s ./correlations ] ; then
+    rm -r ./correlations
+    mkdir ./correlations
   fi
 
   cp -r $results_files/uncomb_corr ./correlations/
