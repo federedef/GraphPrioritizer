@@ -1,8 +1,9 @@
-%calc_similarity_[$nets]){
+calc_similarity_[$nets]){
 	# Input: Tab file gen\tOnto_element1;Onto_element2;... + Archivo .obo
 	# Output: Similarity binary Matrix + Metrics
 	# source ~soft_bio_267/initializes/init_ruby # the source we'll use in the future.
 	source ~josecordoba/software/initializes/init_semtools_script # the source we use at the moment.
+	source ~soft_bio_267/initializes/init_R
 	echo -e "(*)" > tracker
 	ont=`grep -P '^(*)' $net2ont | cut -f 2`
 	parent_id=`grep -P '^(*)' $net2ont | cut -f 3`
@@ -10,11 +11,22 @@
 	semtools.rb -i $input_path/input_processed/(*) -o ./results.txt -O $input_path//input_processed/obos/$ont -s lin -S "," -T "$parent_id" # -k "HP:" Return linn similitud by pairs. 
 	awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' (*)_semantic_similarity_list > semantic_similarity_list_(*) # State diagonal values to 0. TODO: Maybe 'd better to change to the first position the (*)'
 	text2binary_matrix.rb -i semantic_similarity_list_(*) -o semantic_matrix_bin -t pair -s > similarity_metrics
+	disparity_filter.R -i ./semantic_matrix_bin -o "./"
 	if [ -s *semantic_similarity_list ] ; then 
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' similarity_metrics >> ../similarity_metrics
 	else
 		exit 1
 	fi
+}
+
+%disparity_filter_[$nets]){
+	source ~soft_bio_267/initializes/init_R
+	source ~soft_bio_267/initializes/init_ruby
+	filter_path=`pwd`
+	echo "$filter_path" > p
+	?
+	disparity_filter.R -i !calc_similarity_*!/semantic_matrix_bin -o "../"
+	#text2binary_matrix.rb -i filtered_semantic_matrix_bin -s > filtered_similarity_metrics
 }
 
 
@@ -76,7 +88,7 @@ compare_kernel_[$kernel]){
 }
 
 
-corr_uncomb_[$nets]){
+%corr_uncomb_[$nets]){
 	source ~soft_bio_267/initializes/init_R
 	path_kernel=`cat ../kernel_net_tracker | grep -w '(*)' | sort | uniq | cut -f3 | tr '\n' ','` 
 	names_kernel=`cat ../kernel_net_tracker | grep -w '(*)' | sort | uniq | cut -f1 | tr '\n' ','`
@@ -102,7 +114,7 @@ corr_uncomb_[$nets]){
 }
 
 
-corr_int_kern){
+%corr_int_kern){
 	source ~soft_bio_267/initializes/init_R
 	path_kernel_int=`cat ../integrate_tracker | sort | uniq | cut -f2 | tr '\n' ','` 
 	names_kernel_int=`cat ../integrate_tracker | sort | uniq | cut -f1 | tr '\n' ','`

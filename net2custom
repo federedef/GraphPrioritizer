@@ -1,0 +1,8 @@
+Net 	Ontology	Filter	Projection	Similarity
+gene2phenotype	hp.obo	F	-
+gene2disease	mondo.obo	F 	-
+gene2molecular_function	go.obo	NF	-	-T GO:0008150
+gene2biological_process	go.obo	F 	-	-T GO:0008150
+gene2cellular_sublocation	go.obo	F 	-	-T GO:0005575
+gene2interaction	-	F
+gene2pathway	-	F
