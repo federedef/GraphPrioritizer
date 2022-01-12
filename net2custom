@@ -1,9 +1,16 @@
-Net 	Ontology	Filter	Projection	Similarity
-gene2phenotype	hp.obo	F	-
-gene2disease	mondo.obo	F 	-
-gene2molecular_function	go.obo	NF	-	-T GO:0008150
-gene2biological_process	go.obo	F 	-	-T GO:0008150
-gene2cellular_sublocation	go.obo	F 	-	-T GO:0005575
-gene2interaction	-	F
-gene2pathway	-	F
+Net 	Ontology	Type	Code	Filter
+gene2phenotype	hp.obo	ontology	-s lin -S ","	F
+gene2disease	mondo.obo	ontology	-s lin -S ","	F
+gene2molecular_function	go.obo	ontology	-s lin -S "," -T GO:0008150	NF
+gene2biological_process	go.obo	ontology	-s lin -S "," -T GO:0008150	F
+gene2cellular_sublocation	go.obo	ontology	-s lin -S "," -T GO:0005575	F	
+gene2interaction	-	network	-	NF
+gene2pathway	-	network	-t pair -l 'gen,HGNC:;pathway,REACT:' -m jaccard -u 'gen;pathway'	F
+
+
+
+
+
+
+
 code --> -s lin -S "," -T "$parent_id"
