@@ -69,7 +69,7 @@ genes_seed.each do |gene_seed|
   ranked_genes = rank_by_seedgen(matrix, kernel_nodes, gene_seed)
   #p ranked_genes
   #puts '%s' %gene_seed
-  File.open('%s' %gene_seed,'w') do |f|
+  File.open('%s_candidates' %gene_seed,'w') do |f|
     ranked_genes.each{|ranked_gene| f.print "%s\t%s\t%f\n" %ranked_gene}
   end
 end

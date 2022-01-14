@@ -56,8 +56,8 @@ if [ "$exec_mode" == "download" ] ; then
   zgrep 'MONDO:' input_raw/gene_disease.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 100 > input_processed/gene2disease
   zgrep 'GO:' input_raw/gene_function.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 100 > input_processed/gene2function
   # Adiciones para comprobar.
-  zgrep "REACT:" input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | cut -f 1,5 | head -n 10000 > input_processed/gene2pathway
-  zgrep "RO:0002434" input_raw/gene_interaction.all.tsv.gz | grep 'NCBITaxon:9606' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 ~ /HGNC:/ && $5 ~ /HGNC:/) print $1,$5}' | head -n 10000 > input_processed/gene2interaction
+  zgrep "REACT:" input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | cut -f 1,5 | head -n 100 > input_processed/gene2pathway
+  zgrep "RO:0002434" input_raw/gene_interaction.all.tsv.gz | grep 'NCBITaxon:9606' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 ~ /HGNC:/ && $5 ~ /HGNC:/) print $1,$5}' | head -n 100 > input_processed/gene2interaction
   # RO:0002434 <=> interacts with
 
   mv ./data_downloaded/aux/* ./input_processed/obos
@@ -89,22 +89,33 @@ elif [ "$exec_mode" == "report" ] ; then
   #STAGE 4 GENERATE REPORT fROM RESULTS
   source ~soft_bio_267/initializes/init_ruby
   
+  # Recollect the matriz correlactions png's.
   if [ ! -s ./correlations ] ; then 
     mkdir ./correlations
   elif [ -s ./correlations ] ; then
     rm -r ./correlations
     mkdir ./correlations
   fi
-
+  #TODO:Elegir solo los de mis redes.
   cp -r $results_files/uncomb_corr ./correlations/
   cp $results_files/int_kern_correlation.png ./correlations/int_kern_correlation.png
-  
+
+  # Similarity metrics
   create_metric_table.rb $autoflow_output/similarity_metrics Net $results_files/parsed_similarity_metrics
   awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($1 == N[net]) print $0}' $results_files/parsed_similarity_metrics
+  # Uncomb Kernel metrics.
   create_metric_table.rb $autoflow_output/uncomb_kernel_metrics Sample,Net,Kernel $results_files/parsed_uncomb_kmetrics
   awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($2 == N[net] ) print $0}' $results_files/parsed_uncomb_kmetrics
+  # Comb Kernls.
   create_metric_table.rb $autoflow_output/comb_kernel_metrics Sample,Integration,Kernel $results_files/parsed_comb_kmetrics
-  report_html -t report.erb -d $results_files/parsed_uncomb_kmetrics,$results_files/parsed_comb_kmetrics,$results_files/parsed_similarity_metrics -o report_metrics
+  # Filtered similarity metrics
+  if [ -s $autoflow_output/filtered_metrics ] ; then
+    create_metric_table.rb $autoflow_output/filtered_metrics Net $results_files/parsed_filtered_metrics
+    awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($1 == N[net]) print $0}' $results_files/parsed_filtered_metrics
+    report_html -t report.erb -d $results_files/parsed_uncomb_kmetrics,$results_files/parsed_comb_kmetrics,$results_files/parsed_similarity_metrics,$results_files/parsed_filtered_metrics -o report_metrics
+  else 
+    report_html -t report.erb -d $results_files/parsed_uncomb_kmetrics,$results_files/parsed_comb_kmetrics,$results_files/parsed_similarity_metrics -o report_metrics
+  fi
 fi
 
 
