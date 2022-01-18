@@ -1,4 +1,4 @@
-calc_similarity_[$nets]){
+%calc_similarity_[$nets]){
 	# Input: Tab file gen\tOnto_element1;Onto_element2;... + Archivo .obo
 	# Output: Similarity binary Matrix + Metrics
 	# source ~soft_bio_267/initializes/init_ruby # the source we'll use in the future.
@@ -36,7 +36,7 @@ calc_similarity_[$nets]){
 
 compare_kernel_[$kernel]){ 
 	?
-	calc_kernel_[$nets]){
+	%calc_kernel_[$nets]){
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
 	source ~soft_bio_267/initializes/init_netanalyzer
@@ -56,10 +56,19 @@ compare_kernel_[$kernel]){
   	fi
 	}
 
+	rank_genes_from_uncomb[$nets]){
+	# Input: seed_gens + kernel.
+	# Output: rank genes for every gen.
+	source ~soft_bio_267/initializes/init_ruby
+    mkdir -p ../../report/candidates/uncomb_kernels/compare_kernel_(+)/(*)
+	?
+	ranker_genes.rb -k !calc_kernel_*!/kernel_matrix_bin -n !calc_kernel_*!/kernel_bin.lst -s $gens_seed
+	cp *_candidates ../../report/candidates/uncomb_kernels/compare_kernel_(+)/(*)
+	}
+
 	integrate_kernel_[$integration_types]){
 	# input: kernel matrix from every net.
 	# output: A combined binary kernel + metrics. 
-	# TODO: 
 	source ~soft_bio_267/initializes/init_ruby
 	source ~soft_bio_267/initializes/init_netanalyzer
 	source ~federogc/software/initializes/init_integrate_kernel #TODO: Test this is useless
@@ -74,35 +83,25 @@ compare_kernel_[$kernel]){
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' generalkernel_metrics >> ../comb_kernel_metrics 
 		# Now we need to save the path of the integrated matrix.
 		echo -e "(*)_compare_kernel_(+)\t$integrate_path/general_matrix" >> ../integrate_tracker
-		# Añadir una correlation de los mismos kernels sin integrar.
-		# Hacer un ln -s a la matriz y la renombro con 
+		# Añadir una correlation de los mismos kernels sin integrar. 
 	else 
   		exit 1
   	fi
 	}
 
-	# Colocar aqui lo del integrate corr de R.
-	rank_genes){
+	rank_genes_from_integrated){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_ruby
-	if [ ! -s ../../report ] ; then
-     	mkdir ../../report
-    fi
-    if [ ! -s ../../report/candidates ] ; then
-     	mkdir ../../report/candidates
-    fi
-    if [ ! -s ../../report/candidates/compare_kernel_(+) ] ; then
-     	mkdir  ../../report/candidates/compare_kernel_(+) 
-    fi
+    mkdir -p ../../report/candidates/integrated_kernels/compare_kernel_(+) 
 	?
-	ranker_genes.rb -k !integrate_kernel_*!/general_matrix -n !integrate_kernel_*!/general_matrix.lst -s $gens_seed
-	cp *_candidates ../../report/candidates/compare_kernel_(+)
+	ranker_genes.rb -k !integrate_kernel_*!/general_matrix -n !integrate_kernel_*!/general_matrix.lst -s $gens_seed # TODO: check the iteration part!
+	cp *_candidates ../../report/candidates/integrated_kernels/compare_kernel_(+)
 	}
 }
 
 
-corr_uncomb_[$nets]){
+%corr_uncomb_[$nets]){
 	source ~soft_bio_267/initializes/init_R
 	path_kernel=`cat ../kernel_net_tracker | grep -w '(*)' | sort | uniq | cut -f3 | tr '\n' ','` 
 	names_kernel=`cat ../kernel_net_tracker | grep -w '(*)' | sort | uniq | cut -f1 | tr '\n' ','`
@@ -113,14 +112,7 @@ corr_uncomb_[$nets]){
 	all_names="$names_sim,$names_kernel"
 	corr_methd='spearman' 
 	# Create the necesssary folders.
-	if [ ! -s ../../report ] ; then
-     	mkdir ../../report
-    fi
-    
-    if [ ! -s ../../report/uncomb_corr ] ; then
-   		mkdir ../../report/uncomb_corr
-	fi
-
+	mkdir -p ../../report/uncomb_corr
 	?
 	correlate_matrices.R -d $all_paths -m $corr_methd -o "." -n $all_names -O (*)_"$corr_methd"_correlation
 	if [ -s (*)_"$corr_methd"_correlation.png ] ; then
@@ -131,11 +123,12 @@ corr_uncomb_[$nets]){
 }
 
 
-corr_int_kern){
+%corr_int_kern){
 	source ~soft_bio_267/initializes/init_R
 	path_kernel_int=`cat ../integrate_tracker | sort | uniq | cut -f2 | tr '\n' ','` 
 	names_kernel_int=`cat ../integrate_tracker | sort | uniq | cut -f1 | tr '\n' ','`
 	corr_methd='spearman'
+	mkdir -p ../../report
 	?
 	correlate_matrices.R -d $path_kernel_int  -m $corr_methd -o "." -n $names_kernel_int -O int_kern_correlation
 	if [ -s int_kern_correlation.png ] ; then

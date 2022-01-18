@@ -7,6 +7,7 @@ require 'numo/narray'
 #############################################################
 
 def rank_by_seedgen(kernel_matrix, kernels_nodes, seed_gen)
+  #gen_pos = seed_gen.map{|gen| kernels_nodes.find_index(gen)}
 	gen_pos = kernels_nodes.find_index(seed_gen)
 	gen_list = kernel_matrix[gen_pos,true]
   percentiles = (1..gen_list.length).to_a
@@ -15,6 +16,7 @@ def rank_by_seedgen(kernel_matrix, kernels_nodes, seed_gen)
   ordered_indexes = gen_list.sort_index.to_a.reverse
   ordered_gene_score = []
   ordered_indexes.each.with_index{|order_index, pos| ordered_gene_score.append([kernels_nodes[order_index], gen_list[order_index], percentiles[pos]])}
+  
 
   return ordered_gene_score
 end
@@ -70,7 +72,7 @@ genes_seed.each do |gene_seed|
   #p ranked_genes
   #puts '%s' %gene_seed
   File.open('%s_candidates' %gene_seed,'w') do |f|
-    ranked_genes.each{|ranked_gene| f.print "%s\t%s\t%f\n" %ranked_gene}
+    ranked_genes.each{|ranked_gene| f.print "%s\t%f\t%f\n" %ranked_gene}
   end
 end
 

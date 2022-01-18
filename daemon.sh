@@ -35,42 +35,29 @@ if [ "$exec_mode" == "download" ] ; then
   . ~soft_bio_267/initializes/init_R
   . ~soft_bio_267/initializes/init_ruby
 
-  # PASS RAW DOWNLOADED FILES.
-
+  #Pass raw downloaded files.
   if [ -s ./data_downloaded/aux ] ; then
     echo "removing pre-existed obos files"
     find ./data_downloaded/aux -name "*.obo*" -delete 
   fi
 
-  # Descarga de ontologías.
+  #Downloading ontologies.
   downloader.rb -i ./input_source/source_data -o ./data_downloaded
   cp ./data_downloaded/raw/monarch/tsv/all_associations/* ./input_raw
 
-  # PROCESS THE FILES.
-  if [ ! -s ./input_processed ] ; then
-    mkdir ./input_processed
-  fi
-
-  #TODO: Quitar el head cuando probemos
+  #Process the files
+  mkdir -p ./input_processed
+  #Warning: Truncate "| head -n 100" when trying.
   zgrep 'HP:' input_raw/gene_phenotype.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 100 > input_processed/gene2phenotype 
   zgrep 'MONDO:' input_raw/gene_disease.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 100 > input_processed/gene2disease
   zgrep 'GO:' input_raw/gene_function.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 100 > input_processed/gene2function
-  # Adiciones para comprobar.
+  # TODO: The next addition have to be checked.
   zgrep "REACT:" input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | cut -f 1,5 | head -n 100 > input_processed/gene2pathway
-  zgrep "RO:0002434" input_raw/gene_interaction.all.tsv.gz | grep 'NCBITaxon:9606' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 ~ /HGNC:/ && $5 ~ /HGNC:/) print $1,$5}' | head -n 100 > input_processed/gene2interaction
+  zgrep "RO:0002434" input_raw/gene_interaction.all.tsv.gz | grep 'NCBITaxon:9606' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 ~ /HGNC:/ && $5 ~ /HGNC:/) print $1,$5}' | head -n 100 > input_processed/gene2interaction 
   # RO:0002434 <=> interacts with
 
   mv ./data_downloaded/aux/* ./input_processed/obos
 
-  #cp -r ./data_downloaded/aux ./input_processed/
-  #
-  #if [ -s ./input_processed/obos ] ; then
-  #  echo "removing pre-existed obos folder"
-  #  rm -r ./input_processed/obos
-  #fi
-  #
-  #mv ./input_processed/aux/* ./input_processed/obos
-  
   # Creating paco files for each go branch.
   cp input_processed/gene2function input_processed/gene2molecular_function
   cp input_processed/gene2function input_processed/gene2cellular_sublocation
@@ -89,16 +76,20 @@ elif [ "$exec_mode" == "report" ] ; then
   #STAGE 4 GENERATE REPORT fROM RESULTS
   source ~soft_bio_267/initializes/init_ruby
   
-  # Recollect the matriz correlactions png's.
+  # Recollect the matrix correlactions png's.
   if [ ! -s ./correlations ] ; then 
     mkdir ./correlations
   elif [ -s ./correlations ] ; then
     rm -r ./correlations
     mkdir ./correlations
   fi
-  #TODO:Elegir solo los de mis redes.
+  # Folder that just save files for the report.
   cp -r $results_files/uncomb_corr ./correlations/
   cp $results_files/int_kern_correlation.png ./correlations/int_kern_correlation.png
+  # Folder that save all the correlations generated in all the sessions.
+  mkdir -p all_correlations
+  cp ./correlations/int_kern_correlation ./all_correlations
+  cp ./correlations/uncomb_corr/* ./all_correlations
 
   # Similarity metrics
   create_metric_table.rb $autoflow_output/similarity_metrics Net $results_files/parsed_similarity_metrics
