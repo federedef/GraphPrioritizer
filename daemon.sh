@@ -73,9 +73,14 @@ elif [ "$exec_mode" == "check" ] ; then
   flow_logger -w -e $autoflow_output -r all
 
 elif [ "$exec_mode" == "report" ] ; then 
-  #STAGE 4 GENERATE REPORT fROM RESULTS
   source ~soft_bio_267/initializes/init_ruby
+
+  #STAGE 4.1 RECOLLECT CANDIDATES LIST fROM RESULTS
   
+  cp -r $results_files/candidates ./
+
+  #STAGE 4.2 GENERATE REPORT fROM RESULTS
+
   # Recollect the matrix correlactions png's.
   if [ ! -s ./correlations ] ; then 
     mkdir ./correlations
@@ -107,6 +112,7 @@ elif [ "$exec_mode" == "report" ] ; then
   else 
     report_html -t report.erb -d $results_files/parsed_uncomb_kmetrics,$results_files/parsed_comb_kmetrics,$results_files/parsed_similarity_metrics -o report_metrics
   fi
+  
 fi
 
 

@@ -1,4 +1,4 @@
-%calc_similarity_[$nets]){
+calc_similarity_[$nets]){
 	# Input: Tab file gen\tOnto_element1;Onto_element2;... + Archivo .obo
 	# Output: Similarity binary Matrix + Metrics
 	# source ~soft_bio_267/initializes/init_ruby # the source we'll use in the future.
@@ -36,7 +36,7 @@
 
 compare_kernel_[$kernel]){ 
 	?
-	%calc_kernel_[$nets]){
+	calc_kernel_[$nets]){
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
 	source ~soft_bio_267/initializes/init_netanalyzer
@@ -101,7 +101,7 @@ compare_kernel_[$kernel]){
 }
 
 
-%corr_uncomb_[$nets]){
+corr_uncomb_[$nets]){
 	source ~soft_bio_267/initializes/init_R
 	path_kernel=`cat ../kernel_net_tracker | grep -w '(*)' | sort | uniq | cut -f3 | tr '\n' ','` 
 	names_kernel=`cat ../kernel_net_tracker | grep -w '(*)' | sort | uniq | cut -f1 | tr '\n' ','`
@@ -123,7 +123,7 @@ compare_kernel_[$kernel]){
 }
 
 
-%corr_int_kern){
+corr_int_kern){
 	source ~soft_bio_267/initializes/init_R
 	path_kernel_int=`cat ../integrate_tracker | sort | uniq | cut -f2 | tr '\n' ','` 
 	names_kernel_int=`cat ../integrate_tracker | sort | uniq | cut -f1 | tr '\n' ','`

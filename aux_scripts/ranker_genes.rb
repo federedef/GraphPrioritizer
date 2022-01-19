@@ -9,16 +9,22 @@ require 'numo/narray'
 def rank_by_seedgen(kernel_matrix, kernels_nodes, seed_gen)
   #gen_pos = seed_gen.map{|gen| kernels_nodes.find_index(gen)}
 	gen_pos = kernels_nodes.find_index(seed_gen)
-	gen_list = kernel_matrix[gen_pos,true]
-  percentiles = (1..gen_list.length).to_a
-  percentiles.map!{|percentile| percentile/percentiles.length.to_f}
 
-  ordered_indexes = gen_list.sort_index.to_a.reverse
-  ordered_gene_score = []
-  ordered_indexes.each.with_index{|order_index, pos| ordered_gene_score.append([kernels_nodes[order_index], gen_list[order_index], percentiles[pos]])}
-  
+  if !gen_pos.nil?
+  	gen_list = kernel_matrix[gen_pos,true]
+    percentiles = (1..gen_list.length).to_a
+    percentiles.map!{|percentile| percentile/percentiles.length.to_f}
 
-  return ordered_gene_score
+    ordered_indexes = gen_list.sort_index.to_a.reverse
+    ordered_gene_score = []
+    ordered_indexes.each.with_index{|order_index, pos| ordered_gene_score.append([kernels_nodes[order_index], gen_list[order_index], percentiles[pos]])}
+
+    return ordered_gene_score
+
+  elsif gen_pos.nil?
+    return nil
+  end
+
 end
 
 def lst2arr(lst_file)
@@ -28,7 +34,7 @@ def lst2arr(lst_file)
 	line.chomp!
 	nodes.append(line)
 	end
-
+  
 	return nodes
 end
 
@@ -37,7 +43,6 @@ end
 #############################################################
 
 options = {}
-
 OptionParser.new do  |opts|
 
   options[:kernel_file] = nil
@@ -55,24 +60,21 @@ OptionParser.new do  |opts|
     options[:genes_seed] = genes_seed
   end
 
-  options[:output_filename] = "general_matrix"
-  opts.on("-o","-output_matrix TYPE", "The name of the output file") do |output_filename|
-  	options[:output_filename] = output_filename
-  end
 end.parse!
 
 ########################### MAIN ############################
 #############################################################
+
 matrix = Npy.load(options[:kernel_file])
 kernel_nodes = lst2arr(options[:node_file])
 genes_seed = lst2arr(options[:genes_seed])
 
 genes_seed.each do |gene_seed|
   ranked_genes = rank_by_seedgen(matrix, kernel_nodes, gene_seed)
-  #p ranked_genes
-  #puts '%s' %gene_seed
-  File.open('%s_candidates' %gene_seed,'w') do |f|
-    ranked_genes.each{|ranked_gene| f.print "%s\t%f\t%f\n" %ranked_gene}
+  if !ranked_genes.nil?
+    File.open('%s_candidates' %gene_seed,'w') do |f|
+      ranked_genes.each{|ranked_gene| f.print "%s\t%f\t%f\n" %ranked_gene}
+    end
   end
 end
 
