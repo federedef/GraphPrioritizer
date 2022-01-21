@@ -93,7 +93,7 @@ elif [ "$exec_mode" == "report" ] ; then
   cp $results_files/int_kern_correlation.png ./correlations/int_kern_correlation.png
   # Folder that save all the correlations generated in all the sessions.
   mkdir -p all_correlations
-  cp ./correlations/int_kern_correlation ./all_correlations
+  cp ./correlations/int_kern_correlation.png ./all_correlations
   cp ./correlations/uncomb_corr/* ./all_correlations
 
   # Similarity metrics

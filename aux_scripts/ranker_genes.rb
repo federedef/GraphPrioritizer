@@ -72,8 +72,12 @@ genes_seed = lst2arr(options[:genes_seed])
 genes_seed.each do |gene_seed|
   ranked_genes = rank_by_seedgen(matrix, kernel_nodes, gene_seed)
   if !ranked_genes.nil?
-    File.open('%s_candidates' %gene_seed,'w') do |f|
+    File.open('%s_possible_candidates' %gene_seed,'w') do |f|
       ranked_genes.each{|ranked_gene| f.print "%s\t%f\t%f\n" %ranked_gene}
+    end
+  else 
+    File.open('%s_nomatch_candidates' %gene_seed,'w') do |f|
+      f.print "No present this gene in the matrix"
     end
   end
 end

@@ -17,7 +17,7 @@ calc_similarity_[$nets]){
 	text2binary_matrix.rb -i semantic_similarity_list -o semantic_matrix_bin -t pair -s > similarity_metrics # Obtain statistical metrics and pass to matrix bien.
 
 	if [ -s similarity_metrics ] ; then 
-		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' similarity_metrics >> ../similarity_metrics
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' similarity_metrics >> ../similarity_metrics #<-
 	else
 		exit 1
 	fi
@@ -26,7 +26,7 @@ calc_similarity_[$nets]){
 		disparity_filter.R -i semantic_matrix_bin -o "./" -O semantic_matrix_bin
 		text2binary_matrix.rb -i semantic_matrix_bin -o "filtered_semantic_matrix_bin" -t bin -s > filtered_metrics
 		if [ -s filtered_metrics ] ; then 
-		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' filtered_metrics >> ../filtered_metrics
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' filtered_metrics >> ../filtered_metrics #<-
 		else
 			exit 1
 		fi
@@ -49,8 +49,8 @@ compare_kernel_[$kernel]){
 	text2binary_matrix.rb -i kernel_matrix_bin -o kernel_matrix_undo -t bin -s > kernel_metrics
 	if [ -s kernel_matrix_undo ] ; then
 		rm kernel_matrix_undo
-		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' kernel_metrics >> ../uncomb_kernel_metrics 
-		echo -e "(*)_compare_kernel_(+)\t(*)\t$kern_net_path/kernel_matrix_bin" >> ../kernel_net_tracker
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' kernel_metrics >> ../uncomb_kernel_metrics #<-
+		echo -e "(*)_compare_kernel_(+)\t(*)\t$kern_net_path/kernel_matrix_bin" >> ../kernel_net_tracker # <-
 	else 
   		exit 1
   	fi
@@ -61,9 +61,16 @@ compare_kernel_[$kernel]){
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_ruby
     mkdir -p ../../report/candidates/uncomb_kernels/compare_kernel_(+)/(*)
+    #affected_genes=`wc -l $gens_seed`
 	?
 	ranker_genes.rb -k !calc_kernel_*!/kernel_matrix_bin -n !calc_kernel_*!/kernel_bin.lst -s $gens_seed
-	cp *_candidates ../../report/candidates/uncomb_kernels/compare_kernel_(+)/(*)
+	#cp *_candidates ../../report/candidates/uncomb_kernels/compare_kernel_(+)/(*)
+	count_candidate_files=`ls | grep -c _candidates`
+	if [ $count_candidate_files -ge 1 ] ; then
+		cp *_possible_candidates ../../report/candidates/uncomb_kernels/compare_kernel_(+)/(*)
+	else 
+  		exit 1
+  	fi
 	}
 
 	integrate_kernel_[$integration_types]){
@@ -82,7 +89,7 @@ compare_kernel_[$kernel]){
 		# Now we prepare to create_metric_table.rb
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' generalkernel_metrics >> ../comb_kernel_metrics 
 		# Now we need to save the path of the integrated matrix.
-		echo -e "(*)_compare_kernel_(+)\t$integrate_path/general_matrix" >> ../integrate_tracker
+		echo -e "(*)_compare_kernel_(+)\t$integrate_path/general_matrix" >> ../integrate_tracker # <-
 		# Añadir una correlation de los mismos kernels sin integrar. 
 	else 
   		exit 1
@@ -94,17 +101,29 @@ compare_kernel_[$kernel]){
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_ruby
     mkdir -p ../../report/candidates/integrated_kernels/compare_kernel_(+) 
+    #affected_genes=`wc -l $gens_seed`
 	?
 	ranker_genes.rb -k !integrate_kernel_*!/general_matrix -n !integrate_kernel_*!/general_matrix.lst -s $gens_seed # TODO: check the iteration part!
-	cp *_candidates ../../report/candidates/integrated_kernels/compare_kernel_(+)
+	#cp *_candidates ../../report/candidates/integrated_kernels/compare_kernel_(+)
+	count_candidate_files=`ls | grep -c _candidates`
+	if [ $count_candidate_files -ge 1 ] ; then
+		cp *_possible_candidates ../../report/candidates/integrated_kernels/compare_kernel_(+)
+	else 
+  		exit 1
+  	fi
 	}
 }
 
 
 corr_uncomb_[$nets]){
 	source ~soft_bio_267/initializes/init_R
-	path_kernel=`cat ../kernel_net_tracker | grep -w '(*)' | sort | uniq | cut -f3 | tr '\n' ','` 
-	names_kernel=`cat ../kernel_net_tracker | grep -w '(*)' | sort | uniq | cut -f1 | tr '\n' ','`
+	# Calculate the number of last rows we need to use.
+	total_nets=`echo "$nets" | tr -s ";" " " | wc -w`
+	total_kernels=`echo "$kernel" | tr -s ";" " " | wc -w`
+	last_rows=`echo $(($total_nets * $total_kernels))`
+	# Obtain the path and names from those rows.
+	path_kernel=`cat ../kernel_net_tracker | tail -n $last_rows | grep -w '(*)' | sort | uniq | cut -f3 | tr '\n' ','` 
+	names_kernel=`cat ../kernel_net_tracker | tail -n $last_rows | grep -w '(*)' | sort | uniq | cut -f1 | tr '\n' ','`
 	path_sim=!calc_similarity_*!/semantic_matrix_bin
 	names_sim=similarity_(*)
 	# all paths and names from kernels and similarities.
@@ -125,8 +144,13 @@ corr_uncomb_[$nets]){
 
 corr_int_kern){
 	source ~soft_bio_267/initializes/init_R
-	path_kernel_int=`cat ../integrate_tracker | sort | uniq | cut -f2 | tr '\n' ','` 
-	names_kernel_int=`cat ../integrate_tracker | sort | uniq | cut -f1 | tr '\n' ','`
+	# Calculate the number of last rows we need to use.
+	total_integration_types=`echo "$integration_types" | tr -s ";" " " | wc -w`
+	total_kernels=`echo "$kernel" | tr -s ";" " " | wc -w`
+	last_rows=`echo $(($total_integration_types * $total_kernels))`
+	# Obtain the path and names from those rows.
+	path_kernel_int=`cat ../integrate_tracker | tail -n $last_rows | sort | uniq | cut -f2 | tr '\n' ','` 
+	names_kernel_int=`cat ../integrate_tracker | tail -n $last_rows | sort | uniq | cut -f1 | tr '\n' ','`
 	corr_methd='spearman'
 	mkdir -p ../../report
 	?
