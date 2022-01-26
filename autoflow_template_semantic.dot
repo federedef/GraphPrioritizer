@@ -1,0 +1,38 @@
+digraph G {
+node[shape=box]
+"calc_similarity_gene2phenotype"[color=black, peripheries=2, style=filled, fillcolor=yellow]
+"calc_similarity_gene2disease"[color=black, peripheries=2, style=filled, fillcolor=yellow]
+"calc_similarity_gene2phenotype"-> "calc_kernel_gene2phenotype_ct"
+"calc_similarity_gene2disease"-> "calc_kernel_gene2disease_ct"
+"calc_kernel_gene2phenotype_ct"-> "cor_uncomb__ct"
+"calc_kernel_gene2disease_ct"-> "cor_uncomb__ct"
+"calc_kernel_gene2phenotype_ct"-> "rank_genes_from_uncombgene2phenotype_ct"
+"calc_kernel_gene2disease_ct"-> "rank_genes_from_uncombgene2disease_ct"
+"calc_kernel_gene2phenotype_ct"-> "integrate_kernel_mean_ct"
+"calc_kernel_gene2disease_ct"-> "integrate_kernel_mean_ct"
+"integrate_kernel_mean_ct"-> "rank_genes_from_integrated_ct"
+"calc_similarity_gene2phenotype"-> "calc_kernel_gene2phenotype_rf"
+"calc_similarity_gene2disease"-> "calc_kernel_gene2disease_rf"
+"calc_kernel_gene2phenotype_rf"-> "cor_uncomb__rf"
+"calc_kernel_gene2disease_rf"-> "cor_uncomb__rf"
+"calc_kernel_gene2phenotype_rf"-> "rank_genes_from_uncombgene2phenotype_rf"
+"calc_kernel_gene2disease_rf"-> "rank_genes_from_uncombgene2disease_rf"
+"calc_kernel_gene2phenotype_rf"-> "integrate_kernel_mean_rf"
+"calc_kernel_gene2disease_rf"-> "integrate_kernel_mean_rf"
+"integrate_kernel_mean_rf"-> "rank_genes_from_integrated_rf"
+"corr_uncomb_ct"[color=black, peripheries=2, style=filled, fillcolor=yellow]
+"corr_uncomb_rf"[color=black, peripheries=2, style=filled, fillcolor=yellow]
+"integrate_kernel_mean_ct"-> "corr_int_kern"
+"integrate_kernel_mean_rf"-> "corr_int_kern"
+"cor_uncomb__ct"[fontcolor=white, color=black, style=filled]
+"rank_genes_from_uncombgene2phenotype_ct"[fontcolor=white, color=black, style=filled]
+"rank_genes_from_uncombgene2disease_ct"[fontcolor=white, color=black, style=filled]
+"rank_genes_from_integrated_ct"[fontcolor=white, color=black, style=filled]
+"cor_uncomb__rf"[fontcolor=white, color=black, style=filled]
+"rank_genes_from_uncombgene2phenotype_rf"[fontcolor=white, color=black, style=filled]
+"rank_genes_from_uncombgene2disease_rf"[fontcolor=white, color=black, style=filled]
+"rank_genes_from_integrated_rf"[fontcolor=white, color=black, style=filled]
+"corr_uncomb_ct"[fontcolor=white, color=black, style=filled]
+"corr_uncomb_rf"[fontcolor=white, color=black, style=filled]
+"corr_int_kern"[fontcolor=white, color=black, style=filled]
+}
