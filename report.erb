@@ -118,18 +118,27 @@
                 %>
         </div>
 
+        <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Comparing each layer </h3>
+
+        <!-- TODO: Put the general image name for similarity. -->
+        
+        <div style="overflow: hidden; text-align:center">
+                <%= embed_img("./correlations/similarity_spearman_correlation.png", 'width="50%" height="50%"') %>
+        </div>
+
         <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Comparing types of kernel </h3>
 
-        <div style="overflow: hidden">
+        <div style="overflow: hidden; text-align:center">
                 <% uncomb_paths_cor = Dir["./correlations/uncomb_corr/*_correlation.png"] %>
                 <% uncomb_paths_cor.each do |file| %>
                   <%= embed_img(file, 'width="50%" height="50%"') %>
                 <% end %>
         </div>
+        
 
         <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Comparing integrations and kernel types </h3>
 
-        <div style="overflow: hidden">
+        <div style="overflow: hidden; text-align:center">
                 <%= embed_img("./correlations/int_kern_correlation.png", 'width="50%" height="50%"') %>
         </div>
 </div>

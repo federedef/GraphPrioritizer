@@ -1,4 +1,4 @@
-calc_similarity_[$nets]){
+%calc_similarity_[$nets]){
 	# Input: Tab file gen\tOnto_element1;Onto_element2;... + Archivo .obo
 	# Output: Similarity binary Matrix + Metrics
 	# source ~soft_bio_267/initializes/init_ruby # the source we'll use in the future.
@@ -35,6 +35,21 @@ calc_similarity_[$nets]){
 	fi
 }
 
+%corr_sim){
+	source ~soft_bio_267/initializes/init_R
+	path_sim=`echo "!calc_similarity_!/semantic_matrix_bin " | tr -s " " ","`
+	names_sim=`echo "$nets" | tr -s ";" ","`
+	corr_methd='spearman' 
+	# Create the necesssary folders.
+	mkdir -p ../../report/
+	?
+	correlate_matrices.R -d $path_sim -m $corr_methd -o "." -n $names_sim -O similarity_"$corr_methd"_correlation
+	if [ -s similarity_"$corr_methd"_correlation.png ] ; then
+		cp ./similarity_"$corr_methd"_correlation.png  ../../report/similarity_"$corr_methd"_correlation.png
+	else 
+  		exit 1
+  	fi
+}
 
 compare_kernel_[$kernel]){ 
 	?

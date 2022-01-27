@@ -15,7 +15,7 @@ results_files=$output_folder/report
 #Custom variables.
 net="gene2phenotype;gene2disease" #;gene2molecular_function;gene2biological_process;gene2cellular_sublocation" "small_pro;small_pro_two" #;loquesea.paco;... gen_phen_mini; small_pro
 kernel="ct;rf"
-integration_types="mean;" #...;integration_mean_by_presence;...
+integration_types="mean;" #...mean;integration_mean_by_presence;...
 #net2ont=$input_path'/net2ont' 
 net2custom=$input_path'/net2custom'
 gens_seed=$input_path'/gens_seed' # What are the knocked genes?
@@ -90,10 +90,10 @@ elif [ "$exec_mode" == "report" ] ; then
   fi
   # Folder that just save files for the report.
   cp -r $results_files/uncomb_corr ./correlations/
-  cp $results_files/int_kern_correlation.png ./correlations/int_kern_correlation.png
+  cp $results_files/*correlation.png ./correlations/
   # Folder that save all the correlations generated in all the sessions.
   mkdir -p all_correlations
-  cp ./correlations/int_kern_correlation.png ./all_correlations
+  cp ./correlations/*_correlation.png ./all_correlations
   cp ./correlations/uncomb_corr/* ./all_correlations
 
   # Similarity metrics
