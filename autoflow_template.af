@@ -1,4 +1,4 @@
-%calc_similarity_[$nets]){
+calc_similarity_[$nets]){
 	# Input: Tab file gen\tOnto_element1;Onto_element2;... + Archivo .obo
 	# Output: Similarity binary Matrix + Metrics
 	# source ~soft_bio_267/initializes/init_ruby # the source we'll use in the future.
@@ -36,7 +36,7 @@
 }
 
 
-&compare_kernel_[$kernel]){ 
+compare_kernel_[$kernel]){ 
 	?
 	calc_kernel_[$nets]){
 		# input: Similarity binary matrix
@@ -57,32 +57,6 @@
 	  		exit 1
 	  	fi
 	}
-
-	%cor_uncomb_){
-		source ~soft_bio_267/initializes/init_R
-		# Calculate the number of last rows we need to use.
-		total_nets=`echo "$nets" | tr -s ";" " " | wc -w`
-		# Obtain the path and names from those rows.
-		path_kernel=`!calc_kernel_!/kernel_matrix_bin | tr ' ' ','` 
-		names_kernel=`cat ../kernel_net_tracker | tail -n $total_nets | grep -w '(*)' | sort | uniq | cut -f1 | tr '\n' ','`
-		path_sim=`cat ../similarity_tracker | tail -n $total_nets | grep -w '(*)' | sort | uniq | cut -f2 | tr '\n' ','` 
-		names_sim=`cat ../similarity_tracker | tail -n $total_nets | grep -w '(*)' | sort | uniq | cut -f1 | tr '\n' ','` 
-		# all paths and names from kernels and similarities.
-		all_paths="$path_sim,$path_kernel"
-		all_names="$names_sim,$names_kernel"
-		corr_methd='spearman' 
-		# Create the necesssary folders.
-		mkdir -p ../../report/uncomb_corr
-		?
-		correlate_matrices.R -d $all_paths -m $corr_methd -o "." -n $all_names -O (*)_"$corr_methd"_correlation
-		if [ -s (*)_"$corr_methd"_correlation.png ] ; then
-			cp ./(*)_"$corr_methd"_correlation.png  ../../report/uncomb_corr/(*)_"$corr_methd"_correlation.png
-		else 
-	  		exit 1
-	  	fi
-	}
-
-
 
 	rank_genes_from_uncomb[$nets]){
 		# Input: seed_gens + kernel.
@@ -143,8 +117,9 @@
 }
 
 
-&corr_uncomb_[$kernel]){
+corr_uncomb_[$nets]){
 	source ~soft_bio_267/initializes/init_R
+	echo " !integrate_kernel_!/ " > probando
 	# Calculate the number of last rows we need to use.
 	total_nets=`echo "$nets" | tr -s ";" " " | wc -w`
 	total_kernels=`echo "$kernel" | tr -s ";" " " | wc -w`
@@ -155,11 +130,12 @@
 	path_sim=`cat ../similarity_tracker | tail -n $total_nets | grep -w '(*)' | sort | uniq | cut -f2 | tr '\n' ','` 
 	names_sim=`cat ../similarity_tracker | tail -n $total_nets | grep -w '(*)' | sort | uniq | cut -f1 | tr '\n' ','` 
 	# all paths and names from kernels and similarities.
-	all_paths="$path_sim,$path_kernel"
-	all_names="$names_sim,$names_kernel"
+	all_paths="$path_sim$path_kernel"
+	all_names="$names_sim$names_kernel"
 	corr_methd='spearman' 
 	# Create the necesssary folders.
 	mkdir -p ../../report/uncomb_corr
+	echo "$all_paths" > flag
 	?
 	correlate_matrices.R -d $all_paths -m $corr_methd -o "." -n $all_names -O (*)_"$corr_methd"_correlation
 	if [ -s (*)_"$corr_methd"_correlation.png ] ; then
@@ -169,10 +145,9 @@
   	fi
 }
 
-
-corr_int_kern){
+corr_in_kern){
 	source ~soft_bio_267/initializes/init_R
-	echo "!integrate_kernel_!"
+	echo " !integrate_kernel_!/ " > probando
 	# Calculate the number of last rows we need to use.
 	total_integration_types=`echo "$integration_types" | tr -s ";" " " | wc -w`
 	total_kernels=`echo "$kernel" | tr -s ";" " " | wc -w`
@@ -190,5 +165,3 @@ corr_int_kern){
   		exit 1
   	fi
 }
-
-
