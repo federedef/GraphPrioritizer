@@ -23,4 +23,8 @@ To use this algorithm you can modify two main files:
 
 ### *net2custom*
 
+### Use
+
+Modify the gens_seed >> specify custom variables >> modify net2custom >> delete previous files with other executions.
+
 ## Develop manual

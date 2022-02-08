@@ -1,4 +1,4 @@
-%calc_similarity_[$nets]){
+calc_similarity_[$nets]){
 	# Input: Tab file gen\tOnto_element1;Onto_element2;... + Archivo .obo
 	# Output: Similarity binary Matrix + Metrics
 	# source ~soft_bio_267/initializes/init_ruby # the source we'll use in the future.
@@ -13,8 +13,7 @@
 	simil_code=`grep -P '^(*)' $net2custom | cut -f 4`
 	filter_factor=`grep -P '^(*)' $net2custom | cut -f 5`
 	?
-
-	similarity_builder.sh $net_id $ont_id $exec_mode $simil_code  
+	similarity_builder.sh $net_id $ont_id $exec_mode $simil_code
 	text2binary_matrix.rb -i semantic_similarity_list -o semantic_matrix_bin -t pair -s > similarity_metrics # Obtain statistical metrics and pass to matrix bien.
 
 	if [ -s similarity_metrics ] ; then 
@@ -35,7 +34,7 @@
 	fi
 }
 
-%corr_sim){
+corr_sim){
 	source ~soft_bio_267/initializes/init_R
 	path_sim=`echo "!calc_similarity_!/semantic_matrix_bin " | tr -s " " ","`
 	names_sim=`echo "$nets" | tr -s ";" ","`
@@ -50,6 +49,7 @@
   		exit 1
   	fi
 }
+
 
 compare_kernel_[$kernel]){ 
 	?

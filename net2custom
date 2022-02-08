@@ -1,9 +1,9 @@
 Net 	Ontology	Type	Code	Filter
-gene2phenotype	hp.obo	ontology	-s lin -S ","	NF
-gene2disease	mondo.obo	ontology	-s lin -S ","	NF
-gene2molecular_function	go.obo	ontology	-s lin -S "," -T GO:0008150	NF
-gene2biological_process	go.obo	ontology	-s lin -S "," -T GO:0008150	F
-gene2cellular_sublocation	go.obo	ontology	-s lin -S "," -T GO:0005575	F	
+gene2phenotype	hp.obo	ontology	""	NF
+gene2disease	mondo.obo	ontology	""	NF
+gene2molecular_function	go.obo	ontology	"GO:0003674"	NF
+gene2biological_process	go.obo	ontology	"GO:0008150"	NF
+gene2cellular_sublocation	go.obo	ontology	"GO:0005575"	NF	
 gene2interaction	-	network	-	NF
 gene2pathway	-	network	-t pair -l 'gen,HGNC:;pathway,REACT:' -m jaccard -u 'gen;pathway'	F
 
