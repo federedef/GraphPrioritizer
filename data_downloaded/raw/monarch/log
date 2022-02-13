@@ -1,4 +1,4 @@
-2022-02-08 14:39:21 URL:https://archive.monarchinitiative.org/202010/tsv/all_associations/gene_pathway.all.tsv.gz [9516653/9516653] -> "./data_downloaded/raw/monarch/tsv/all_associations/gene_pathway.all.tsv.gz" [1]
-FINISHED --2022-02-08 14:39:21--
+2022-02-13 21:23:47 URL:https://archive.monarchinitiative.org/202010/tsv/all_associations/gene_pathway.all.tsv.gz [9516653/9516653] -> "./data_downloaded/raw/monarch/tsv/all_associations/gene_pathway.all.tsv.gz" [1]
+FINISHED --2022-02-13 21:23:47--
 Total wall clock time: 2.7s
-Downloaded: 1 files, 9.1M in 1.7s (5.34 MB/s)
+Downloaded: 1 files, 9.1M in 1.7s (5.27 MB/s)
