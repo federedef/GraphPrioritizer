@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-source ~soft_bio_267/initializes/init_ruby
-
-/mnt/home/users/bio_267_uma/josecordoba/software/semtools/bin/semtools.rb -i gene2go -o ./results.txt -O go.obo -s resnik -S "," -k "GO:" -T "GO:0008150"
-
-# Recodatorio de ayuda: Durante la reunion, con resnik no hubo problemas, pero si con lin.
-
-
-
