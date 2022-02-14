@@ -8,7 +8,7 @@ source ~soft_bio_267/initializes/init_ruby
 
 for parental_node in GO:0003674 GO:0008150
 do
-  /mnt/home/users/bio_267_uma/josecordoba/software/semtools/bin/semtools.rb -i gene2go -o ./results.txt -O go.obo -s resnik -S "," -k "GO:" -T "$parental_node"
+  semtools.rb -i gene2go -o ./results.txt -O go.obo -s resnik -S "," -k "GO:" -r './' -c -T "$parental_node"
   mv gene2go_semantic_similarity_list ${parental_node}_similarity_list
 done
 

@@ -1,8 +1,8 @@
 calc_similarity_[$nets]){
 	# Input: Tab file gen\tOnto_element1;Onto_element2;... + Archivo .obo
 	# Output: Similarity binary Matrix + Metrics
-	# source ~soft_bio_267/initializes/init_ruby # the source we'll use in the future.
-	source ~josecordoba/software/initializes/init_semtools_script # the source we use at the moment.
+	source ~soft_bio_267/initializes/init_ruby 
+	#source ~josecordoba/software/initializes/init_semtools_script 
 	source ~soft_bio_267/initializes/init_R
 
 	echo -e "(*)" > tracker

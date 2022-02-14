@@ -5,7 +5,7 @@ exec_mode=$1
 add_opt=$2 # flags to autoflow
 input_path=`pwd`
 export PATH=$input_path/aux_scripts:~soft_bio_267/programs/x86_64/scripts:$PATH # To test
-export PATH=/mnt/home/users/bio_267_uma/federogc/clin_db_manager/bin:$PATH # To incorporate in the download section.
+#export PATH=/mnt/home/users/bio_267_uma/federogc/clin_db_manager/bin:$PATH 
 
 output_folder=$SCRATCH/executions/backupgenes
 autoflow_output=$output_folder/exec
