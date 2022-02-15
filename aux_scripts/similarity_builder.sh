@@ -9,11 +9,11 @@ input_path=/mnt/home/users/bio_267_uma/federogc/projects/backupgenes #TODO: Put 
 result_path=`pwd`
 
 nets_path=$input_path/input_processed
-obos_path=$input_path/input_processed/obos
+#obos_path=$input_path/input_processed/obos
 
 
 if [ "$exec_mode" == "ontology" ] ; then
-	semtools.rb -i $nets_path/$1 -o ./results.txt -O $obos_path/$ont_id -s resnik -S "," -r "./" -c -T $simil_code
+	semtools.rb -i $nets_path/$1 -o ./results.txt -O $ont_id -s lin -S "," -c -T $simil_code
 	#semtools.rb -i gene2go -o ./results.txt -O go.obo -s resnik -S "," -k "GO:" -T "GO:0003674"
 	awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' ${net_id}_semantic_similarity_list > semantic_similarity_list # State diagonal values to 0.
 elif [ "$exec_mode" == "network" ] ; then 
