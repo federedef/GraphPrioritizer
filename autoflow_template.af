@@ -1,4 +1,23 @@
-calc_similarity_[$nets]){
+pairs_to_paco_[$nets]){
+	source ~soft_bio_267/initializes/init_ruby 
+	echo -e "(*)" > tracker
+	exec_mode=`grep -P '^(*)' $net2custom | cut -f 3`
+	?
+	text2binary_matrix.rb -i $input_path/input_processed/(*) -o annotation_matrix_bin -t pair -s > annotations_metrics
+	#if [ -s annotations_metrics ] ; then 
+	#	awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' annotations_metrics >> ../annotations_metrics
+	#else
+	#	exit 1
+	#fi
+	## TODO: remove "| head -n 100" when big test required.
+	#if [ "$exec_mode" == "ontology" ] ; then
+	#	aggregate_column_data.rb -i $input_path/(*) -x 0 -a 1 | head -n 100 > (*)
+	#elif [ "$exec_mode" == "network" ] ; then 
+	#	$input_path/(*) > (*)
+	#fi
+}
+
+%calc_similarity_[$nets]){
 	# Input: Tab file gen\tOnto_element1;Onto_element2;... + Archivo .obo
 	# Output: Similarity binary Matrix + Metrics
 	source ~soft_bio_267/initializes/init_ruby 
@@ -8,17 +27,13 @@ calc_similarity_[$nets]){
 	echo -e "(*)" > tracker
 	similarity_path=`pwd`
 	net_id=`grep -P '^(*)' $net2custom | cut -f 1`
-	echo $net_id > probando
 	ont_id=`grep -P '^(*)' $net2custom | cut -f 2`
 	exec_mode=`grep -P '^(*)' $net2custom | cut -f 3`
 	simil_code=`grep -P '^(*)' $net2custom | cut -f 4`
-	echo $simil_code > prueba
 	filter_factor=`grep -P '^(*)' $net2custom | cut -f 5`
 	?
-	similarity_builder.sh $net_id $ont_id $exec_mode $simil_code
-	text2binary_matrix.rb -i semantic_similarity_list -o semantic_matrix_bin -t pair -s > similarity_metrics # Obtain statistical metrics and pass to matrix bien.
-	#semtools.rb -i /mnt/home/users/bio_267_uma/federogc/projects/backupgenes/input_processed/gene2phenotype -o ./results.txt -O $ont_id -s lin -S "," -c -T HP:0000001
-	#awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' ${net_id}_semantic_similarity_list > semantic_similarity_list # State diagonal values to 0.
+	similarity_builder.sh !pairs_to_paco_*!/(*) $ont_id $exec_mode "$simil_code"
+	text2binary_matrix.rb -i semantic_similarity_list -o semantic_matrix_bin -t pair -s > similarity_metrics # Obtain statistical metrics and pass to matrix bin.
 
 	if [ -s similarity_metrics ] ; then 
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' similarity_metrics >> ../similarity_metrics 
@@ -36,22 +51,6 @@ calc_similarity_[$nets]){
 			exit 1
 		fi
 	fi
-}
-
-%corr_similarity){
-	source ~soft_bio_267/initializes/init_R
-	path_sim=`echo "!calc_similarity_!/semantic_matrix_bin " | tr -s " " ","`
-	names_sim=`echo "$nets" | tr -s ";" ","`
-	corr_methd='spearman' 
-	# Create the necesssary folders.
-	mkdir -p ../../report/
-	?
-	correlate_matrices.R -d $path_sim -m $corr_methd -o "." -n $names_sim -O similarity_"$corr_methd"_correlation
-	if [ -s similarity_"$corr_methd"_correlation.png ] ; then
-		cp ./similarity_"$corr_methd"_correlation.png  ../../report/similarity_"$corr_methd"_correlation.png
-	else 
-  		exit 1
-  	fi
 }
 
 

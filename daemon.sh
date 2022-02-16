@@ -4,7 +4,7 @@
 exec_mode=$1 
 add_opt=$2 # flags to autoflow
 input_path=`pwd`
-export PATH=$input_path/aux_scripts:~soft_bio_267/programs/x86_64/scripts:$PATH # To test
+export PATH=$input_path/aux_scripts:~soft_bio_267/programs/x86_64/scripts:$PATH
 
 output_folder=$SCRATCH/executions/backupgenes
 autoflow_output=$output_folder/exec
@@ -12,7 +12,7 @@ results_files=$output_folder/report
 
 
 #Custom variables.
-net="gene2phenotype;gene2molecular_function;gene2biological_process;gene2cellular_sublocation" #;loquesea.paco;... gen_phen_mini; small_pro
+net="phenotype;molecular_function;biological_process;cellular_component" #;loquesea.paco;... gen_phen_mini; small_pro
 kernel="ct;rf"
 integration_types="mean;" #...mean;integration_mean_by_presence;...
 #net2ont=$input_path'/net2ont' 
@@ -48,22 +48,23 @@ if [ "$exec_mode" == "download" ] ; then
   #Process the files
   mkdir -p ./input_processed
   #Warning: Truncate "| head -n 100" when trying.
-  zgrep 'HP:' input_raw/gene_phenotype.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 100 > input_processed/gene2phenotype 
-  zgrep 'MONDO:' input_raw/gene_disease.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 100 > input_processed/gene2disease
-  zgrep 'GO:' input_raw/gene_function.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 100 > input_processed/gene2function
+  #aggregate_column_data.rb -i - -x 0 -a 4 | head -n 101 
+  zgrep 'HP:' input_raw/gene_phenotype.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | cut -f 1,5 > input_processed/phenotype 
+  zgrep 'MONDO:' input_raw/gene_disease.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | cut -f 1,5 > input_processed/disease
+  zgrep 'GO:' input_raw/gene_function.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | cut -f 1,5 > input_processed/function
   # TODO: The next addition have to be checked.
-  zgrep "REACT:" input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | cut -f 1,5 | head -n 100 > input_processed/gene2pathway
-  zgrep "RO:0002434" input_raw/gene_interaction.all.tsv.gz | grep 'NCBITaxon:9606' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 ~ /HGNC:/ && $5 ~ /HGNC:/) print $1,$5}' | head -n 100 > input_processed/gene2interaction 
+  zgrep "REACT:" input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | cut -f 1,5 > input_processed/pathway # | head -n 100
+  zgrep "RO:0002434" input_raw/gene_interaction.all.tsv.gz | grep 'NCBITaxon:9606' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 ~ /HGNC:/ && $5 ~ /HGNC:/) print $1,$5}' > input_processed/interaction #| head -n 100 
   # RO:0002434 <=> interacts with
 
   #mkdir -p ./input_processed/obos
   #mv ./data_downloaded/aux/* ./input_processed/obos
 
   # Creating paco files for each go branch.
-  cp input_processed/gene2function input_processed/gene2molecular_function
-  cp input_processed/gene2function input_processed/gene2cellular_sublocation
-  cp input_processed/gene2function input_processed/gene2biological_process
-  rm input_processed/gene2function
+  cp input_processed/function input_processed/molecular_function
+  cp input_processed/function input_processed/cellular_component
+  cp input_processed/function input_processed/biological_process
+  rm input_processed/function
 
 elif [ "$exec_mode" == "autoflow" ] ; then
   #STAGE 2 AUTOFLOW EXECUTION
@@ -78,7 +79,8 @@ elif [ "$exec_mode" == "report" ] ; then
 
   #STAGE 4.1 RECOLLECT CANDIDATES LIST fROM RESULTS
 
-  cp -r $results_files/candidates ./
+  mkdir -p candidates
+  rsync -a --delete $results_files/candidates/ ./candidates/
 
   #STAGE 4.2 GENERATE REPORT fROM RESULTS
   # Recollect the matrix correlactions png's.

@@ -1,11 +1,11 @@
 Net 	Ontology	Type	Code	Filter
-gene2phenotype	HPO	ontology	"HP:0000001"	NF
-gene2disease	MONDO	ontology	""	NF
-gene2molecular_function	GO	ontology	"GO:0003674"	NF
-gene2biological_process	GO	ontology	"GO:0008150"	NF
-gene2cellular_sublocation	GO	ontology	"GO:0005575"	NF	
-gene2interaction	-	network	-	NF
-gene2pathway	-	network	-t pair -l 'gen,HGNC:;pathway,REACT:' -m jaccard -u 'gen;pathway'	F
+phenotype	HPO	ontology	HP:0000001	NF
+disease	MONDO	ontology		NF
+molecular_function	GO	ontology	GO:0003674	NF
+biological_process	GO	ontology	GO:0008150	NF
+cellular_component	GO	ontology	GO:0005575	NF	
+interaction	-	network	-	NF
+pathway	-	network	-t pair -l 'gen,HGNC:;pathway,REACT:' -m jaccard -u 'gen;pathway'	F
 
 
 

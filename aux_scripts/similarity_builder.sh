@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-net_id=$1
+net_path=$1
 ont_id=$2
 exec_mode=$3
 simil_code=$4
@@ -11,15 +11,13 @@ result_path=`pwd`
 nets_path=$input_path/input_processed
 #obos_path=$input_path/input_processed/obos
 
-
 if [ "$exec_mode" == "ontology" ] ; then
-	semtools.rb -i $nets_path/$1 -o ./results.txt -O $ont_id -s lin -S "," -c -T $simil_code
-	#semtools.rb -i gene2go -o ./results.txt -O go.obo -s resnik -S "," -k "GO:" -T "GO:0003674"
+	semtools.rb -i $net_path -o ./results.txt -O $ont_id -s lin -S "," -c -T $simil_code
 	awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' ${net_id}_semantic_similarity_list > semantic_similarity_list # State diagonal values to 0.
 elif [ "$exec_mode" == "network" ] ; then 
 
 	if [ "$simil_code" = "-" ] ; then 
-		cp $nets_path/$1 $result_path/${net_id}_semantic_similarity_list
+		cp $net_path/$1 $result_path/${net_id}_semantic_similarity_list
 	else
 		NetAnalyzer.rb -i $nets_path/$1 -a "${net_id}_semantic_similarity_list" $simil_code # Put output as semantic_similarity_list
 	fi
