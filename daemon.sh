@@ -7,8 +7,8 @@ input_path=`pwd`
 export PATH=$input_path/aux_scripts:~soft_bio_267/programs/x86_64/scripts:$PATH
 
 output_folder=$SCRATCH/executions/backupgenes
-autoflow_output=$output_folder/exec
-results_files=$output_folder/report
+kernels_calc_af_exec=$output_folder/exec 
+kernels_calc_af_report=$output_folder/report
 
 
 #Custom variables.
@@ -49,9 +49,9 @@ if [ "$exec_mode" == "download" ] ; then
   mkdir -p ./input_processed
   #Warning: Truncate "| head -n 100" when trying.
   #aggregate_column_data.rb -i - -x 0 -a 4 | head -n 101 
-  zgrep 'HP:' input_raw/gene_phenotype.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | cut -f 1,5 > input_processed/phenotype 
-  zgrep 'MONDO:' input_raw/gene_disease.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | cut -f 1,5 > input_processed/disease
-  zgrep 'GO:' input_raw/gene_function.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | cut -f 1,5 > input_processed/function
+  zgrep 'HP:' input_raw/gene_phenotype.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 101  > input_processed/phenotype 
+  zgrep 'MONDO:' input_raw/gene_disease.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 101  > input_processed/disease
+  zgrep 'GO:' input_raw/gene_function.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 101  > input_processed/function
   # TODO: The next addition have to be checked.
   zgrep "REACT:" input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | cut -f 1,5 > input_processed/pathway # | head -n 100
   zgrep "RO:0002434" input_raw/gene_interaction.all.tsv.gz | grep 'NCBITaxon:9606' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 ~ /HGNC:/ && $5 ~ /HGNC:/) print $1,$5}' > input_processed/interaction #| head -n 100 
@@ -66,53 +66,49 @@ if [ "$exec_mode" == "download" ] ; then
   cp input_processed/function input_processed/biological_process
   rm input_processed/function
 
-elif [ "$exec_mode" == "autoflow" ] ; then
+elif [ "$exec_mode" == "kernels" ] ; then
+  #STAGE 2 AUTOFLOW EXECUTION
+  AutoFlow -w kernels_calc.af -V $autoflow_vars -o $kernels_calc_af_exec $add_opt 
+
+elif [ "$exec_mode" == "backups" ] ; then
   #STAGE 2 AUTOFLOW EXECUTION
   AutoFlow -w autoflow_template.af -V $autoflow_vars -o $autoflow_output $add_opt 
 
 elif [ "$exec_mode" == "check" ] ; then
   #STAGE 3 CHECK EXECUTION
-  flow_logger -w -e $autoflow_output -r all
+  flow_logger -w -e $kernels_calc_af_exec -r all
 
 elif [ "$exec_mode" == "report" ] ; then 
   source ~soft_bio_267/initializes/init_ruby
 
   #STAGE 4.1 RECOLLECT CANDIDATES LIST fROM RESULTS
+  mkdir -p report 
+  mkdir -p report/correlations
+  mkdir -p report/metrics
+  cp ${kernels_calc_af_exec}/correlate_matrices.R_*/*_correlation.png ./report/correlations
 
-  mkdir -p candidates
-  rsync -a --delete $results_files/candidates/ ./candidates/
-
+  #mkdir -p candidates
+  #rsync -a --delete $results_files/candidates/ ./candidates/
   #STAGE 4.2 GENERATE REPORT fROM RESULTS
-  # Recollect the matrix correlactions png's.
-  if [ ! -s ./correlations ] ; then 
-    mkdir ./correlations
-  elif [ -s ./correlations ] ; then
-    rm -r ./correlations
-    mkdir ./correlations
-  fi
-  # Folder that just save files for the report.
-  cp -r $results_files/uncomb_corr ./correlations/
-  cp $results_files/*correlation.png ./correlations/
-  # Folder that save all the correlations generated in all the sessions.
-  mkdir -p all_correlations
-  cp ./correlations/*_correlation.png ./all_correlations
-  cp ./correlations/uncomb_corr/* ./all_correlations
 
+  # Profile metrics
+  create_metric_table.rb $kernels_calc_af_exec/annotations_metrics Net ./report/metrics/parsed_annotations_metrics
+  #awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($1 == N[net]) print $0}' $results_files/parsed_annotations_metrics
   # Similarity metrics
-  create_metric_table.rb $autoflow_output/similarity_metrics Net $results_files/parsed_similarity_metrics
-  awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($1 == N[net]) print $0}' $results_files/parsed_similarity_metrics
+  create_metric_table.rb $kernels_calc_af_exec/similarity_metrics Net ./report/metrics/parsed_similarity_metrics
+  #awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($1 == N[net]) print $0}' ./report/metrics/parsed_similarity_metrics
   # Uncomb Kernel metrics.
-  create_metric_table.rb $autoflow_output/uncomb_kernel_metrics Sample,Net,Kernel $results_files/parsed_uncomb_kmetrics
-  awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($2 == N[net] ) print $0}' $results_files/parsed_uncomb_kmetrics
+  create_metric_table.rb $kernels_calc_af_exec/uncomb_kernel_metrics Sample,Net,Kernel ./report/metrics/parsed_uncomb_kmetrics
+  awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($2 == N[net] ) print $0}' ./report/metrics/parsed_uncomb_kmetrics
   # Comb Kernls.
-  create_metric_table.rb $autoflow_output/comb_kernel_metrics Sample,Integration,Kernel $results_files/parsed_comb_kmetrics
+  create_metric_table.rb $kernels_calc_af_exec/comb_kernel_metrics Sample,Integration,Kernel ./report/metrics/parsed_comb_kmetrics
   # Filtered similarity metrics
-  if [ -s $autoflow_output/filtered_metrics ] ; then
-    create_metric_table.rb $autoflow_output/filtered_metrics Net $results_files/parsed_filtered_metrics
+  if [ -s $kernels_calc_af_exec/filtered_metrics ] ; then
+    create_metric_table.rb $kernels_calc_af_exec/filtered_metrics Net $results_files/parsed_filtered_metrics
     awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($1 == N[net]) print $0}' $results_files/parsed_filtered_metrics
     report_html -t report.erb -d $results_files/parsed_uncomb_kmetrics,$results_files/parsed_comb_kmetrics,$results_files/parsed_similarity_metrics,$results_files/parsed_filtered_metrics -o report_metrics
   else 
-    report_html -t report.erb -d $results_files/parsed_uncomb_kmetrics,$results_files/parsed_comb_kmetrics,$results_files/parsed_similarity_metrics -o report_metrics
+    report_html -t report.erb -d ./report/metrics/parsed_annotations_metrics,./report/metrics/parsed_uncomb_kmetrics,./report/metrics/parsed_comb_kmetrics,./report/metrics/parsed_similarity_metrics -o report_metrics
   fi
   
 fi

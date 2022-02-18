@@ -17,8 +17,26 @@
 
         <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Matrix properties </h3>
 
+
         <div style="overflow: hidden";>
-                <p style="text-align:center;"><b>Table 1.</b> Similarity matrixes </p> 
+                <p style="text-align:center;"><b>Table 1.</b> Annotation files descriptors </p> 
+                <%= 
+                table(id: "parsed_annotations_metrics", text: true, header: true, 
+                        fields: [0,4,5,6,8],
+                        cell_align: ['left', 'center', 'center', 'center','center'],
+                        border: 2,
+                        attrib: {
+                                'style' => 'margin-left: auto; margin-right:auto;',
+                                'cellspacing' => 0,
+                                'cellpadding' => 2
+                        }) do |data|
+                end
+                %>
+        </div>
+
+
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Table 2.</b> Similarity matrixes </p> 
                 <%= 
                 table(id: "parsed_similarity_metrics", text: true, header: true, 
                         fields: [0,1,2,3],
@@ -34,7 +52,7 @@
         </div>
 
         <div style="overflow: hidden";>
-                <p style="text-align:center;"><b>Table 2.</b> Filtered similarity matrixes </p> 
+                <p style="text-align:center;"><b>Table 3.</b> Filtered similarity matrixes </p> 
                 <%= 
                 if !@hash_vars["parsed_filtered_metrics"].nil?
                         table(id: "parsed_filtered_metrics", text: true, header: true, 
@@ -52,7 +70,7 @@
         </div>
 
         <div style="overflow: hidden";>
-                <p style="text-align:center;"><b>Table 3.</b> Uncombined kernel matrixes </p> 
+                <p style="text-align:center;"><b>Table 4.</b> Uncombined kernel matrixes </p> 
                 <%= 
                 table(id: "parsed_uncomb_kmetrics", text: true, header: true, 
                         fields: [1,2,3,4,5],
@@ -68,7 +86,7 @@
         </div>
 
         <div style="overflow: hidden";>
-                <p style="text-align:center;"><b>Table 4.</b> Integrated kernel matrixes </p>
+                <p style="text-align:center;"><b>Table 5.</b> Integrated kernel matrixes </p>
                 <%= 
                 table(id: "parsed_comb_kmetrics", text: true, header: true, 
                         fields: [1,2,3,4,5],
@@ -121,17 +139,16 @@
         <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Comparing types of kernel </h3>
 
         <div style="overflow: hidden; text-align:center">
-                <% uncomb_paths_cor = Dir["./correlations/uncomb_corr/*_correlation.png"] %>
+                <% uncomb_paths_cor = Dir["./report/correlations/!(int*)correlation.png"] %>
                 <% uncomb_paths_cor.each do |file| %>
                   <%= embed_img(file, 'width="50%" height="50%"') %>
                 <% end %>
         </div>
-        
 
         <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Comparing integrations and kernel types </h3>
 
         <div style="overflow: hidden; text-align:center">
-                <%= embed_img("./correlations/int_kern_correlation.png", 'width="50%" height="50%"') %>
+                <%= embed_img("./report/correlations/int_kern_correlation.png", 'width="50%" height="50%"') %>
         </div>
 </div>
 

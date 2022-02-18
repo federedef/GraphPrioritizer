@@ -1,2 +1,4 @@
-https://archive.monarchinitiative.org/latest/tsv/all_associations/gene_pathway.all.tsv.gz:
-2022-02-16 15:10:50 ERROR 404: Not Found.
+2022-02-18 09:45:20 URL:https://archive.monarchinitiative.org/latest/tsv/all_associations/gene_pathway.all.tsv.gz [10237888/10237888] -> "./data_downloaded/raw/monarch/tsv/all_associations/gene_pathway.all.tsv.gz" [1]
+FINISHED --2022-02-18 09:45:20--
+Total wall clock time: 2.0s
+Downloaded: 1 files, 9.8M in 0.8s (11.7 MB/s)

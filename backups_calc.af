@@ -1,0 +1,16 @@
+rank_genes){
+	# Input: seed_gens + kernel.
+	# Output: rank genes for every gen.
+	source ~soft_bio_267/initializes/init_ruby
+    mkdir -p ../../report/candidates
+    #affected_genes=`wc -l $gens_seed`
+	?
+	ranker_genes.rb -k !integrate_kernel_*!/general_matrix -n !integrate_kernel_*!/general_matrix.lst -s $gens_seed # TODO: check the iteration part!
+	#cp *_candidates ../../report/candidates/integrated_kernels/compare_kernel_(+)
+	count_candidate_files=`ls | grep -c _candidates`
+	if [ $count_candidate_files -ge 1 ] ; then
+		cp *_possible_candidates ../../report/candidates/integrated_kernels/compare_kernel_(+)
+	else 
+  		exit 1
+  	fi
+}
