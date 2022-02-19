@@ -15,14 +15,13 @@
 
         <p> The algorithm transformed the semantic similarity matrix to make it compatible with a kernel. Once this was done for each network and kernel type, it was integrated by kernel type. Below there is a general analysis of the properties of each matrix in the different phases of the process. </p>
 
-        <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Matrix properties </h3>
-
+        <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Annotations properties </h3>
 
         <div style="overflow: hidden";>
                 <p style="text-align:center;"><b>Table 1.</b> Annotation files descriptors </p> 
                 <%= 
                 table(id: "parsed_annotations_metrics", text: true, header: true, 
-                        fields: [0,4,5,6,8],
+                        fields: [0,5,4,6,8],
                         cell_align: ['left', 'center', 'center', 'center','center'],
                         border: 2,
                         attrib: {
@@ -34,6 +33,7 @@
                 %>
         </div>
 
+        <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Matrix properties </h3>
 
         <div style="overflow: hidden";>
                 <p style="text-align:center;"><b>Table 2.</b> Similarity matrixes </p> 
@@ -105,7 +105,7 @@
 
         <div style="overflow: hidden">
 
-                <%= barplot(id: "parsed_similarity_metrics", fields: [0, 12, 13, 14], header: true, row_names: true,
+                <%= line(id: "parsed_similarity_metrics", fields: [0, 10, 11, 12], header: true, row_names: true,
                         responsive: false,
                         height: '400px', width: '400px', x_label: 'Weight',
                         title: "Weight's similarity values",
@@ -115,7 +115,7 @@
                                 })
                 %>
 
-                <%= barplot(id: "parsed_uncomb_kmetrics", fields: [0, 12, 13, 14], header: true, row_names: true,
+                <%= line(id: "parsed_uncomb_kmetrics", fields: [0, 12, 13, 14], header: true, row_names: true,
                         responsive: false,
                         height: '400px', width: '400px', x_label: 'Weight',
                         title: "Weight's kernelized values before integration",
@@ -125,7 +125,7 @@
                                 })
                 %>
 
-                <%= barplot(id: "parsed_comb_kmetrics", fields: [0, 12, 13, 14], header: true, row_names: true,
+                <%= line(id: "parsed_comb_kmetrics", fields: [0, 12, 13, 14], header: true, row_names: true,
                         responsive: false,
                         height: '400px', width: '400px',
                         title: "Weight's kernelized values after integration", x_label: 'Weight',
@@ -139,7 +139,7 @@
         <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Comparing types of kernel </h3>
 
         <div style="overflow: hidden; text-align:center">
-                <% uncomb_paths_cor = Dir["./report/correlations/!(int*)correlation.png"] %>
+                <% uncomb_paths_cor = Dir["./report/correlations/non_integrated*correlation.png"] %>
                 <% uncomb_paths_cor.each do |file| %>
                   <%= embed_img(file, 'width="50%" height="50%"') %>
                 <% end %>
@@ -148,7 +148,7 @@
         <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Comparing integrations and kernel types </h3>
 
         <div style="overflow: hidden; text-align:center">
-                <%= embed_img("./report/correlations/int_kern_correlation.png", 'width="50%" height="50%"') %>
+                <%= embed_img("./report/correlations/integrated_kern_correlation.png", 'width="50%" height="50%"') %>
         </div>
 </div>
 

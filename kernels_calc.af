@@ -73,22 +73,22 @@ compare_kernel_[$kernel]){
 	  	fi
 	}
 
-	%rank_genes_from_uncomb[$nets]){
-		# Input: seed_gens + kernel.
-		# Output: rank genes for every gen.
-		source ~soft_bio_267/initializes/init_ruby
-	    mkdir -p ../../report/candidates/uncomb_kernels/compare_kernel_(+)/(*)
-	    #affected_genes=`wc -l $gens_seed`
-		?
-		ranker_genes.rb -k !calc_kernel_*!/kernel_matrix_bin -n !calc_kernel_*!/kernel_bin.lst -s $gens_seed
-		#cp *_candidates ../../report/candidates/uncomb_kernels/compare_kernel_(+)/(*)
-		count_candidate_files=`ls | grep -c _candidates`
-		if [ $count_candidate_files -ge 1 ] ; then
-			cp *_possible_candidates ../../report/candidates/uncomb_kernels/compare_kernel_(+)/(*)
-		else 
-	  		exit 1
-	  	fi
-	}
+	#rank_genes_from_uncomb[$nets]){
+	#	# Input: seed_gens + kernel.
+	#	# Output: rank genes for every gen.
+	#	source ~soft_bio_267/initializes/init_ruby
+	#    mkdir -p ../../report/candidates/uncomb_kernels/compare_kernel_(+)/(*)
+	#    #affected_genes=`wc -l $gens_seed`
+	#	?
+	#	ranker_genes.rb -k !calc_kernel_*!/kernel_matrix_bin -n !calc_kernel_*!/kernel_bin.lst -s $gens_seed
+	#	#cp *_candidates ../../report/candidates/uncomb_kernels/compare_kernel_(+)/(*)
+	#	count_candidate_files=`ls | grep -c _candidates`
+	#	if [ $count_candidate_files -ge 1 ] ; then
+	#		cp *_possible_candidates ../../report/candidates/uncomb_kernels/compare_kernel_(+)/(*)
+	#	else 
+	#  		exit 1
+	#  	fi
+	#}
 
 	%integrate_kernel_[$integration_types]){
 		# input: kernel matrix from every net.
@@ -112,22 +112,22 @@ compare_kernel_[$kernel]){
 	  	fi
 	}
 
-	%rank_genes_from_integrated){
-		# Input: seed_gens + kernel.
-		# Output: rank genes for every gen.
-		source ~soft_bio_267/initializes/init_ruby
-	    mkdir -p ../../report/candidates/integrated_kernels/compare_kernel_(+) 
-	    #affected_genes=`wc -l $gens_seed`
-		?
-		ranker_genes.rb -k !integrate_kernel_*!/general_matrix -n !integrate_kernel_*!/general_matrix.lst -s $gens_seed # TODO: check the iteration part!
-		#cp *_candidates ../../report/candidates/integrated_kernels/compare_kernel_(+)
-		count_candidate_files=`ls | grep -c _candidates`
-		if [ $count_candidate_files -ge 1 ] ; then
-			cp *_possible_candidates ../../report/candidates/integrated_kernels/compare_kernel_(+)
-		else 
-	  		exit 1
-	  	fi
-	}
+	#rank_genes_from_integrated){
+	#	# Input: seed_gens + kernel.
+	#	# Output: rank genes for every gen.
+	#	source ~soft_bio_267/initializes/init_ruby
+	#    mkdir -p ../../report/candidates/integrated_kernels/compare_kernel_(+) 
+	#    #affected_genes=`wc -l $gens_seed`
+	#	?
+	#	ranker_genes.rb -k !integrate_kernel_*!/general_matrix -n !integrate_kernel_*!/general_matrix.lst -s $gens_seed # TODO: check the iteration part!
+	#	#cp *_candidates ../../report/candidates/integrated_kernels/compare_kernel_(+)
+	#	count_candidate_files=`ls | grep -c _candidates`
+	#	if [ $count_candidate_files -ge 1 ] ; then
+	#		cp *_possible_candidates ../../report/candidates/integrated_kernels/compare_kernel_(+)
+	#	else 
+	#  		exit 1
+	#  	fi
+	#}
 }
 
 
@@ -138,7 +138,7 @@ corr_non_integrated_kernels_[$nets]){
 	all_names=${all_names::-1}
 	corr_method='spearman' 
 	?
-	correlate_matrices.R -d $all_paths -m $corr_method -o "." -n $all_names -O (*)_"$corr_method"_correlation
+	correlate_matrices.R -d $all_paths -m $corr_method -o "." -n $all_names -O non_integrated_(*)_"$corr_method"_correlation
 	if [ ! -s (*)_"$corr_method"_correlation.png ] ; then
 		exit 1
 	fi 
@@ -152,8 +152,8 @@ corr_integrated_kernels){
 	all_names=${all_names::-1}
 	corr_method='spearman' 
 	?
-	correlate_matrices.R -d $all_paths  -m $corr_method -o "." -n $all_names -O int_kern_correlation
-	if [ ! -s int_kern_correlation.png ] ; then
+	correlate_matrices.R -d $all_paths  -m $corr_method -o "." -n $all_names -O integrated_kern_correlation
+	if [ ! -s integrated_kern_correlation.png ] ; then
 		exit 1
 	fi 
 }

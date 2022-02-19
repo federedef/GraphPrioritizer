@@ -12,10 +12,9 @@ kernels_calc_af_report=$output_folder/report
 
 
 #Custom variables.
-net="phenotype;molecular_function;biological_process;cellular_component" #;loquesea.paco;... gen_phen_mini; small_pro
+net="phenotype;molecular_function;biological_process;cellular_component" 
 kernel="ct;rf"
-integration_types="mean;" #...mean;integration_mean_by_presence;...
-#net2ont=$input_path'/net2ont' 
+integration_types="mean;" 
 net2custom=$input_path'/net2custom'
 gens_seed=$input_path'/gens_seed' # What are the knocked genes?
 
@@ -48,7 +47,6 @@ if [ "$exec_mode" == "download" ] ; then
   #Process the files
   mkdir -p ./input_processed
   #Warning: Truncate "| head -n 100" when trying.
-  #aggregate_column_data.rb -i - -x 0 -a 4 | head -n 101 
   zgrep 'HP:' input_raw/gene_phenotype.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 101  > input_processed/phenotype 
   zgrep 'MONDO:' input_raw/gene_disease.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 101  > input_processed/disease
   zgrep 'GO:' input_raw/gene_function.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 101  > input_processed/function
@@ -57,22 +55,20 @@ if [ "$exec_mode" == "download" ] ; then
   zgrep "RO:0002434" input_raw/gene_interaction.all.tsv.gz | grep 'NCBITaxon:9606' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 ~ /HGNC:/ && $5 ~ /HGNC:/) print $1,$5}' > input_processed/interaction #| head -n 100 
   # RO:0002434 <=> interacts with
 
-  #mkdir -p ./input_processed/obos
-  #mv ./data_downloaded/aux/* ./input_processed/obos
-
   # Creating paco files for each go branch.
-  cp input_processed/function input_processed/molecular_function
-  cp input_processed/function input_processed/cellular_component
-  cp input_processed/function input_processed/biological_process
+  for branch in molecular_function cellular_component biological_process ; do
+    cp input_processed/function input_processed/$branch
+    echo -e "input_processed/$branch"
+  done
   rm input_processed/function
 
 elif [ "$exec_mode" == "kernels" ] ; then
   #STAGE 2 AUTOFLOW EXECUTION
   AutoFlow -w kernels_calc.af -V $autoflow_vars -o $kernels_calc_af_exec $add_opt 
 
-elif [ "$exec_mode" == "backups" ] ; then
-  #STAGE 2 AUTOFLOW EXECUTION
-  AutoFlow -w autoflow_template.af -V $autoflow_vars -o $autoflow_output $add_opt 
+#elif [ "$exec_mode" == "backups" ] ; then
+#  #STAGE 2 AUTOFLOW EXECUTION
+#  AutoFlow -w autoflow_template.af -V $autoflow_vars -o $autoflow_output $add_opt 
 
 elif [ "$exec_mode" == "check" ] ; then
   #STAGE 3 CHECK EXECUTION
@@ -86,10 +82,6 @@ elif [ "$exec_mode" == "report" ] ; then
   mkdir -p report/correlations
   mkdir -p report/metrics
   cp ${kernels_calc_af_exec}/correlate_matrices.R_*/*_correlation.png ./report/correlations
-
-  #mkdir -p candidates
-  #rsync -a --delete $results_files/candidates/ ./candidates/
-  #STAGE 4.2 GENERATE REPORT fROM RESULTS
 
   # Profile metrics
   create_metric_table.rb $kernels_calc_af_exec/annotations_metrics Net ./report/metrics/parsed_annotations_metrics
