@@ -1,10 +1,10 @@
 <%
         # TODO:Retocar esta seccion. De momento sólo es una mera copia del ejemplo.
-        data_header = @hash_vars['parsed_uncomb_kmetrics'].first
+        data_header = @hash_vars['parsed_uncomb_kernel_metrics'].first
         #Order by sample name
-        tab_header = @hash_vars['parsed_uncomb_kmetrics'].shift
-        @hash_vars['parsed_uncomb_kmetrics'].sort!{|s1, s2| s1.first.reverse <=> s2.first.reverse }
-        @hash_vars['parsed_uncomb_kmetrics'].unshift(tab_header)
+        tab_header = @hash_vars['parsed_uncomb_kernel_metrics'].shift
+        @hash_vars['parsed_uncomb_kernel_metrics'].sort!{|s1, s2| s1.first.reverse <=> s2.first.reverse }
+        @hash_vars['parsed_uncomb_kernel_metrics'].unshift(tab_header)
 
 %>
 
@@ -72,7 +72,7 @@
         <div style="overflow: hidden";>
                 <p style="text-align:center;"><b>Table 4.</b> Uncombined kernel matrixes </p> 
                 <%= 
-                table(id: "parsed_uncomb_kmetrics", text: true, header: true, 
+                table(id: "parsed_uncomb_kernel_metrics", text: true, header: true, 
                         fields: [1,2,3,4,5],
                         cell_align: ['left', 'left', 'center', 'center', 'center', 'center'],
                         border: 2,
@@ -88,7 +88,7 @@
         <div style="overflow: hidden";>
                 <p style="text-align:center;"><b>Table 5.</b> Integrated kernel matrixes </p>
                 <%= 
-                table(id: "parsed_comb_kmetrics", text: true, header: true, 
+                table(id: "parsed_comb_kernel_metrics", text: true, header: true, 
                         fields: [1,2,3,4,5],
                         cell_align: ['left', 'left', 'center', 'center', 'center', 'center'],
                         border: 2,
@@ -115,7 +115,7 @@
                                 })
                 %>
 
-                <%= line(id: "parsed_uncomb_kmetrics", fields: [0, 12, 13, 14], header: true, row_names: true,
+                <%= line(id: "parsed_uncomb_kernel_metrics", fields: [0, 12, 13, 14], header: true, row_names: true,
                         responsive: false,
                         height: '400px', width: '400px', x_label: 'Weight',
                         title: "Weight's kernelized values before integration",
@@ -125,7 +125,7 @@
                                 })
                 %>
 
-                <%= line(id: "parsed_comb_kmetrics", fields: [0, 12, 13, 14], header: true, row_names: true,
+                <%= line(id: "parsed_comb_kernel_metrics", fields: [0, 12, 13, 14], header: true, row_names: true,
                         responsive: false,
                         height: '400px', width: '400px',
                         title: "Weight's kernelized values after integration", x_label: 'Weight',

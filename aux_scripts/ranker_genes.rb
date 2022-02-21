@@ -60,6 +60,11 @@ OptionParser.new do  |opts|
     options[:genes_seed] = genes_seed
   end
 
+  options[:] = nil
+  opts.on("-s","-genes_seed SEED", "The list of genes to look for backups") do |genes_seed|
+    options[:genes_seed] = genes_seed
+  end
+
 end.parse!
 
 ########################### MAIN ############################

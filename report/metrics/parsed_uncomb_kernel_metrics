@@ -1,0 +1,9 @@
+references[uncomb_kernel_metrics]	molecular_function	cellular_component	biological_process	phenotype
+molecular_function_ct	ct			
+molecular_function_rf	rf			
+cellular_component_rf		rf		
+cellular_component_ct		ct		
+biological_process_ct			ct	
+biological_process_rf			rf	
+phenotype_ct				ct
+phenotype_rf				rf

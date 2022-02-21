@@ -46,17 +46,30 @@ if [ "$exec_mode" == "download" ] ; then
 
   #Process the files
   mkdir -p ./input_processed
+
+  declare -A tag_filter 
+  tag_filter[phenotype]='HP:'
+  tag_filter[disease]='MONDO:'
+  tag_filter[function]='GO:'
+  tag_filter[pathway]='REACT:'
+  tag_filter[interaction]='RO:0002434' # RO:0002434 <=> interacts with
+
+  for sample in phenotype disease function ; do
+    zgrep ${tag_filter[$sample]} input_raw/gene_${sample}.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
+    aggregate_column_data.rb -i - -x 0 -a 4 | head -n 101  > input_processed/$sample
+  done
+
   #Warning: Truncate "| head -n 100" when trying.
-  zgrep 'HP:' input_raw/gene_phenotype.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 101  > input_processed/phenotype 
-  zgrep 'MONDO:' input_raw/gene_disease.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 101  > input_processed/disease
-  zgrep 'GO:' input_raw/gene_function.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | aggregate_column_data.rb -i - -x 0 -a 4 | head -n 101  > input_processed/function
   # TODO: The next addition have to be checked.
-  zgrep "REACT:" input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | cut -f 1,5 > input_processed/pathway # | head -n 100
-  zgrep "RO:0002434" input_raw/gene_interaction.all.tsv.gz | grep 'NCBITaxon:9606' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 ~ /HGNC:/ && $5 ~ /HGNC:/) print $1,$5}' > input_processed/interaction #| head -n 100 
-  # RO:0002434 <=> interacts with
+  zgrep "REACT:" input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | \
+   cut -f 1,5 | head -n 100 > input_processed/pathway 
+  zgrep "RO:0002434" input_raw/gene_interaction.all.tsv.gz | grep 'NCBITaxon:9606' | \
+  awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 ~ /HGNC:/ && $5 ~ /HGNC:/) print $1,$5}' | head -n 100 > input_processed/interaction 
+  
 
   # Creating paco files for each go branch.
-  for branch in molecular_function cellular_component biological_process ; do
+  gene_ontology=( molecular_function cellular_component biological_process )
+  for branch in ${gene_ontology[@]} ; do
     cp input_processed/function input_processed/$branch
     echo -e "input_processed/$branch"
   done
@@ -65,10 +78,6 @@ if [ "$exec_mode" == "download" ] ; then
 elif [ "$exec_mode" == "kernels" ] ; then
   #STAGE 2 AUTOFLOW EXECUTION
   AutoFlow -w kernels_calc.af -V $autoflow_vars -o $kernels_calc_af_exec $add_opt 
-
-#elif [ "$exec_mode" == "backups" ] ; then
-#  #STAGE 2 AUTOFLOW EXECUTION
-#  AutoFlow -w autoflow_template.af -V $autoflow_vars -o $autoflow_output $add_opt 
 
 elif [ "$exec_mode" == "check" ] ; then
   #STAGE 3 CHECK EXECUTION
@@ -81,20 +90,19 @@ elif [ "$exec_mode" == "report" ] ; then
   mkdir -p report 
   mkdir -p report/correlations
   mkdir -p report/metrics
+  
   cp ${kernels_calc_af_exec}/correlate_matrices.R_*/*_correlation.png ./report/correlations
 
-  # Profile metrics
-  create_metric_table.rb $kernels_calc_af_exec/annotations_metrics Net ./report/metrics/parsed_annotations_metrics
-  #awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($1 == N[net]) print $0}' $results_files/parsed_annotations_metrics
-  # Similarity metrics
-  create_metric_table.rb $kernels_calc_af_exec/similarity_metrics Net ./report/metrics/parsed_similarity_metrics
-  #awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($1 == N[net]) print $0}' ./report/metrics/parsed_similarity_metrics
-  # Uncomb Kernel metrics.
-  create_metric_table.rb $kernels_calc_af_exec/uncomb_kernel_metrics Sample,Net,Kernel ./report/metrics/parsed_uncomb_kmetrics
-  awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($2 == N[net] ) print $0}' ./report/metrics/parsed_uncomb_kmetrics
-  # Comb Kernls.
-  create_metric_table.rb $kernels_calc_af_exec/comb_kernel_metrics Sample,Integration,Kernel ./report/metrics/parsed_comb_kmetrics
-  # Filtered similarity metrics
+  declare -A references
+  references[annotations_metrics]='Net'
+  references[similarity_metrics]='Net'
+  references[uncomb_kernel_metrics]='Sample,Net,Kernel'
+  references[comb_kernel_metrics]='Sample,Integration,Kernel'
+
+  for metric in annotations_metrics similarity_metrics uncomb_kernel_metrics comb_kernel_metrics ; do
+    create_metric_table.rb $kernels_calc_af_exec/$metric ${references[$metric]} ./report/metrics/parsed_${metric}
+  done
+
   if [ -s $kernels_calc_af_exec/filtered_metrics ] ; then
     create_metric_table.rb $kernels_calc_af_exec/filtered_metrics Net $results_files/parsed_filtered_metrics
     awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($1 == N[net]) print $0}' $results_files/parsed_filtered_metrics
