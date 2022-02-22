@@ -73,21 +73,25 @@ compare_kernel_[$kernel]){
 	  	fi
 	}
 
-	rank_genes_from_uncomb[$nets]){
+	%rank_genes_from_uncomb_[$nets]){
 		# Input: seed_gens + kernel.
 		# Output: rank genes for every gen.
 		source ~soft_bio_267/initializes/init_ruby
-	    mkdir -p ../../report/candidates/uncomb_kernels/compare_kernel_(+)/(*)
-	    #affected_genes=`wc -l $gens_seed`
-		?
-		ranker_genes.rb -k !calc_kernel_*!/kernel_matrix_bin -n !calc_kernel_*!/kernel_bin.lst -s $gens_seed
-		#cp *_candidates ../../report/candidates/uncomb_kernels/compare_kernel_(+)/(*)
-		count_candidate_files=`ls | grep -c _candidates`
-		if [ $count_candidate_files -ge 1 ] ; then
-			cp *_possible_candidates ../../report/candidates/uncomb_kernels/compare_kernel_(+)/(*)
+		echo -e "(*)_compare_kernel_(+)\t(*)\tcompare_kernel_(+)" > tracker
+		echo "$backup_gens" > probando
+	    genes_iterator=`cat $gens_seed | tr "\n" "\t"`
+	    echo "$gens_seed" > prueba
+	    for gene in ${genes_iterator} ; do 
+			?
+			ranker_gene.rb -k !calc_kernel_*!/kernel_matrix_bin -n !calc_kernel_*!/kernel_bin.lst -s "${gene}" -o "${gene}_(*)"
+		done
+		paths_candidates_file=`echo *_all_candidates | tr " " ","`
+		rank_metrics.rb -r $paths_candidates_file -c $backup_gens > rank_metrics
+		if [ -s rank_metrics ] ; then
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' rank_metrics >> ../non_integrated_rank_metrics
 		else 
-	  		exit 1
-	  	fi
+		  	exit 1
+		fi
 	}
 
 	%integrate_kernel_[$integration_types]){
@@ -112,22 +116,24 @@ compare_kernel_[$kernel]){
 	  	fi
 	}
 
-	#rank_genes_from_integrated){
-	#	# Input: seed_gens + kernel.
-	#	# Output: rank genes for every gen.
-	#	source ~soft_bio_267/initializes/init_ruby
-	#    mkdir -p ../../report/candidates/integrated_kernels/compare_kernel_(+) 
-	#    #affected_genes=`wc -l $gens_seed`
-	#	?
-	#	ranker_genes.rb -k !integrate_kernel_*!/general_matrix -n !integrate_kernel_*!/general_matrix.lst -s $gens_seed # TODO: check the iteration part!
-	#	#cp *_candidates ../../report/candidates/integrated_kernels/compare_kernel_(+)
-	#	count_candidate_files=`ls | grep -c _candidates`
-	#	if [ $count_candidate_files -ge 1 ] ; then
-	#		cp *_possible_candidates ../../report/candidates/integrated_kernels/compare_kernel_(+)
-	#	else 
-	#  		exit 1
-	#  	fi
-	#}
+	%rank_genes_from_integrated_[$integration_types]){
+		# Input: seed_gens + kernel.
+		# Output: rank genes for every gen.
+		source ~soft_bio_267/initializes/init_ruby
+		echo -e "(*)_compare_kernel_(+)\t(*)\tcompare_kernel_(+)" > tracker
+	    genes_iterator=`cat $gens_seed | tr "\n" "\t"`
+	    for gene in ${genes_iterator} ; do 
+			?
+			ranker_gene.rb -k !integrate_kernel_*!/general_matrix -n !integrate_kernel_*!/general_matrix.lst -s "${gene}" -o "${gene}_(*)"
+		done
+		rank_metrics.rb -r *_all_candidates -c $backup_gens > rank_metrics
+		if [ -s rank_metrics ] ; then
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' rank_metrics >> ../integrated_rank_metrics
+		else 
+		  	exit 1
+		fi
+	}
+
 }
 
 
@@ -139,7 +145,7 @@ corr_non_integrated_kernels_[$nets]){
 	corr_method='spearman' 
 	?
 	correlate_matrices.R -d $all_paths -m $corr_method -o "." -n $all_names -O non_integrated_(*)_"$corr_method"_correlation
-	if [ ! -s (*)_"$corr_method"_correlation.png ] ; then
+	if [ ! -s non_integrated_(*)_"$corr_method"_correlation.png ] ; then
 		exit 1
 	fi 
 }
@@ -165,4 +171,21 @@ corr_integrated_kernels){
 #		?
 #		ln -s "$path"
 #	done
+#}
+
+#rank_genes_from_integr){
+#	# Input: seed_gens + kernel.
+#	# Output: rank genes for every gen.
+#	source ~soft_bio_267/initializes/init_ruby
+#    mkdir -p ../../report/candidates/integrated_kernels/compare_kernel_(+) 
+#    #affected_genes=`wc -l $gens_seed`
+#	?
+#	ranker_genes.rb -k !integrate_kernel_*!/general_matrix -n !integrate_kernel_*!/general_matrix.lst -s $gens_seed # TODO: check the iteration part!
+#	#cp *_candidates ../../report/candidates/integrated_kernels/compare_kernel_(+)
+#	count_candidate_files=`ls | grep -c _candidates`
+#	if [ $count_candidate_files -ge 1 ] ; then
+#		cp *_possible_candidates ../../report/candidates/integrated_kernels/compare_kernel_(+)
+#	else 
+#  		exit 1
+#  	fi
 #}

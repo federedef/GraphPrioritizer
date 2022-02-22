@@ -17,6 +17,7 @@ kernel="ct;rf"
 integration_types="mean;" 
 net2custom=$input_path'/net2custom'
 gens_seed=$input_path'/gens_seed' # What are the knocked genes?
+backup_gens=$input_path'/backup_gens' # What are its backups?
 
 autoflow_vars=`echo " 
 \\$nets=$net,
@@ -24,7 +25,8 @@ autoflow_vars=`echo "
 \\$input_path=$input_path,
 \\$integration_types=$integration_types,
 \\$net2custom=$net2custom,
-\\$gens_seed=$gens_seed
+\\$gens_seed=$gens_seed,
+\\$backup_gens=$backup_gens
 " | tr -d [:space:]`
 
 
@@ -89,27 +91,35 @@ elif [ "$exec_mode" == "report" ] ; then
   #STAGE 4.1 RECOLLECT CANDIDATES LIST fROM RESULTS
   mkdir -p report 
   mkdir -p report/correlations
+  mkdir -p report/candidates
   mkdir -p report/metrics
   
-  cp ${kernels_calc_af_exec}/correlate_matrices.R_*/*_correlation.png ./report/correlations
+  rsync -a --delete ${kernels_calc_af_exec}/correlate_matrices.R_*/*_correlation.png ./report/correlations
+  rsync -a --delete ${kernels_calc_af_exec}/ranker_gene.rb_*/*_all_candidates ./report/candidates
+  #cp ${kernels_calc_af_exec}/correlate_matrices.R_*/*_correlation.png ./report/correlations
+  #cp ${kernels_calc_af_exec}/ranker_gene.rb_*/*_all_candidates ./report/candidates
 
   declare -A references
   references[annotations_metrics]='Net'
   references[similarity_metrics]='Net'
   references[uncomb_kernel_metrics]='Sample,Net,Kernel'
   references[comb_kernel_metrics]='Sample,Integration,Kernel'
+  references[non_integrated_rank_metrics]='Sample,Net,Kernel'
+  references[integrated_rank_metrics]='Sample,Integration,Kernel'
 
-  for metric in annotations_metrics similarity_metrics uncomb_kernel_metrics comb_kernel_metrics ; do
+  for metric in annotations_metrics similarity_metrics uncomb_kernel_metrics comb_kernel_metrics non_integrated_rank_metrics integrated_rank_metrics; do
     create_metric_table.rb $kernels_calc_af_exec/$metric ${references[$metric]} ./report/metrics/parsed_${metric}
   done
 
-  if [ -s $kernels_calc_af_exec/filtered_metrics ] ; then
-    create_metric_table.rb $kernels_calc_af_exec/filtered_metrics Net $results_files/parsed_filtered_metrics
-    awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($1 == N[net]) print $0}' $results_files/parsed_filtered_metrics
-    report_html -t report.erb -d $results_files/parsed_uncomb_kmetrics,$results_files/parsed_comb_kmetrics,$results_files/parsed_similarity_metrics,$results_files/parsed_filtered_metrics -o report_metrics
-  else 
-    report_html -t report.erb -d ./report/metrics/parsed_annotations_metrics,./report/metrics/parsed_uncomb_kmetrics,./report/metrics/parsed_comb_kmetrics,./report/metrics/parsed_similarity_metrics -o report_metrics
-  fi
+  report_html -t kernel_report.erb -d ./report/metrics/parsed_annotations_metrics,./report/metrics/parsed_uncomb_kernel_metrics,./report/metrics/parsed_comb_kernel_metrics,./report/metrics/parsed_similarity_metrics -o report_kernel
+  report_html -t ranking_report.erb -d ./report/metrics/parsed_non_integrated_rank_metrics,./report/metrics/parsed_integrated_rank_metrics -o report_ranking
+  #if [ -s $kernels_calc_af_exec/filtered_metrics ] ; then
+  #  create_metric_table.rb $kernels_calc_af_exec/filtered_metrics Net $results_files/parsed_filtered_metrics
+  #  awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($1 == N[net]) print $0}' $results_files/parsed_filtered_metrics
+  #  report_html -t report.erb -d $results_files/parsed_uncomb_kernel_metrics,$results_files/parsed_comb_kernel_metrics,$results_files/parsed_similarity_metrics,$results_files/parsed_filtered_metrics -o report_metrics
+  #else 
+  #  report_html -t report.erb -d ./report/metrics/parsed_annotations_metrics,./report/metrics/parsed_uncomb_kernels_metrics,./report/metrics/parsed_comb_kernel_metrics,./report/metrics/parsed_similarity_metrics -o report_metrics
+  #fi
   
 fi
 

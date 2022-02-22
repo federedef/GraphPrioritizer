@@ -1,4 +1,4 @@
-references[annotations_metrics]	Elements	Elements_Non_Zero	Non_Zero_Density	Max	Min	Average	Variance	Standard_Deviation	Q1	Median	Q3
+Net	Elements	Elements_Non_Zero	Non_Zero_Density	Max	Min	Average	Variance	Standard_Deviation	Q1	Median	Q3
 phenotype	101	101	1.0	251	1	34.960396039603964	2855.9504950495048	53.4410936924901	1	24	50
 molecular_function	89	89	1.0	7	1	2.3820224719101124	7.46067415730337	2.7314234672242548	1	2	3
 biological_process	84	84	1.0	17	1	4.25	28.511904761904763	5.339653992713831	2.0	3.0	6.5
