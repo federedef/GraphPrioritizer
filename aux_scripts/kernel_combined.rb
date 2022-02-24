@@ -105,14 +105,18 @@ class Kernels
 		end
 
 		integrated_general_matrix = Numo::DFloat.zeros(general_nodes.length,general_nodes.length)
-		kernel_values = []
 		(0..general_nodes.length-1).each do |i|
 			(0..general_nodes.length-1).each do |j|
+				kernel_values = []
 				matrixes.each do |matrix|
 					kernel_values.append(matrix[i,j])
 				end
 				number_present_in_kernel = kernel_values.length - kernel_values.count(0)
-				integrated_general_matrix[i,j] = kernel_values.sum()/number_present_in_kernel
+				if number_present_in_kernel == 0 
+					integrated_general_matrix[i,j] = 0
+				else
+					integrated_general_matrix[i,j] = kernel_values.sum()/number_present_in_kernel
+				end
 				kernel_values=[]
 			end
 		end

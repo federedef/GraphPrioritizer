@@ -13,8 +13,8 @@ kernels_calc_af_report=$output_folder/report
 
 #Custom variables.
 net="phenotype;molecular_function;biological_process;cellular_component" 
-kernel="ct;rf"
-integration_types="mean;" 
+kernel="ka;ct;el;rf"
+integration_types="integration_mean_by_presence;"
 net2custom=$input_path'/net2custom'
 gens_seed=$input_path'/gens_seed' # What are the knocked genes?
 backup_gens=$input_path'/backup_gens' # What are its backups?
@@ -96,8 +96,6 @@ elif [ "$exec_mode" == "report" ] ; then
   
   rsync -a --delete ${kernels_calc_af_exec}/correlate_matrices.R_*/*_correlation.png ./report/correlations
   rsync -a --delete ${kernels_calc_af_exec}/ranker_gene.rb_*/*_all_candidates ./report/candidates
-  #cp ${kernels_calc_af_exec}/correlate_matrices.R_*/*_correlation.png ./report/correlations
-  #cp ${kernels_calc_af_exec}/ranker_gene.rb_*/*_all_candidates ./report/candidates
 
   declare -A references
   references[annotations_metrics]='Net'

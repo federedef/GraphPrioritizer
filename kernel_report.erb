@@ -1,10 +1,14 @@
 <%
-        # TODO:Retocar esta seccion. De momento sólo es una mera copia del ejemplo.
-        data_header = @hash_vars['parsed_uncomb_kernel_metrics'].first
-        #Order by sample name
-        tab_header = @hash_vars['parsed_uncomb_kernel_metrics'].shift
-        @hash_vars['parsed_uncomb_kernel_metrics'].sort!{|s1, s2| s1.first.reverse <=> s2.first.reverse }
-        @hash_vars['parsed_uncomb_kernel_metrics'].unshift(tab_header)
+         def order_columns(name, column)
+                tab_header = @hash_vars[name].shift
+                @hash_vars[name].sort!{|s1, s2| s1[column] <=> s2[column] }
+                @hash_vars[name].unshift(tab_header)
+        end
+
+        order_columns('parsed_annotations_metrics',0)
+        order_columns('parsed_similarity_metrics',0)
+        order_columns('parsed_uncomb_kernel_metrics',0)
+        order_columns('parsed_comb_kernel_metrics',0)
 
 %>
 

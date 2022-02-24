@@ -32,13 +32,13 @@ end
 def report_stats(data)
   report_stats = []
   report_stats << ['Elements', data.size]
-  report_stats << ['Max', data.max]
-  report_stats << ['Min', data.min]
-  report_stats << ['Average', data.mean]
-  report_stats << ['Standard Deviation', data.standard_deviation]
-  report_stats << ['Q1', data.get_quantiles(0.25)]
-  report_stats << ['Median', data.get_quantiles(0.5)]
-  report_stats << ['Q3', data.get_quantiles(0.75)]
+  report_stats << ['Max', data.max.round(3)]
+  report_stats << ['Min', data.min.round(3)]
+  report_stats << ['Average', data.mean.round(3)]
+  report_stats << ['Standard Deviation', data.standard_deviation.round(3)]
+  report_stats << ['Q1', data.get_quantiles(0.25).round(3)]
+  report_stats << ['Median', data.get_quantiles(0.5).round(3)]
+  report_stats << ['Q3', data.get_quantiles(0.75).round(3)]
   return report_stats
 end
 

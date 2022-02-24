@@ -1,4 +1,4 @@
-%statistics_ontology_profiles_[$nets]){
+statistics_ontology_profiles_[$nets]){
 	source ~soft_bio_267/initializes/init_ruby 
 	echo -e "(*)" > tracker
 	ont_id=`grep -P '^(*)' $net2custom | cut -f 2`
@@ -13,7 +13,7 @@
 	fi
 }
 
-%calc_similarity_[$nets]){
+calc_similarity_[$nets]){
 	# Input: Tab file gen\tOnto_element1;Onto_element2;... + Archivo .obo
 	# Output: Similarity binary Matrix + Metrics
 	source ~soft_bio_267/initializes/init_ruby 
@@ -53,7 +53,7 @@
 
 compare_kernel_[$kernel]){ 
 	?
-	%calc_kernel_[$nets]){
+	calc_kernel_[$nets]){
 		# input: Similarity binary matrix
 		# output: binary Kernel from similarity matrix + metrics
 		source ~soft_bio_267/initializes/init_netanalyzer
@@ -73,7 +73,7 @@ compare_kernel_[$kernel]){
 	  	fi
 	}
 
-	%rank_genes_from_uncomb_[$nets]){
+	rank_genes_from_uncomb_[$nets]){
 		# Input: seed_gens + kernel.
 		# Output: rank genes for every gen.
 		source ~soft_bio_267/initializes/init_ruby
@@ -94,7 +94,7 @@ compare_kernel_[$kernel]){
 		fi
 	}
 
-	%integrate_kernel_[$integration_types]){
+	integrate_kernel_[$integration_types]){
 		# input: kernel matrix from every net.
 		# output: A combined binary kernel + metrics. 
 		source ~soft_bio_267/initializes/init_ruby
@@ -116,7 +116,7 @@ compare_kernel_[$kernel]){
 	  	fi
 	}
 
-	%rank_genes_from_integrated_[$integration_types]){
+	rank_genes_from_integrated_[$integration_types]){
 		# Input: seed_gens + kernel.
 		# Output: rank genes for every gen.
 		source ~soft_bio_267/initializes/init_ruby
@@ -139,12 +139,20 @@ compare_kernel_[$kernel]){
 
 corr_non_integrated_kernels_[$nets]){
 	source ~soft_bio_267/initializes/init_R
-	all_paths=`echo -e "!calc_similarity_*!/semantic_matrix_bin !calc_kernel_*!/kernel_matrix_bin" | tr " " ","`
-	all_names=`cat !calc_similarity_*!/tracker !calc_kernel_*!/tracker | cut -f1 | tr "\n" ","`
+	all_paths=`echo -e "!calc_similarity_*!/semantic_matrix_bin !calc_kernel_!/kernel_matrix_bin " | tr " " ","`
+	all_paths=${all_paths::-1}
+	all_names=`cat !calc_similarity_*!/tracker !calc_kernel_!/tracker | cut -f1 | tr "\n" ","`
 	all_names=${all_names::-1}
-	corr_method='spearman' 
+	index=`echo $all_names | awk 'BEGIN{RS=",";ORS=","}{ if ( $1 ~ /(*)/ ) {print NR}}'`
+	index=${index::-1}
+	echo $index > indices_prueba
+	all_names=`echo $all_names | cut -f $index -d ","`
+	all_paths=`echo $all_paths | cut -f $index -d ","`
+	echo $all_paths > miremos
+	echo $all_names > nombres
+	corr_method='spearman'
 	?
-	correlate_matrices.R -d $all_paths -m $corr_method -o "." -n $all_names -O non_integrated_(*)_"$corr_method"_correlation
+	correlate_matrices.R -d $all_paths -m $corr_method -o "." -n $all_names -D -O non_integrated_(*)_"$corr_method"_correlation
 	if [ ! -s non_integrated_(*)_"$corr_method"_correlation.png ] ; then
 		exit 1
 	fi 
@@ -158,7 +166,7 @@ corr_integrated_kernels){
 	all_names=${all_names::-1}
 	corr_method='spearman' 
 	?
-	correlate_matrices.R -d $all_paths  -m $corr_method -o "." -n $all_names -O integrated_kern_correlation
+	correlate_matrices.R -d $all_paths  -m $corr_method -o "." -n $all_names -D -O integrated_kern_correlation
 	if [ ! -s integrated_kern_correlation.png ] ; then
 		exit 1
 	fi 

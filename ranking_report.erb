@@ -1,15 +1,26 @@
+<%
+         def order_columns(name, column)
+                tab_header = @hash_vars[name].shift
+                @hash_vars[name].sort!{|s1, s2| s1[column] <=> s2[column] }
+                @hash_vars[name].unshift(tab_header)
+        end
+
+        order_columns('parsed_non_integrated_rank_metrics',0)
+        order_columns('parsed_integrated_rank_metrics',0)
+        
+%>
+
 
 <div style="width:90%; background-color:#FFFFFF; margin:50 auto; align-content: center;">
-        <h1 style="text-align:center; background-color:#ecf0f1, color: powderblue; ">Analysis of the algorithm: From kernels to backup genes.</h1>
+        <h1 style="text-align:center; background-color:#ecf0f1, color: powderblue; ">Analysis of the algorithm: From rankings to backup genes.</h1>
 
-        <h2 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Kernelization section </h2>
+        <h2 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Ranking section </h2>
 
-        <p> The algorithm transformed the semantic similarity matrix to make it compatible with a kernel. Once this was done for each network and kernel type, it was integrated by kernel type. Below there is a general analysis of the properties of each matrix in the different phases of the process. </p>
-
-        <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Annotations properties </h3>
+        <p> For each of the affected genes present in the list, a ranking with the score and percentile of every possible gene was obtained. 
+Once this was done, the position for every known backup gene was obtained and the statistical descriptor of all the values calculated.</p>
 
         <div style="overflow: hidden";>
-                <p style="text-align:center;"><b>Table 1.</b> Annotation files descriptors </p> 
+                <p style="text-align:center;"><b>Table 1.</b> Backup position values for every kernel and net before integration.</p> 
                 <%= 
                 table(id: "parsed_non_integrated_rank_metrics", text: true, header: true, 
                         fields: [1,2,3,5,4,6,7],
@@ -24,10 +35,8 @@
                 %>
         </div>
 
-        <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Matrix properties </h3>
-
         <div style="overflow: hidden";>
-                <p style="text-align:center;"><b>Table 2.</b> Similarity matrixes </p> 
+                <p style="text-align:center;"><b>Table 2.</b> Backup position values for every kernel after integration</p> 
                 <%= 
                 table(id: "parsed_integrated_rank_metrics", text: true, header: true, 
                         fields: [1,2,3,5,4,6,7],
@@ -42,14 +51,14 @@
                 %>
         </div>
 
-        <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Weight values </h3>
+        <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;">  </h3>
 
         <div style="overflow: hidden">
 
                 <%= line(id: "parsed_non_integrated_rank_metrics", fields: [0, 8, 9, 10], header: true, row_names: true,
                         responsive: false,
-                        height: '400px', width: '400px', x_label: 'Weight',
-                        title: "Weight's similarity values",
+                        height: '400px', width: '400px', x_label: 'Percentile',
+                        title: "Distribution of the Backup genes percentiles",
                         config: {
                                 'showLegend' => true,
                                 'graphOrientation' => 'vertical',
@@ -58,8 +67,8 @@
 
                 <%= line(id: "parsed_integrated_rank_metrics", fields: [0, 8, 9, 10], header: true, row_names: true,
                         responsive: false,
-                        height: '400px', width: '400px', x_label: 'Weight',
-                        title: "Weight's kernelized values before integration",
+                        height: '400px', width: '400px', x_label: 'Percentile',
+                        title: "Distribution of the Backup genes percentiles",
                         config: {
                                 'showLegend' => true,
                                 'graphOrientation' => 'vertical',
