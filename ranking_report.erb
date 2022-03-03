@@ -5,8 +5,13 @@
                 @hash_vars[name].unshift(tab_header)
         end
 
-        order_columns('parsed_non_integrated_rank_metrics',0)
-        order_columns('parsed_integrated_rank_metrics',0)
+        if !@hash_vars['parsed_non_integrated_rank_metrics'].nil?
+                order_columns('parsed_non_integrated_rank_metrics',0)
+        end
+
+        if !@hash_vars['parsed_integrated_rank_metrics'].nil?
+                order_columns('parsed_integrated_rank_metrics',0)
+        end
         
 %>
 
@@ -22,31 +27,35 @@ Once this was done, the position for every known backup gene was obtained and th
         <div style="overflow: hidden";>
                 <p style="text-align:center;"><b>Table 1.</b> Backup position values for every kernel and net before integration.</p> 
                 <%= 
-                table(id: "parsed_non_integrated_rank_metrics", text: true, header: true, 
-                        fields: [1,2,3,5,4,6,7],
-                        cell_align: ['left', 'center', 'center', 'center','center','center','center'],
-                        border: 2,
-                        attrib: {
-                                'style' => 'margin-left: auto; margin-right:auto;',
-                                'cellspacing' => 0,
-                                'cellpadding' => 2
-                        }) do |data|
+                if !@hash_vars['parsed_non_integrated_rank_metrics'].nil?
+                        table(id: "parsed_non_integrated_rank_metrics", text: true, header: true, 
+                                fields: [1,2,3,5,4,6,7],
+                                cell_align: ['left', 'center', 'center', 'center','center','center','center'],
+                                border: 2,
+                                attrib: {
+                                        'style' => 'margin-left: auto; margin-right:auto;',
+                                        'cellspacing' => 0,
+                                        'cellpadding' => 2
+                                }) do |data|
+                        end
                 end
                 %>
         </div>
 
         <div style="overflow: hidden";>
                 <p style="text-align:center;"><b>Table 2.</b> Backup position values for every kernel after integration</p> 
-                <%= 
-                table(id: "parsed_integrated_rank_metrics", text: true, header: true, 
-                        fields: [1,2,3,5,4,6,7],
-                        cell_align: ['left', 'center', 'center', 'center','center','center','center'],
-                        border: 2,
-                        attrib: {
-                                'style' => 'margin-left: auto; margin-right:auto;',
-                                'cellspacing' => 0,
-                                'cellpadding' => 2
-                        }) do |data|
+                <%=
+                if !@hash_vars['parsed_integrated_rank_metrics'].nil? 
+                        table(id: "parsed_integrated_rank_metrics", text: true, header: true, 
+                                fields: [1,2,3,5,4,6,7],
+                                cell_align: ['left', 'center', 'center', 'center','center','center','center'],
+                                border: 2,
+                                attrib: {
+                                        'style' => 'margin-left: auto; margin-right:auto;',
+                                        'cellspacing' => 0,
+                                        'cellpadding' => 2
+                                }) do |data|
+                        end
                 end
                 %>
         </div>
@@ -55,24 +64,30 @@ Once this was done, the position for every known backup gene was obtained and th
 
         <div style="overflow: hidden">
 
-                <%= line(id: "parsed_non_integrated_rank_metrics", fields: [0, 8, 9, 10], header: true, row_names: true,
-                        responsive: false,
-                        height: '400px', width: '400px', x_label: 'Percentile',
-                        title: "Distribution of the Backup genes percentiles",
-                        config: {
-                                'showLegend' => true,
-                                'graphOrientation' => 'vertical',
-                                })
+                <%= 
+                if !@hash_vars['parsed_non_integrated_rank_metrics'].nil? 
+                        line(id: "parsed_non_integrated_rank_metrics", fields: [0, 8, 9, 10], header: true, row_names: true,
+                                responsive: false,
+                                height: '400px', width: '400px', x_label: 'Percentile',
+                                title: "Distribution of the Backup genes percentiles",
+                                config: {
+                                        'showLegend' => true,
+                                        'graphOrientation' => 'vertical',
+                                        })
+                end
                 %>
 
-                <%= line(id: "parsed_integrated_rank_metrics", fields: [0, 8, 9, 10], header: true, row_names: true,
-                        responsive: false,
-                        height: '400px', width: '400px', x_label: 'Percentile',
-                        title: "Distribution of the Backup genes percentiles",
-                        config: {
-                                'showLegend' => true,
-                                'graphOrientation' => 'vertical',
-                                })
+                <%=
+                if !@hash_vars['parsed_integrated_rank_metrics'].nil?
+                        line(id: "parsed_integrated_rank_metrics", fields: [0, 8, 9, 10], header: true, row_names: true,
+                                responsive: false,
+                                height: '400px', width: '400px', x_label: 'Percentile',
+                                title: "Distribution of the Backup genes percentiles",
+                                config: {
+                                        'showLegend' => true,
+                                        'graphOrientation' => 'vertical',
+                                        })
+                end
                 %>
 
         </div>

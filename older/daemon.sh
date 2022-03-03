@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+. ~soft_bio_267/initializes/init_autoflow 
+
+exec_mode=$1 
+add_opt=$2 # flags to autoflow
+input_path=`pwd`
+export PATH=$input_path/aux_scripts:~soft_bio_267/programs/x86_64/scripts:$PATH
+
+output_folder=$SCRATCH/executions/backupgenes
+kernels_calc_af_exec=$output_folder/exec 
+kernels_calc_af_report=$output_folder/report
+
+
+#Custom variables.
+net="%phenotype;molecular_function;%biological_process;cellular_component" 
+kernel="ka;ct;el;rf"
+integration_types="mean;integration_mean_by_presence;"
+net2custom=$input_path'/net2custom'
+gens_seed=$input_path'/gens_seed' # What are the knocked genes?
+backup_gens=$input_path'/backup_gens' # What are its backups?
+
+autoflow_vars=`echo " 
+\\$nets=$net,
+\\$kernel=$kernel,
+\\$input_path=$input_path,
+\\$integration_types=$integration_types,
+\\$net2custom=$net2custom,
+\\$gens_seed=$gens_seed,
+\\$backup_gens=$backup_gens
+" | tr -d [:space:]`
+
+
+if [ "$exec_mode" == "download" ] ; then
+  #STAGE 1 DOWNLOADING REFERENCE
+  . ~soft_bio_267/initializes/init_R
+  . ~soft_bio_267/initializes/init_ruby
+
+  #Pass raw downloaded files.
+  if [ -s ./data_downloaded/aux ] ; then
+    echo "removing pre-existed obos files"
+    find ./data_downloaded/aux -name "*.obo*" -delete 
+  fi
+
+  #Downloading ontologies and annotation files.
+  downloader.rb -i ./input_source/source_data -o ./data_downloaded
+  mkdir -p ./input_raw
+  cp ./data_downloaded/raw/monarch/tsv/all_associations/* ./input_raw
+
+  #Process the files
+  mkdir -p ./input_processed
+
+  declare -A tag_filter 
+  tag_filter[phenotype]='HP:'
+  tag_filter[disease]='MONDO:'
+  tag_filter[function]='GO:'
+  tag_filter[pathway]='REACT:'
+  tag_filter[interaction]='RO:0002434' # RO:0002434 <=> interacts with
+
+  for sample in phenotype disease function ; do
+    zgrep ${tag_filter[$sample]} input_raw/gene_${sample}.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
+    aggregate_column_data.rb -i - -x 0 -a 4 > input_processed/$sample
+  done
+
+  #Warning: Truncate "| head -n 100" when trying.
+  # TODO: The next addition have to be checked.
+  zgrep "REACT:" input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | \
+   cut -f 1,5 | head -n 100 > input_processed/pathway 
+  zgrep "RO:0002434" input_raw/gene_interaction.all.tsv.gz | grep 'NCBITaxon:9606' | \
+  awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 ~ /HGNC:/ && $5 ~ /HGNC:/) print $1,$5}' | head -n 100 > input_processed/interaction 
+  
+
+  # Creating paco files for each go branch.
+  gene_ontology=( molecular_function cellular_component biological_process )
+  for branch in ${gene_ontology[@]} ; do
+    cp input_processed/function input_processed/$branch
+    echo -e "input_processed/$branch"
+  done
+  rm input_processed/function
+
+elif [ "$exec_mode" == "kernels" ] ; then
+  #STAGE 2 AUTOFLOW EXECUTION
+  AutoFlow -w kernels_calc.af -V $autoflow_vars -o $kernels_calc_af_exec -m 60gb -t 4-00:00:00 $add_opt 
+
+elif [ "$exec_mode" == "check" ] ; then
+  #STAGE 3 CHECK EXECUTION
+  flow_logger -w -e $kernels_calc_af_exec -r all
+
+elif [ "$exec_mode" == "report" ] ; then 
+  source ~soft_bio_267/initializes/init_ruby
+
+  #STAGE 4.1 RECOLLECT CANDIDATES LIST fROM RESULTS
+  mkdir -p report 
+  mkdir -p report/correlations
+  mkdir -p report/candidates
+  mkdir -p report/metrics
+  
+  rsync -a --delete ${kernels_calc_af_exec}/correlate_matrices.R_*/*_correlation.png ./report/correlations
+  rsync -a --delete ${kernels_calc_af_exec}/ranker_gene.rb_*/*_all_candidates ./report/candidates
+
+  declare -A references
+  references[annotations_metrics]='Net'
+  references[similarity_metrics]='Net'
+  references[uncomb_kernel_metrics]='Sample,Net,Kernel'
+  references[comb_kernel_metrics]='Sample,Integration,Kernel'
+  references[non_integrated_rank_metrics]='Sample,Net,Kernel'
+  references[integrated_rank_metrics]='Sample,Integration,Kernel'
+
+  for metric in annotations_metrics similarity_metrics uncomb_kernel_metrics comb_kernel_metrics non_integrated_rank_metrics integrated_rank_metrics; do
+    if [ -s $kernels_calc_af_exec/$metric ] ; then
+    create_metric_table.rb $kernels_calc_af_exec/$metric ${references[$metric]} ./report/metrics/parsed_${metric} 
+    fi
+  done
+
+  report_html -t kernel_report.erb -d ./report/metrics/parsed_annotations_metrics,./report/metrics/parsed_uncomb_kernel_metrics,./report/metrics/parsed_comb_kernel_metrics,./report/metrics/parsed_similarity_metrics -o report_kernel
+  report_html -t ranking_report.erb -d ./report/metrics/parsed_non_integrated_rank_metrics,./report/metrics/parsed_integrated_rank_metrics -o report_ranking
+  #if [ -s $kernels_calc_af_exec/filtered_metrics ] ; then
+  #  create_metric_table.rb $kernels_calc_af_exec/filtered_metrics Net $results_files/parsed_filtered_metrics
+  #  awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($1 == N[net]) print $0}' $results_files/parsed_filtered_metrics
+  #  report_html -t report.erb -d $results_files/parsed_uncomb_kernel_metrics,$results_files/parsed_comb_kernel_metrics,$results_files/parsed_similarity_metrics,$results_files/parsed_filtered_metrics -o report_metrics
+  #else 
+  #  report_html -t report.erb -d ./report/metrics/parsed_annotations_metrics,./report/metrics/parsed_uncomb_kernels_metrics,./report/metrics/parsed_comb_kernel_metrics,./report/metrics/parsed_similarity_metrics -o report_metrics
+  #fi
+  
+fi
+
+

@@ -1,4 +1,4 @@
-2022-02-21 11:11:44 URL:https://archive.monarchinitiative.org/latest/tsv/all_associations/gene_pathway.all.tsv.gz [10237888/10237888] -> "./data_downloaded/raw/monarch/tsv/all_associations/gene_pathway.all.tsv.gz" [1]
-FINISHED --2022-02-21 11:11:44--
-Total wall clock time: 0.3s
-Downloaded: 1 files, 9.8M in 0.2s (56.8 MB/s)
+2022-03-03 12:38:09 URL:https://archive.monarchinitiative.org/latest/tsv/all_associations/gene_pathway.all.tsv.gz [10237888/10237888] -> "./data_downloaded/raw/monarch/tsv/all_associations/gene_pathway.all.tsv.gz" [1]
+FINISHED --2022-03-03 12:38:09--
+Total wall clock time: 2.1s
+Downloaded: 1 files, 9.8M in 1.0s (10.2 MB/s)
