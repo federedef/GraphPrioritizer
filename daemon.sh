@@ -128,40 +128,61 @@ elif [ "$exec_mode" == "ranking" ] ; then
   # PRIMERO RALIZAMOS EL RANKEO CON LOS KERNELS SIN INTEGRAR.
 
   #STAGE 2 AUTOFLOW EXECUTION
-  for annotation in $annotations ; do 
-    for kernel in $kernels ; do 
-      kernel_path=$output_folder/$annotation_$kernel/NetAnalyzer # TODO: Comprobar este punto. 
-      # En este caso no lo pongsa asóí, para hacerlo compatible con la integracion.
-      autoflow_vars=`echo " 
-      \\$annotation=$annotation,
-      \\$kernel=$kernel,
-      \\$input_path=$input_path,
-      \\$kernel_path=$kernel_path,
-      \\$gens_seed=$gens_seed,
-      \\$backup_gens=$backup_gens
-      " | tr -d [:space:]`
 
-      # CAUTION, PUT THIS IF NECESSARY -m 60gb -t 4-00:00:00
-      AutoFlow -w rankeo.af -V $autoflow_vars -o $output_folder/ranking_$kernel_$annotation $add_opt 
+  mkdir -p $output_folder/rankings
+  echo "eyy" 
+
+  for annotation in $annotations ; do 
+
+    for kernel in $kernels ; do 
+
+      ugot_path="$output_folder/similarity_kernels/ugot_path"
+      folder_kernel_path=`awk '{print $0,NR}' $ugot_path | sort -k 5 -r -u | grep "${annotation}_$kernel" | awk '{print $4}'`
+      echo ${folder_kernel_path}
+      if [ ! -z ${folder_kernel_path} ] ; then # This kernel for this annotation is done? 
+
+        autoflow_vars=`echo " 
+        \\$annotation=$annotation,
+        \\$kernel=$kernel,
+        \\$input_path=$input_path,
+        \\$folder_kernel_path=$folder_kernel_path,
+        \\$gens_seed=$gens_seed,
+        \\$backup_gens=$backup_gens
+        " | tr -d [:space:]`
+
+        # CAUTION, PUT THIS IF NECESSARY -m 60gb -t 4-00:00:00
+        AutoFlow -w ranking_non_int.af -V $autoflow_vars -o $output_folder/rankings/ranking_${kernel}_${annotation} $add_opt 
+      fi
+
     done
   done
 
 elif [ "$exec_mode" == "integrated_ranking" ] ; then
-  # STAGE 2 AUTOFLOW EXECUTION
-  # Con esta sección podemos aplicar la ejecución por kernel de interés
-  # PRIMERO RALIZAMOS EL RANKEO CON LOS KERNELS SIN INTEGRAR.
 
-  #STAGE 2 AUTOFLOW EXECUTION
-  for kernel in $kernels ; do 
-      autoflow_vars=`echo " 
-      \\$kernel=$kernel,
-      \\$input_path=$input_path,
-      \\$gens_seed=$gens_seed,
-      \\$backup_gens=$backup_gens
-      " | tr -d [:space:]`
+  mkdir -p $output_folder/integrated_rankings
 
-      # CAUTION, PUT THIS IF NECESSARY -m 60gb -t 4-00:00:00
-      AutoFlow -w rankeo.af -V $autoflow_vars -o $output_folder/ranking_$kernel_integration $add_opt 
+  for integration_type in ${integration_types} ; do 
+    for kernel in $kernels ; do 
+
+      ugot_path="$output_folder/integrations/ugot_path"
+      folder_kernel_path=`awk '{print $0,NR}' $ugot_path | sort -k 5 -r -u | grep "${integration_type}_$kernel" | awk '{print $4}'`
+      echo ${folder_kernel_path}
+      if [ ! -z ${folder_kernel_path} ] ; then # This kernel for this integration_type is done? 
+
+        autoflow_vars=`echo " 
+        \\$integration_type=$integration_type,
+        \\$kernel=$kernel,
+        \\$input_path=$input_path,
+        \\$folder_kernel_path=$folder_kernel_path,
+        \\$gens_seed=$gens_seed,
+        \\$backup_gens=$backup_gens
+        " | tr -d [:space:]`
+
+        # CAUTION, PUT THIS IF NECESSARY -m 60gb -t 4-00:00:00
+        AutoFlow -w ranking_int.af -V $autoflow_vars -o $output_folder/integrated_rankings/ranking_${kernel}_${integration_type} $add_opt 
+      fi
+
+    done
   done
 
 elif [ "$exec_mode" == "predictividad" ] ; then

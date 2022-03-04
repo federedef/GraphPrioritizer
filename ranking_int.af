@@ -1,0 +1,22 @@
+rank_genes){
+	# Input: seed_gens + kernel.
+	# Output: rank genes for every gen.
+	source ~soft_bio_267/initializes/init_ruby
+	echo -e "$integration_type_$kernel\t$integration_type\t$kernel" > tracker
+	ranking_path=`pwd`
+    genes_iterator=`cat $gens_seed | tr "\n" "\t"`
+	echo "$backup_gens" > probando
+    echo "$gens_seed" > prueba
+    for gene in ${genes_iterator} ; do 
+		?
+		ranker_gene.rb -k $folder_kernel_path/general_matrix -n $folder_kernel_path/general_matrix.lst -s "${gene}" -o "${gene}_(*)"
+	done
+	paths_candidates_file=`echo *_all_candidates | tr " " ","`
+	rank_metrics.rb -r $paths_candidates_file -c $backup_gens > rank_metrics
+	if [ -s rank_metrics ] ; then
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' rank_metrics >> ../../../integrated_rank_metrics
+		echo -e "$integration_type_$kernel\t$integration_type\t$kernel\t$ranking_path" >> ../../ugot_path
+	else 
+	  	exit 1
+	fi
+}
