@@ -12,9 +12,11 @@ rank_genes){
 		ranker_gene.rb -k $folder_kernel_path/kernel_matrix_bin -n $folder_kernel_path/kernel_bin.lst -s "${gene}" -o "${gene}_(*)"
 	done
 	paths_candidates_file=`echo *_all_candidates | tr " " ","`
-	rank_metrics.rb -r $paths_candidates_file -c $backup_gens > rank_metrics
+	rank_metrics.rb -r $paths_candidates_file -c $backup_gens -e "stats" > rank_metrics
+	rank_metrics.rb -r $paths_candidates_file -c $backup_gens -e "ranks" > rank_list
 	if [ -s rank_metrics ] ; then
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' rank_metrics >> ../../../non_integrated_rank_metrics
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' rank_list >> ../../../non_integrated_rank_list
 		echo -e "$annotation_$kernel\t$annotation\t$kernel\t$ranking_path" >> ../../ugot_path
 	else 
 	  	exit 1

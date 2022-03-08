@@ -13,7 +13,7 @@ def search_candidates(rank_file, backups)
 		line.chomp!
 		possible_gene = line.split("\t")[0]
 		if known_backups.include? possible_gene
-			known_backups_rank.append(line.split("\t")[2].to_f)
+			known_backups_rank.append([seed_gene, possible_gene, line.split("\t")[2].to_f])
 		end
 	end
 	return known_backups_rank if !known_backups_rank.nil?
@@ -42,6 +42,20 @@ def report_stats(data)
   return report_stats
 end
 
+def report_ranks(gene_pos_ranks)
+	report_ranks = []
+	gene_pos_ranks.each do |gene_pos_rank|
+		report_ranks << gene_pos_rank
+	end
+	return report_ranks
+end
+
+
+#def genseed_name_from_filename(rank_file)
+#	seed_gene = rank_file.split("_")[0]
+#	return seed_gene
+#end
+
 
 
 ########################### OPTPARSE ########################
@@ -58,6 +72,11 @@ OptionParser.new do  |opts|
   options[:backups] = nil
   opts.on("-c","-backups NODE", "The path to the backup files") do |backups|
     options[:backups] = backups
+  end
+
+  options[:execution_mode] = "stats" 
+  opts.on("-e","-execution_mode MODE", "The mode of execution" ) do |mode|
+  	options[:execution_mode] = mode 
   end
 
 end.parse!
@@ -77,9 +96,19 @@ rankings.each do |ranking|
 end
 
 if !known_backups_ranks.nil?
-	report_stats(known_backups_ranks).each do |stat|
-    	puts stat.join("\t")
- 	end
+	if options[:execution_mode] == "stats"
+		all_ranks = known_backups_ranks.map{|rank_row| rank_row[2]}
+		report_stats(all_ranks).each do |stat|
+	    puts stat.join("\t")
+	  end
+	elsif options[:execution_mode] == "ranks"
+		report_ranks(known_backups_ranks).each do |rank|
+			puts rank.join("\t")
+	  end
+	end
 end
+
+
+	
 
 

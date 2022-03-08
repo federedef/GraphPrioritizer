@@ -7,7 +7,8 @@ input_path=`pwd`
 export PATH=$input_path/aux_scripts:~soft_bio_267/programs/x86_64/scripts:$PATH
 
 output_folder=$SCRATCH/executions/backupgenes
-kernels_calc_af_report=$output_folder/report
+report_folder=$output_folder/report
+#kernels_calc_af_report=$output_folder/report
 
 
 #Custom variables.
@@ -115,7 +116,6 @@ elif [ "$exec_mode" == "integrate" ] ; then
       \\$ugot_path=$ugot_path
       " | tr -d [:space:]`
 
-      echo $autoflow_vars 
       # TODO: quizas haya  que anadir una especificacion de cuales capas se han conseguido integrar al final.
       # CAUTION, PUT THIS IF NECESSARY -m 60gb -t 4-00:00:00 -m 60gb -t 4-00:00:00
       AutoFlow -w integrate.af -V $autoflow_vars -o $output_folder/integrations/${integration_type} $add_opt 
@@ -130,10 +130,8 @@ elif [ "$exec_mode" == "ranking" ] ; then
   #STAGE 2 AUTOFLOW EXECUTION
 
   mkdir -p $output_folder/rankings
-  echo "eyy" 
 
   for annotation in $annotations ; do 
-
     for kernel in $kernels ; do 
 
       ugot_path="$output_folder/similarity_kernels/ugot_path"
@@ -185,12 +183,40 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
     done
   done
 
-elif [ "$exec_mode" == "predictividad" ] ; then
+elif [ "$exec_mode" == "metrics" ] ; then
   #STAGE 2 AUTOFLOW EXECUTION
   # Con esta sección podemos aplicar la ejecución por kernel de interés
-  for i in vec ; do 
-    AutoFlow -w rankeo.af -V $autoflow_vars -o rankeo_$variable -m 60gb -t 4-00:00:00 $add_opt 
+
+  # Realizamos la similitud entre capas.
+
+  # Añadir el numero de atributos por cada capa en cada gen.
+  # Una tabla llamada annotation_number.
+
+  annotation_grade.sh $gens_seed $report_folder $net2custom "$annotations" $input_path/input_processed
+
+  source ~soft_bio_267/initializes/init_R
+  mkdir -p $report_folder
+
+  # CDF para los no integrados
+  mkdir -p $report_folder/non_integrated_cdf_plots
+  for annotation in $annotations ; do 
+    plot_cdf.R -a $annotation -d $output_folder/non_integrated_rank_list -o ${annotation}_cdf -O $report_folder/non_integrated_cdf_plots -w 10 -g 10
   done
+
+  # CDF para los si integrados
+  mkdir -p $report_folder/integrated_cdf_plots
+  for integration_type in ${integration_types} ; do
+    plot_cdf.R -a $integration_type -d $output_folder/integrated_rank_list -o ${integration_type}_cdf -O $report_folder/integrated_cdf_plots -w 10 -g 10
+  done
+
+
+
+
+  # Realizamos las curvas CDF.
+
+  #for i in vec ; do 
+  #  AutoFlow -w rankeo.af -V $autoflow_vars -o rankeo_$variable -m 60gb -t 4-00:00:00 $add_opt 
+  #done
 
 ##################################################################################################################
 elif [ "$exec_mode" == "check" ] ; then
