@@ -6,6 +6,7 @@ add_opt=$2 # flags to autoflow
 input_path=`pwd`
 export PATH=$input_path/aux_scripts:~soft_bio_267/programs/x86_64/scripts:$PATH
 
+autoflow_scripts=$input_path/autoflow_scripts
 output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 #kernels_calc_af_report=$output_folder/report
@@ -33,6 +34,9 @@ kernels_varflow="ka;ct;el;rf"
 #\\$backup_gens=$backup_gens
 #" | tr -d [:space:]`
 
+#########################################################
+#STAGE 1 DOWNLOAD DATA
+#########################################################
 
 if [ "$exec_mode" == "download" ] ; then
   #STAGE 1 DOWNLOADING REFERENCE
@@ -81,9 +85,14 @@ if [ "$exec_mode" == "download" ] ; then
   done
   rm input_processed/function
 
+#########################################################
+#STAGE 2 AUTOFLOW EXECUTION
+#########################################################
 
 elif [ "$exec_mode" == "kernels" ] ; then
-  #STAGE 2 AUTOFLOW EXECUTION
+  #########################################################
+  #STAGE 2.1 PROCESS SIMILARITY AND OBTAIN KERNELS
+
 
   mkdir -p $output_folder/similarity_kernels
 
@@ -97,37 +106,13 @@ elif [ "$exec_mode" == "kernels" ] ; then
       " | tr -d [:space:]`
 
       # CAUTION, PUT THIS IF NECESSARY -m 60gb -t 4-00:00:00
-      AutoFlow -w sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt 
-
-  done
-###################################################################################################################
-# IDEA: Usar parametros para especificar los kernels que quiero integrar, o el modo etc.
-elif [ "$exec_mode" == "integrate" ] ; then 
-
-  mkdir -p $output_folder/integrations
-
-  for integration_type in ${integration_types} ; do 
-
-      ugot_path="$output_folder/similarity_kernels/ugot_path"
-
-      autoflow_vars=`echo "
-      \\$integration_type=${integration_type},
-      \\$kernels_varflow=${kernels_varflow},
-      \\$ugot_path=$ugot_path
-      " | tr -d [:space:]`
-
-      # TODO: quizas haya  que anadir una especificacion de cuales capas se han conseguido integrar al final.
-      # CAUTION, PUT THIS IF NECESSARY -m 60gb -t 4-00:00:00 -m 60gb -t 4-00:00:00
-      AutoFlow -w integrate.af -V $autoflow_vars -o $output_folder/integrations/${integration_type} $add_opt 
+      AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt 
 
   done
 
 elif [ "$exec_mode" == "ranking" ] ; then
-  # STAGE 2 AUTOFLOW EXECUTION
-  # Con esta sección podemos aplicar la ejecución por kernel de interés
-  # PRIMERO RALIZAMOS EL RANKEO CON LOS KERNELS SIN INTEGRAR.
-
-  #STAGE 2 AUTOFLOW EXECUTION
+  #########################################################
+  #STAGE 2.2 OBTAIN RANKING FROM NON INTEGRATED KERNELS
 
   mkdir -p $output_folder/rankings
 
@@ -149,13 +134,41 @@ elif [ "$exec_mode" == "ranking" ] ; then
         " | tr -d [:space:]`
 
         # CAUTION, PUT THIS IF NECESSARY -m 60gb -t 4-00:00:00
-        AutoFlow -w ranking_non_int.af -V $autoflow_vars -o $output_folder/rankings/ranking_${kernel}_${annotation} $add_opt 
+        AutoFlow -w $autoflow_scripts/ranking_non_int.af -V $autoflow_vars -o $output_folder/rankings/ranking_${kernel}_${annotation} $add_opt 
       fi
 
     done
   done
 
+
+elif [ "$exec_mode" == "integrate" ] ; then 
+  #########################################################
+  #STAGE 2.3 INTEGRATE THE KERNELS
+
+  # IDEA: Usar parametros para especificar 
+  # los kernels que quiero integrar, o el modo etc.
+
+  mkdir -p $output_folder/integrations
+
+  for integration_type in ${integration_types} ; do 
+
+      ugot_path="$output_folder/similarity_kernels/ugot_path"
+
+      autoflow_vars=`echo "
+      \\$integration_type=${integration_type},
+      \\$kernels_varflow=${kernels_varflow},
+      \\$ugot_path=$ugot_path
+      " | tr -d [:space:]`
+
+      # TODO: quizas haya  que anadir una especificacion de cuales capas se han conseguido integrar al final.
+      # CAUTION, PUT THIS IF NECESSARY -m 60gb -t 4-00:00:00 -m 60gb -t 4-00:00:00
+      AutoFlow -w $autoflow_scripts/integrate.af -V $autoflow_vars -o $output_folder/integrations/${integration_type} $add_opt 
+
+  done
+
 elif [ "$exec_mode" == "integrated_ranking" ] ; then
+  #########################################################
+  #STAGE 2.4 OBTAIN RANKING FROM INTEGRATED KERNELS
 
   mkdir -p $output_folder/integrated_rankings
 
@@ -177,67 +190,52 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
         " | tr -d [:space:]`
 
         # CAUTION, PUT THIS IF NECESSARY -m 60gb -t 4-00:00:00
-        AutoFlow -w ranking_int.af -V $autoflow_vars -o $output_folder/integrated_rankings/ranking_${kernel}_${integration_type} $add_opt 
+        AutoFlow -w $autoflow_scripts/ranking_int.af -V $autoflow_vars -o $output_folder/integrated_rankings/ranking_${kernel}_${integration_type} $add_opt 
       fi
 
     done
   done
 
+#########################################################
+#STAGE 3 PREPARING PLOTS FOR THE REPORT
+#########################################################
+
 elif [ "$exec_mode" == "metrics" ] ; then
-  #STAGE 2 AUTOFLOW EXECUTION
-  # Con esta sección podemos aplicar la ejecución por kernel de interés
-
-  # Realizamos la similitud entre capas.
-
-  # Añadir el numero de atributos por cada capa en cada gen.
-  # Una tabla llamada annotation_number.
-
-  annotation_grade.sh $gens_seed $report_folder $net2custom "$annotations" $input_path/input_processed
-
   source ~soft_bio_267/initializes/init_R
   mkdir -p $report_folder
 
-  # CDF para los no integrados
+  # TODO: Pensar en el método adecuado para medir la similitud entre capas o kernels.
+  # (quizas acortando por los rankings) o por medio de la referencia en similitud.
+  
+
+  #########################################################
+  #STAGE 3.1 OBTAIN THE AMOUNT OF DATA FOR EACH SEED-GEN
+  #          ON EACH ANNOTATION LAYER
+  annotation_grade.sh $gens_seed $output_folder $net2custom "$annotations" $input_path/input_processed
+
+  #########################################################
+  #STAGE 3.2 OBTAIN CDF PLOTS FROM NON INTEGRATED
   mkdir -p $report_folder/non_integrated_cdf_plots
   for annotation in $annotations ; do 
     plot_cdf.R -a $annotation -d $output_folder/non_integrated_rank_list -o ${annotation}_cdf -O $report_folder/non_integrated_cdf_plots -w 10 -g 10
   done
 
-  # CDF para los si integrados
+  #########################################################
+  #STAGE 3.3 OBTAIN CDF PLOTS FROM INTEGRATED
   mkdir -p $report_folder/integrated_cdf_plots
   for integration_type in ${integration_types} ; do
     plot_cdf.R -a $integration_type -d $output_folder/integrated_rank_list -o ${integration_type}_cdf -O $report_folder/integrated_cdf_plots -w 10 -g 10
   done
 
-
-
-
-  # Realizamos las curvas CDF.
-
-  #for i in vec ; do 
-  #  AutoFlow -w rankeo.af -V $autoflow_vars -o rankeo_$variable -m 60gb -t 4-00:00:00 $add_opt 
-  #done
-
-##################################################################################################################
-elif [ "$exec_mode" == "check" ] ; then
-  #STAGE 3 CHECK EXECUTION
-  # La sección del check la realizado por bucle o en selección directa.
-  for folder in `ls $output_folder` ; do 
-    echo "$folder"
-    flow_logger -w -e $output_folder/$folder -r all
-  done
+#########################################################
+#STAGE 4 OBTAIN REPORT FROM RESULTS
+#########################################################
 
 elif [ "$exec_mode" == "report" ] ; then 
   source ~soft_bio_267/initializes/init_ruby
-
-  #STAGE 4.1 RECOLLECT CANDIDATES LIST fROM RESULTS
-  mkdir -p report 
-  mkdir -p report/correlations
-  mkdir -p report/candidates
-  mkdir -p report/metrics
   
-  rsync -a --delete ${kernels_calc_af_exec}/correlate_matrices.R_*/*_correlation.png ./report/correlations
-  rsync -a --delete ${kernels_calc_af_exec}/ranker_gene.rb_*/*_all_candidates ./report/candidates
+  #############################################
+  mkdir -p $report_folder/metrics
 
   declare -A references
   references[annotations_metrics]='Net'
@@ -246,23 +244,48 @@ elif [ "$exec_mode" == "report" ] ; then
   references[comb_kernel_metrics]='Sample,Integration,Kernel'
   references[non_integrated_rank_metrics]='Sample,Net,Kernel'
   references[integrated_rank_metrics]='Sample,Integration,Kernel'
+  references[annotation_grade_metrics]='Gene_seed'
 
-  for metric in annotations_metrics similarity_metrics uncomb_kernel_metrics comb_kernel_metrics non_integrated_rank_metrics integrated_rank_metrics; do
-    if [ -s $kernels_calc_af_exec/$metric ] ; then
-    create_metric_table.rb $kernels_calc_af_exec/$metric ${references[$metric]} ./report/metrics/parsed_${metric} 
+  for metric in annotations_metrics similarity_metrics uncomb_kernel_metrics comb_kernel_metrics non_integrated_rank_metrics integrated_rank_metrics annotation_grade_metrics; do
+    if [ -s $output_folder/$metric ] ; then
+    create_metric_table.rb $output_folder/$metric ${references[$metric]} $report_folder/metrics/parsed_${metric} 
     fi
   done
 
-  report_html -t kernel_report.erb -d ./report/metrics/parsed_annotations_metrics,./report/metrics/parsed_uncomb_kernel_metrics,./report/metrics/parsed_comb_kernel_metrics,./report/metrics/parsed_similarity_metrics -o report_kernel
-  report_html -t ranking_report.erb -d ./report/metrics/parsed_non_integrated_rank_metrics,./report/metrics/parsed_integrated_rank_metrics -o report_ranking
-  #if [ -s $kernels_calc_af_exec/filtered_metrics ] ; then
-  #  create_metric_table.rb $kernels_calc_af_exec/filtered_metrics Net $results_files/parsed_filtered_metrics
-  #  awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($1 == N[net]) print $0}' $results_files/parsed_filtered_metrics
-  #  report_html -t report.erb -d $results_files/parsed_uncomb_kernel_metrics,$results_files/parsed_comb_kernel_metrics,$results_files/parsed_similarity_metrics,$results_files/parsed_filtered_metrics -o report_metrics
-  #else 
-  #  report_html -t report.erb -d ./report/metrics/parsed_annotations_metrics,./report/metrics/parsed_uncomb_kernels_metrics,./report/metrics/parsed_comb_kernel_metrics,./report/metrics/parsed_similarity_metrics -o report_metrics
-  #fi
-  
+report_html -t ./report/templates/kernel_report.erb -d $report_folder/metrics/parsed_annotations_metrics,$report_folder/metrics/parsed_uncomb_kernel_metrics,$report_folder/metrics/parsed_comb_kernel_metrics,$report_folder/metrics/parsed_similarity_metrics -o report_kernel
+report_html -t ./report/templates/ranking_report.erb -d $report_folder/metrics/parsed_non_integrated_rank_metrics,$report_folder/metrics/parsed_integrated_rank_metrics,$report_folder/metrics/parsed_annotation_grade_metrics -o report_ranking
+
+
+#######################################################
+
+  ##STAGE 4.1 RECOLLECT CANDIDATES LIST fROM RESULTS
+  #mkdir -p report 
+  ##mkdir -p report/correlations
+  #mkdir -p report/candidates
+  #mkdir -p report/metrics
+  #
+  ##rsync -a --delete ${kernels_calc_af_exec}/correlate_matrices.R_*/*_correlation.png ./report/correlations
+  #rsync -a --delete ${kernels_calc_af_exec}/ranker_gene.rb_*/*_all_candidates ./report/candidates
+  #report_html -t kernel_report.erb -d ./report/metrics/parsed_annotations_metrics,./report/metrics/parsed_uncomb_kernel_metrics,./report/metrics/parsed_comb_kernel_metrics,./report/metrics/parsed_similarity_metrics -o report_kernel
+  #report_html -t ranking_report.erb -d ./report/metrics/parsed_non_integrated_rank_metrics,./report/metrics/parsed_integrated_rank_metrics -o report_ranking
+  ##if [ -s $kernels_calc_af_exec/filtered_metrics ] ; then
+  ##  create_metric_table.rb $kernels_calc_af_exec/filtered_metrics Net $results_files/parsed_filtered_metrics
+  ##  awk -i inplace -v nets=$net 'BEGIN {split(nets, N, ";")}{if( NR == 1 ) print $0; for (net in N) if($1 == N[net]) print $0}' $results_files/parsed_filtered_metrics
+  ##  report_html -t report.erb -d $results_files/parsed_uncomb_kernel_metrics,$results_files/parsed_comb_kernel_metrics,$results_files/parsed_similarity_metrics,$results_files/parsed_filtered_metrics -o report_metrics
+  ##else 
+  ##  report_html -t report.erb -d ./report/metrics/parsed_annotations_metrics,./report/metrics/parsed_uncomb_kernels_metrics,./report/metrics/parsed_comb_kernel_metrics,./report/metrics/parsed_similarity_metrics -o report_metrics
+  ##fi
+
+#########################################################
+#STAGE TO CHECK AUTOFLOW IS RIGHT
+#########################################################
+elif [ "$exec_mode" == "check" ] ; then
+  #STAGE 3 CHECK EXECUTION
+  # La sección del check la realizado por bucle o en selección directa.
+  for folder in `ls $output_folder/$add_opt/` ; do 
+    if [ -d $output_folder/$add_opt/$folder ] ; then
+      echo "$folder"
+      flow_logger -w -e $output_folder/$add_opt/$folder -r all
+    fi
+  done  
 fi
-
-

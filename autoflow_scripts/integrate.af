@@ -1,0 +1,27 @@
+
+integrate_kernel_[$kernels_varflow]){
+	# input: kernel matrix from every net.
+	# output: A combined binary kernel + metrics. 
+	source ~soft_bio_267/initializes/init_ruby
+	source ~soft_bio_267/initializes/init_netanalyzer
+	# source ~federogc/software/initializes/init_integrate_kernel
+	echo -e "$integration_type_(*)\t$integration_type\t(*)" > tracker
+	folder_kernel_paths=`awk '{print $0,NR}' $ugot_path | sort -k 5 -r -u | awk '{ if ( $1 ~ /(*)/ ) {print $4}}' | tr "\n" " "`
+	integrate_path=`pwd`
+
+	path_kernels=`echo "$folder_kernel_paths" | sed 's/ /\/kernel_matrix_bin /g'`
+	#echo $path_kernels > probando
+	path_nodes=`echo "$folder_kernel_paths" | sed 's/ /\/kernel_bin.lst /g'`
+	#echo $path_nodes > probando2
+	?
+	kernel_combined.rb -i $integration_type -t " $path_kernels " -n " $path_nodes " -o general_matrix 
+	text2binary_matrix.rb -i general_matrix -o general_matrix_undo -t bin -s > generalkernel_metrics
+	if [ -s general_matrix_undo ] ; then
+		rm general_matrix_undo
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' generalkernel_metrics >> ../../../comb_kernel_metrics 
+		echo -e "$integration_type_(*)\t$integration_type\t(*)\t$integrate_path" >> ../../ugot_path
+	else 
+  		exit 1
+  	fi
+}
+

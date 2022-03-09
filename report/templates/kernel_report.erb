@@ -1,0 +1,196 @@
+<%
+         def order_columns(name, column)
+                tab_header = @hash_vars[name].shift
+                @hash_vars[name].sort!{|s1, s2| s1[column] <=> s2[column] }
+                @hash_vars[name].unshift(tab_header)
+        end
+
+        order_columns('parsed_annotations_metrics',0) if !@hash_vars['parsed_annotations_metrics'].nil?
+        order_columns('parsed_similarity_metrics',0) if !@hash_vars['parsed_similarity_metrics'].nil?
+        order_columns('parsed_uncomb_kernel_metrics',0) if !@hash_vars['parsed_uncomb_kernel_metrics'].nil?
+        order_columns('parsed_comb_kernel_metrics',0) if !@hash_vars['parsed_comb_kernel_metrics'].nil?
+
+%>
+
+<div style="width:90%; background-color:#FFFFFF; margin:50 auto; align-content: center;">
+        <h1 style="text-align:center; background-color:#ecf0f1, color: powderblue; ">Analysis of the algorithm: From kernels to backup genes.</h1>
+
+        <h2 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Kernelization section </h2>
+
+        <p> The algorithm transformed the semantic similarity matrix to make it compatible with a kernel. Once this was done for each network and kernel type, it was integrated by kernel type. Below there is a general analysis of the properties of each matrix in the different phases of the process. </p>
+
+        <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Annotations properties </h3>
+
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Table 1.</b> Annotation files descriptors </p> 
+                <%= 
+                if !@hash_vars['parsed_annotations_metrics'].nil?
+                        table(id: "parsed_annotations_metrics", text: true, header: true, 
+                                fields: [0,5,4,6,8],
+                                cell_align: ['left', 'center', 'center', 'center','center'],
+                                border: 2,
+                                attrib: {
+                                        'style' => 'margin-left: auto; margin-right:auto;',
+                                        'cellspacing' => 0,
+                                        'cellpadding' => 2
+                                }) do |data|
+                        end
+                end
+                %>
+        </div>
+
+        <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Matrix properties </h3>
+
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Table 2.</b> Similarity matrixes </p> 
+                <%= 
+                if !@hash_vars['parsed_similarity_metrics'].nil?
+                        table(id: "parsed_similarity_metrics", text: true, header: true, 
+                                fields: [0,1,2,3],
+                                cell_align: ['left', 'center', 'center', 'center'],
+                                border: 2,
+                                attrib: {
+                                        'style' => 'margin-left: auto; margin-right:auto;',
+                                        'cellspacing' => 0,
+                                        'cellpadding' => 2
+                                }) do |data|
+                        end
+                end
+                %>
+        </div>
+
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Table 3.</b> Filtered similarity matrixes </p> 
+                <%= 
+                if !@hash_vars["parsed_filtered_metrics"].nil?
+                        table(id: "parsed_filtered_metrics", text: true, header: true, 
+                                fields: [0,1,2,3],
+                                cell_align: ['left', 'center', 'center', 'center'],
+                                border: 2,
+                                attrib: {
+                                        'style' => 'margin-left: auto; margin-right:auto;',
+                                        'cellspacing' => 0,
+                                        'cellpadding' => 2
+                                }) do |data|
+                        end
+                end
+                %>
+        </div>
+
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Table 4.</b> Uncombined kernel matrixes </p> 
+                <%= 
+                if !@hash_vars['parsed_uncomb_kernel_metrics'].nil?
+                        table(id: "parsed_uncomb_kernel_metrics", text: true, header: true, 
+                                fields: [1,2,3,4,5],
+                                cell_align: ['left', 'left', 'center', 'center', 'center', 'center'],
+                                border: 2,
+                                attrib: {
+                                        'style' => 'margin-left: auto; margin-right:auto;',
+                                        'cellspacing' => 0,
+                                        'cellpadding' => 2
+                                }) do |data|
+                        end
+                end
+                %>
+        </div>
+
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Table 5.</b> Integrated kernel matrixes </p>
+                <%= 
+                if !@hash_vars['parsed_comb_kernel_metrics'].nil?
+                        table(id: "parsed_comb_kernel_metrics", text: true, header: true, 
+                                fields: [1,2,3,4,5],
+                                cell_align: ['left', 'left', 'center', 'center', 'center', 'center'],
+                                border: 2,
+                                attrib: {
+                                        'style' => 'margin-left: auto; margin-right:auto;',
+                                        'cellspacing' => 0,
+                                        'cellpadding' => 2
+                                }) do |data|
+                        end
+                end
+                %>
+        </div>
+
+        <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Weight values </h3>
+
+        <div style="overflow: hidden">
+
+                <%= 
+                if !@hash_vars['parsed_similarity_metrics'].nil?
+                        line(id: "parsed_similarity_metrics", fields: [0, 10, 11, 12], header: true, row_names: true,
+                                responsive: false,
+                                height: '400px', width: '400px', x_label: 'Weight',
+                                title: "Weight's similarity values",
+                                config: {
+                                        'showLegend' => true,
+                                        'graphOrientation' => 'vertical',
+                                        })
+                end
+                %>
+
+                <%= 
+                if !@hash_vars['parsed_uncomb_kernel_metrics'].nil?
+                        line(id: "parsed_uncomb_kernel_metrics", fields: [0, 12, 13, 14], header: true, row_names: true,
+                                responsive: false,
+                                height: '400px', width: '400px', x_label: 'Weight',
+                                title: "Weight's kernelized values before integration",
+                                config: {
+                                        'showLegend' => true,
+                                        'graphOrientation' => 'vertical',
+                                        })
+                end
+                %>
+
+                <%= 
+                if !@hash_vars['parsed_comb_kernel_metrics'].nil?
+                        line(id: "parsed_comb_kernel_metrics", fields: [0, 12, 13, 14], header: true, row_names: true,
+                                responsive: false,
+                                height: '400px', width: '400px',
+                                title: "Weight's kernelized values after integration", x_label: 'Weight',
+                                config: {
+                                        'showLegend' => true,
+                                        'graphOrientation' => 'vertical',
+                                        })
+                end
+                %>
+        </div>
+
+        <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Comparing types of kernel </h3>
+
+        <div style="overflow: hidden; text-align:center">
+                <% uncomb_paths_cor = Dir["./report/correlations/non_integrated*correlation.png"] %>
+                <% uncomb_paths_cor.each do |file| %>
+                  <%= embed_img(file, 'width="50%" height="50%"') %>
+                <% end %>
+        </div>
+
+        <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Comparing integrations and kernel types </h3>
+
+        <div style="overflow: hidden; text-align:center">
+                <%=
+                if  !Dir["./report/correlations/non_integrated*correlation.png"].nil?
+                        embed_img("./report/correlations/integrated_kern_correlation.png", 'width="50%" height="50%"') 
+                end
+                %>
+        </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

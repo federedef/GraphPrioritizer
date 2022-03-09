@@ -1,0 +1,5 @@
+gene2phenotype	hp.obo	
+gene2disease	mondo.obo	
+gene2molecular_function	go.obo		GO:0008150	GO:0003674 ##--> Poner como si fuese en paraetros -T GO:0008150. Asi podemos customizar el algoritmo desde fuera.
+gene2biological_process	go.obo	GO:0008150
+gene2cellular_sublocation	go.obo	GO:0005575
