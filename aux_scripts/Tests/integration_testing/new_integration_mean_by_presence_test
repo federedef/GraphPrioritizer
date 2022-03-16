@@ -1,0 +1,7 @@
+Generating kernels to test
+Running new version with integration_mean_by_presence 
+       user     system      total        real
+load binary matrixes:   0.008981   0.124959   0.133940 (  0.036982)
+Final integration 71.261462   0.025459  71.286921 ( 71.287787)
+Save numpy matrix  0.000754   0.008086   0.008840 (  0.011148)
+Write node list  0.000393   0.000044   0.000437 (  0.000517)

@@ -5,8 +5,10 @@ library(ggplot2)
 option_list <- list(
   make_option(c("-d", "--data_file"), type="character",
               help="insert name of the data file"),
-  make_option(c("-a", "--annotation"), type="character",
+  make_option(c("-f", "--column_first_separator"), type="integer", default=2,
               help="the type of annotation to select"),
+  make_option(c("-s", "--column_second_separator"), type="integer", default=3 ,
+              help="number of the column for values"),
   make_option(c("-c", "--column_values"), type="integer", default=6 ,
               help="number of the column for values"),
   make_option(c("-o", "--output_name"), type="character",
@@ -26,8 +28,11 @@ data_table <- read.table(opt$data_file, header=opt$header, sep="\t")
   
 # Basic ECDF plot using ggplot package
 names(data_table)[opt$column_values] <- "values"
-cdf_plot <- ggplot(data_table[data_table$V2 == opt$annotation,], aes(x=values,group=V3,col=V3)) + stat_ecdf() +
-  labs(x="percentile",y="CDF",colour = "ker", title = paste(opt$annotation," CDFs")) + theme_minimal()
+names(data_table)[opt$column_first_separator] <- "first_separator"
+names(data_table)[opt$column_second_separator] <- "second_separator"
+
+cdf_plot <- ggplot(data_table, aes(x=values,group=second_separator,col=second_separator)) + stat_ecdf() +
+  labs(x="percentile",y="CDF",colour = "ker", title = "CDF plots") + theme_minimal() + facet_wrap(~ first_separator)
 
 output_file <- file.path(opt$output, paste0(opt$output_name, ".png"))
 png(output_file, width = opt$width, height = opt$height, units = "cm", res = 200)

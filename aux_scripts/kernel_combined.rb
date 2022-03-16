@@ -2,6 +2,7 @@
 require 'optparse'
 require 'npy'
 require 'numo/narray'
+require 'benchmark'
 
 class Kernels
 
@@ -186,21 +187,27 @@ if options[:kernel_ids].nil?
 end
 
 
-if options[:input_format] == "bin"
-	kernels.load_kernels_by_bin_matrixes(options[:kernel_files], options[:node_files], options[:kernel_ids])
+#if options[:input_format] == "bin"
+#	kernels.load_kernels_by_bin_matrixes(options[:kernel_files], options[:node_files], options[:kernel_ids])
+#end
+#
+#kernels.kernels2generalMatrix
+#
+#if !options[:integration_type].nil?
+#	kernels.kernels2generalMatrix
+#	kernels.integrate(options[:integration_type])
+#end
+#
+#if !options[:output_matrix_file].nil?
+#	Npy.save(options[:output_matrix_file], kernels.integrated_kernel[0] )
+#	File.open(options[:output_matrix_file] +'.lst', 'w'){|f| f.print kernels.integrated_kernel[1].join("\n")}
+#end
+
+Benchmark.bm do |x|
+  x.report("load binary matrixes: ") { kernels.load_kernels_by_bin_matrixes(options[:kernel_files], options[:node_files], options[:kernel_ids]) }
+  x.report("pass to general matrixes: ") { kernels.kernels2generalMatrix }
+  x.report("Final integration") { kernels.integrate(options[:integration_type]) }
+  x.report("Save numpy matrix") {  Npy.save(options[:output_matrix_file], kernels.integrated_kernel[0]) }
+  x.report("Write node list") { File.open(options[:output_matrix_file] +'.lst', 'w'){|f| f.print kernels.integrated_kernel[1].join("\n")} }
 end
 
-#kernels.normalize("max_by_column")
-
-kernels.kernels2generalMatrix
-
-if !options[:integration_type].nil?
-	kernels.kernels2generalMatrix
-	kernels.integrate(options[:integration_type])
-end
-
-if !options[:output_matrix_file].nil?
-	Npy.save("prueba", kernels.kernels_in_genmatrix[options[:kernel_ids][1]][0])
-	Npy.save(options[:output_matrix_file], kernels.integrated_kernel[0] )
-	File.open(options[:output_matrix_file] +'.lst', 'w'){|f| f.print kernels.integrated_kernel[1].join("\n")}
-end

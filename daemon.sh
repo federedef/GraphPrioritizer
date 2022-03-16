@@ -54,6 +54,8 @@ if [ "$exec_mode" == "download" ] ; then
   mkdir -p ./input_raw
   cp ./data_downloaded/raw/monarch/tsv/all_associations/* ./input_raw
 
+elif [ "$exec_mode" == "process_download" ] ; then
+
   #Process the files
   mkdir -p ./input_processed
 
@@ -66,15 +68,15 @@ if [ "$exec_mode" == "download" ] ; then
 
   for sample in phenotype disease function ; do
     zgrep ${tag_filter[$sample]} input_raw/gene_${sample}.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
-    aggregate_column_data.rb -i - -x 0 -a 4 | head -n 100 > input_processed/$sample
+    aggregate_column_data.rb -i - -x 0 -a 4 > input_processed/$sample
   done
 
-  #Warning: Truncate "| head -n 100" when trying.
+  # Warning: Truncate "| head -n 100" when trying.
   # TODO: The next addition have to be checked.
   zgrep "REACT:" input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | \
-   cut -f 1,5 | head -n 100 > input_processed/pathway 
+   cut -f 1,5 > input_processed/pathway # | head -n 230
   zgrep "RO:0002434" input_raw/gene_interaction.all.tsv.gz | grep 'NCBITaxon:9606' | \
-  awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 ~ /HGNC:/ && $5 ~ /HGNC:/) print $1,$5}' | head -n 100 > input_processed/interaction 
+  awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 ~ /HGNC:/ && $5 ~ /HGNC:/) print $1,$5}' > input_processed/interaction # | head -n 230
   
 
   # Creating paco files for each go branch.
@@ -84,6 +86,34 @@ if [ "$exec_mode" == "download" ] ; then
     echo -e "input_processed/$branch"
   done
   rm input_processed/function
+
+elif [ "$exec_mode" == "white_list" ] ; then
+
+#########################################################
+# OPTIONAL STAGE : SELECT GENES FROM WHITELIST
+#########################################################
+
+  echo -e "sample\tpre-filtered\tpos-filtered" > input_processed/filter_metrics
+
+  for sample in phenotype disease biological_process cellular_component molecular_function pathway interaction ; do
+    # Using a process substitution
+    join -t $'\t' -1 1 -2 1 <(sort -k 1 input_processed/$sample) <(sort $input_path/white_list/hgnc_white_list) > input_processed/filtered_$sample
+    nrows_prefiltered=`wc -l input_processed/$sample | tr " " "\t" | cut -f1 `
+    nrows_posfiltered=`wc -l input_processed/filtered_$sample | tr " " "\t" | cut -f1 `
+    echo -e "$sample\t$nrows_prefiltered\t$nrows_posfiltered" >> input_processed/filter_metrics
+    rm input_processed/$sample
+    mv input_processed/filtered_$sample input_processed/$sample
+  done
+
+  join -t $'\t' -1 2 -2 1 <(sort -k 2 input_processed/interaction) <(sort $input_path/white_list/hgnc_white_list) > input_processed/filtered_interaction
+  nrows_prefiltered=`wc -l input_processed/interaction | tr " " "\t" | cut -f1 `
+  nrows_posfiltered=`wc -l input_processed/filtered_interaction | tr " " "\t" | cut -f1 `
+  echo -e "interaction\t$nrows_prefiltered\t$nrows_posfiltered" >> input_processed/filter_metrics
+  rm input_processed/interaction
+  mv input_processed/filtered_interaction input_processed/interaction
+
+  echo "Annotation files filtered"
+
 
 #########################################################
 #STAGE 2 AUTOFLOW EXECUTION
@@ -211,21 +241,17 @@ elif [ "$exec_mode" == "metrics" ] ; then
   #########################################################
   #STAGE 3.1 OBTAIN THE AMOUNT OF DATA FOR EACH SEED-GEN
   #          ON EACH ANNOTATION LAYER
-  annotation_grade.sh $gens_seed $output_folder $net2custom "$annotations" $input_path/input_processed
+  #annotation_grade.sh $gens_seed $output_folder $net2custom "$annotations" $input_path/input_processed
 
   #########################################################
   #STAGE 3.2 OBTAIN CDF PLOTS FROM NON INTEGRATED
   mkdir -p $report_folder/non_integrated_cdf_plots
-  for annotation in $annotations ; do 
-    plot_cdf.R -a $annotation -d $output_folder/non_integrated_rank_list -o ${annotation}_cdf -O $report_folder/non_integrated_cdf_plots -w 10 -g 10
-  done
+  plot_cdf.R -d $output_folder/non_integrated_rank_list -f 2 -s 3 -c 6 -o cdf_plots -O $report_folder/non_integrated_cdf_plots -w 10 -g 10
 
   #########################################################
   #STAGE 3.3 OBTAIN CDF PLOTS FROM INTEGRATED
   mkdir -p $report_folder/integrated_cdf_plots
-  for integration_type in ${integration_types} ; do
-    plot_cdf.R -a $integration_type -d $output_folder/integrated_rank_list -o ${integration_type}_cdf -O $report_folder/integrated_cdf_plots -w 10 -g 10
-  done
+  plot_cdf.R -d $output_folder/integrated_rank_list -f 2 -s 3 -c 6 -o cdf_plots -O $report_folder/integrated_cdf_plots -w 10 -g 10
 
 #########################################################
 #STAGE 4 OBTAIN REPORT FROM RESULTS

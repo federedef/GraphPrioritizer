@@ -1,0 +1,33 @@
+Generating kernels to test
+Running new version with integration_mean_by_presence 
+       user     system      total        real
+load binary matrixes:   0.008981   0.124959   0.133940 (  0.036982)
+Final integration 71.261462   0.025459  71.286921 ( 71.287787)
+Save numpy matrix  0.000754   0.008086   0.008840 (  0.011148)
+Write node list  0.000393   0.000044   0.000437 (  0.000517)
+
+Generating kernels to test
+Running new version with mean 
+       user     system      total        real
+load binary matrixes:   0.003676   0.084314   0.087990 (  0.038178)
+Final integration 70.647882   0.116490  70.764372 ( 70.765100)
+Save numpy matrix  0.000000   0.008088   0.008088 (  0.010284)
+Write node list  0.000000   0.000185   0.000185 (  0.000275)
+
+Generating kernels to test
+Running old version with integration_mean_by_presence 
+       user     system      total        real
+load binary matrixes:   0.003980   0.031754   0.035734 (  0.035735)
+pass to general matrixes:  67.695965   0.020740  67.716705 ( 67.717196)
+Final integration  0.885674   0.004003   0.889677 (  0.889691)
+Save numpy matrix  0.002488   0.003997   0.006485 (  0.022864)
+Write node list  0.000426   0.000001   0.000427 (  0.000645)
+
+Generating kernels to test
+Running old version with mean 
+       user     system      total        real
+load binary matrixes:   0.010540   0.026834   0.037374 (  0.037420)
+pass to general matrixes:  68.523803   0.012419  68.536222 ( 68.536709)
+Final integration  0.004656   0.020001   0.024657 (  0.024660)
+Save numpy matrix  0.000000   0.006432   0.006432 (  0.008435)
+Write node list  0.000000   0.000144   0.000144 (  0.000231)

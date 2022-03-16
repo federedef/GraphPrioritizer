@@ -1,0 +1,90 @@
+PARA 1000
+Generating kernels to test
+Running new version v3 with mean
+       user     system      total        real
+load binary matrixes:   0.021544   0.148055   0.169599 (  0.035262)
+Final integration  2.481617   0.012765   2.494382 (  2.494412)
+Save numpy matrix  0.000000   0.006716   0.006716 (  0.010561)
+Write node list  0.000000   0.000194   0.000194 (  0.001669)
+
+PARA 2000
+Generating kernels to test
+Running new version v3 with mean
+       user     system      total        real
+load binary matrixes:   0.031302   0.203196   0.234498 (  0.146311)
+Final integration 10.255464   0.018580  10.274044 ( 10.274098)
+Save numpy matrix  0.009367   0.017069   0.026436 (  0.029333)
+Write node list  0.000152   0.000118   0.000270 (  0.000428)
+
+PARA 2000 - OLD VERSION
+Generating kernels to test
+Running old version with mean
+       user     system      total        real
+load binary matrixes:   0.015126   0.127457   0.142583 (  0.142624)
+pass to general matrixes: 550.541614   0.107795 550.649409 (550.653351)
+Final integration  0.054769   0.063999   0.118768 (  0.118773)
+Save numpy matrix  0.000000   0.030702   0.030702 (  0.042388)
+Write node list  0.000000   0.000891   0.000891 (  0.003382)
+
+PARA 3000
+Generating kernels to test
+Running new version v3 with mean
+       user     system      total        real
+load binary matrixes:   0.065044   0.363380   0.428424 (  0.352215)
+Final integration 23.055924   0.115042  23.170966 ( 23.171056)
+Save numpy matrix  0.022273   0.044828   0.067101 (  0.072497)
+Write node list  0.000270   0.000098   0.000368 (  0.002341)
+
+PARA 4000
+Generating kernels to test
+Running new version v3 with mean
+       user     system      total        real
+load binary matrixes:   0.172185   1.118186   1.290371 (  0.613926)
+Final integration 39.683560   0.175808  39.859368 ( 39.859542)
+Save numpy matrix  0.034116   0.080444   0.114560 (  0.121441)
+Write node list  0.001087   0.000236   0.001323 (  0.002872)
+
+PARA 5000
+Generating kernels to test
+Running new version v3 with mean
+       user     system      total        real
+load binary matrixes:   0.211239   0.834095   1.045334 (  0.925124)
+Final integration 59.562004   0.246092  59.808096 ( 59.808330)
+Save numpy matrix  0.052882   0.132759   0.185641 (  0.193874)
+Write node list  0.000430   0.000066   0.000496 (  0.000658)
+
+PARA 6000
+Generating kernels to test
+Running new version v3 with mean
+       user     system      total        real
+load binary matrixes:   0.279429   1.442316   1.721745 (  1.528117)
+Final integration 89.141513   0.332111  89.473624 ( 89.476447)
+Save numpy matrix  0.080113   0.240056   0.320169 (  0.345943)
+Write node list  0.001163   0.000129   0.001292 (  0.019080)
+
+PARA 7000
+Generating kernels to test
+Running new version v3 with mean
+       user     system      total        real
+load binary matrixes:   0.430533   1.925780   2.356313 (  1.882724)
+Final integration	121.413422   0.444087 121.857509 (121.858009)
+Save numpy matrix  0.108076   0.276669   0.384745 (  0.404703)
+Write node list  0.000581   0.000049   0.000630 (  0.002103)
+
+PARA 7000
+Generating kernels to test
+Running new version v3 with REALLY THE MEAN
+       user     system      total        real
+load binary matrixes:   0.364708   2.006337   2.371045 (  1.951568)
+Final integration 91.964745   0.432184  92.396929 ( 92.397243)
+Save numpy matrix  0.084842   0.354312   0.439154 (  0.494834)
+Write node list  0.000685   0.000000   0.000685 (  0.003130)
+
+PARA 10000
+Generating kernels to test
+Running new version v3 with mean
+       user     system      total        real
+load binary matrixes:   0.665212   3.461372   4.126584 (  3.650754)
+Final integration184.052912   0.911147 184.964059 (184.964863)
+Save numpy matrix  0.187020   0.596762   0.783782 (  0.822291)
+Write node list  0.000884   0.000060   0.000944 (  0.002461)
