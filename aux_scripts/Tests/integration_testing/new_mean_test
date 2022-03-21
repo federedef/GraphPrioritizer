@@ -1,7 +1,0 @@
-Generating kernels to test
-Running new version with mean 
-       user     system      total        real
-load binary matrixes:   0.003676   0.084314   0.087990 (  0.038178)
-Final integration 70.647882   0.116490  70.764372 ( 70.765100)
-Save numpy matrix  0.000000   0.008088   0.008088 (  0.010284)
-Write node list  0.000000   0.000185   0.000185 (  0.000275)

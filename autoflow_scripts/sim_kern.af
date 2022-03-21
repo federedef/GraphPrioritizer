@@ -1,44 +1,40 @@
-statistics_ontology_profiles){
-	source ~soft_bio_267/initializes/init_ruby 
-	echo -e "$annotation" > tracker
-	ont_id=`grep -P '^$annotation' $net2custom | cut -f 2`
-	exec_mode=`grep -P '^$annotation' $net2custom | cut -f 3`
-	simil_code=`grep -P '^$annotation' $net2custom | cut -f 4`
-	echo "$input_path" > de_pruebas
-	?
-	semtools.rb -i $input_path/input_processed/$annotation -o ./results.txt -O $ont_id -n -S "," -c -T $simil_code > annotations_metrics
-	if [ -s annotations_metrics ] ; then 
-		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' annotations_metrics >> ../../../annotations_metrics
-	else
-		exit 1
-	fi
-}
-
 calc_similarity){
 	# Input: Tab file gen\tOnto_element1;Onto_element2;... + Archivo .obo
 	# Output: Similarity binary Matrix + Metrics
-	source ~soft_bio_267/initializes/init_ruby 
+	#source ~soft_bio_267/initializes/init_ruby 
 	#source ~josecordoba/software/initializes/init_semtools_script 
+	source ~soft_bio_267/initializes/init_netanalyzer
 	source ~soft_bio_267/initializes/init_R
 
 	echo -e "$annotation_sim" > tracker
 	similarity_path=`pwd`
 	#net_id=`grep -P '^$annotation' $net2custom | cut -f 1`
 	ont_id=`grep -P '^$annotation' $net2custom | cut -f 2`
-	#exec_mode=`grep -P '^$annotation' $net2custom | cut -f 3`
+	exec_mode=`grep -P '^$annotation' $net2custom | cut -f 3`
 	simil_code=`grep -P '^$annotation' $net2custom | cut -f 4`
 	filter_factor=`grep -P '^$annotation' $net2custom | cut -f 5`
 	?
-	semtools.rb -i $input_path/input_processed/$annotation -o ./results.txt -O $ont_id -s lin -S "," -c -T $simil_code
-	awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $annotation_semantic_similarity_list > semantic_similarity_list # Set diagonal to 0.
-	text2binary_matrix.rb -i semantic_similarity_list -o semantic_matrix_bin -t pair -s > similarity_metrics # Obtain statistical metrics and pass to matrix bin.
+	if [ "$exec_mode" == "ontology" ] ; then
+		# Perform gen gen similiratiry list
+		if [ $simil_code == "-" ] ; then 
+			time semtools.rb -i $input_path/input_processed/$annotation -o ./results.txt -O $ont_id -s lin -S ","
+	    else
+	    	time semtools.rb -i $input_path/input_processed/$annotation -o ./results.txt -O $ont_id -s lin -S "," -c -T $simil_code
+		fi
+		awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $annotation_semantic_similarity_list > similarity_list # Set diagonal to 0.
+    elif [ "$annotation" == "pathway" ] ; then 
+    	# Perform a projection layer
+    	NetAnalyzer.rb -i $input_path/input_processed/$annotation -a "$annotation_similarity_list" -t pair -l 'gen,HGNC:;pathway,REACT:' -m "jaccard" -u 'gen,gen;pathway' # $simil_code Put output as semantic_similarity_list
+    	awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $annotation_similarity_list > similarity_list # Set diagonal to 0.
+    elif [ "$annotation" == "interaction" ] ; then 
+    	# Keep it without changes
+    	awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $input_path/input_processed/$annotation > similarity_list
+	fi
 
-	if [ -s similarity_metrics ] ; then 
-		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' similarity_metrics >> ../../../similarity_metrics 
-		#echo -e "$annotation\t$similarity_path/semantic_matrix_bin" >> ../similarity_tracker
-	else
+	if [ ! -s similarity_list ] ; then 
 		exit 1
 	fi
+
 	#TODO (Maybe): Add the next topic in the report section.
 	if [ $filter_factor == "F" ] ; then
 		disparity_filter.R -i semantic_matrix_bin -o "./" -O semantic_matrix_bin
@@ -51,22 +47,43 @@ calc_similarity){
 	fi
 }
 
+list2matrix_similarity){
+	source ~soft_bio_267/initializes/init_netanalyzer
+	echo -e "$annotation_sim" > tracker
+	?
+	text2binary_matrix.rb -i calc_similarity)/similarity_list -o similarity_matrix_bin -t pair -s > similarity_metrics # Obtain statistical metrics and pass to matrix bin.
+	if [ -s similarity_metrics ] ; then 
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' similarity_metrics >> ../../../similarity_metrics 
+		#echo -e "$annotation\t$similarity_path/semantic_matrix_bin" >> ../similarity_tracker
+	else
+		exit 1
+	fi
+}
+
 calc_kernel_[$kernels_varflow]){
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
 	source ~soft_bio_267/initializes/init_netanalyzer
-	source ~soft_bio_267/initializes/init_ruby
 	echo -e "$annotation_(*)\t$annotation\t(*)" > tracker
-	cp calc_similarity)/semantic_matrix_bin.lst kernel_bin.lst # To pass the list of node names.
+	cp list2matrix_similarity)/similarity_matrix_bin.lst kernel_bin.lst # To pass the list of node names.
 	kern_net_path=`pwd`
 	?
-	NetAnalyzer.rb -i calc_similarity)/semantic_matrix_bin -f bin -l 'genes' -k (*) -n kernel_bin.lst -u 'genes' -K ./kernel_matrix_bin
-	text2binary_matrix.rb -i kernel_matrix_bin -o kernel_matrix_undo -t bin -s > kernel_metrics
+	NetAnalyzer.rb -i list2matrix_similarity)/similarity_matrix_bin -f bin -l 'genes' -k (*) -n kernel_bin.lst -u 'genes' -K ./kernel_matrix_bin
+	if [ -s kernel_matrix_bin ] ; then
+		echo -e "$annotation_(*)\t$annotation\t(*)\t$kern_net_path" >> ../../ugot_path
+	else 
+  		exit 1
+  	fi
+}
+
+stats_kernels_[$kernels_varflow]){
+	source ~soft_bio_267/initializes/init_netanalyzer
+	ln -s !calc_kernel_*!/tracker
+	?
+	text2binary_matrix.rb -i !calc_kernel_*!/kernel_matrix_bin -o kernel_matrix_undo -t bin -s > kernel_metrics
 	if [ -s kernel_matrix_undo ] ; then
 		rm kernel_matrix_undo
-		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' kernel_metrics >> ../../../uncomb_kernel_metrics 
-		echo -e "$annotation_(*)\t$annotation\t(*)\t$kern_net_path" >> ../../ugot_path
-		#echo -e "${annotation}_(*)\t${annotation}\t$kern_net_path/kernel_matrix_bin" >> ../kernel_net_tracker 
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' kernel_metrics >> ../../../uncomb_kernel_metrics
 	else 
   		exit 1
   	fi

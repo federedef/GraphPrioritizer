@@ -16,7 +16,7 @@ def search_candidates(rank_file, backups)
 			known_backups_rank.append([seed_gene, possible_gene, line.split("\t")[2].to_f])
 		end
 	end
-	return known_backups_rank if !known_backups_rank.nil?
+	return known_backups_rank if !known_backups_rank.empty?
 end
 
 def file2hash(backup_file)
@@ -92,10 +92,11 @@ end
 
 known_backups_ranks = []
 rankings.each do |ranking|
-	known_backups_ranks += search_candidates(ranking, backups)
+	candidates = search_candidates(ranking, backups)
+	known_backups_ranks += candidates if !candidates.nil?
 end
 
-if !known_backups_ranks.nil?
+if !known_backups_ranks.empty?
 	if options[:execution_mode] == "stats"
 		all_ranks = known_backups_ranks.map{|rank_row| rank_row[2]}
 		report_stats(all_ranks).each do |stat|
