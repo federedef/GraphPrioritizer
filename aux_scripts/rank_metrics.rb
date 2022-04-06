@@ -56,6 +56,14 @@ end
 #	return seed_gene
 #end
 
+def get_cdf_values(known_backups)
+	known_backups.sort_by!{|known_backup| known_backup[2]}
+	number_known_backups = known_backups.length
+	known_backups.each_with_index do |known_backup , i|
+			known_backup = known_backup.append((i+1).fdiv(number_known_backups))
+	end
+	return known_backups
+end
 
 
 ########################### OPTPARSE ########################
@@ -95,6 +103,8 @@ rankings.each do |ranking|
 	candidates = search_candidates(ranking, backups)
 	known_backups_ranks += candidates if !candidates.nil?
 end
+
+known_backups_ranks = get_cdf_values(known_backups_ranks)
 
 if !known_backups_ranks.empty?
 	if options[:execution_mode] == "stats"

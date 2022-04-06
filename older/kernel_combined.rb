@@ -2,16 +2,18 @@
 require 'optparse'
 require 'npy'
 require 'numo/narray'
+require 'expcalc'
 require 'benchmark'
 
 class Kernels
 
-	attr_accessor :kernels_raw, :kernels_in_genmatrix, :integrated_kernel
+	attr_accessor :kernels_raw, :integrated_kernel, :general_nodes
 
 	def initialize()
-		@kernels_raw = {}
-		@kernels_in_genmatrix = {}
+		@kernels_raw = {} #[]
+		@local_indexes = []
 		@integrated_kernel = []
+		@general_nodes = []
 	end
 
 	def load_kernels_by_bin_matrixes(input_matrix, input_nodes, kernels_names)
@@ -25,105 +27,85 @@ class Kernels
 	  end
 	end
 
-	def normalize(normalization_type)
-		@kernels_raw.each do |kernel_id, kernel|
-			matrix = kernel[0]
-			if normalization_type == "min_max"
-				@kernels_raw[kernel_id][0] = minmax_normalize(matrix)
-			elsif normalization_type == "max_by_column"
-				@kernels_raw[kernel_id][0] = minmax_normalize_by_column(matrix)
-			end
-		end
-	end
-
-	def kernels2generalMatrix
-
-		general_nodes = []
+	def create_general_index
+		@general_nodes = []
 		@kernels_raw.each_value do |kernel| 
-			general_nodes += kernel[1]
+			@general_nodes += kernel[1]
 		end
-		general_nodes.uniq!
-
-		@kernels_raw.each do |kernel, value|
-			general_kernel = Numo::DFloat.zeros(general_nodes.length,general_nodes.length)
-
-			value[1].each.with_index do |row_node, i|
-				value[1].each.with_index do |column_node, j|
-					pos_row = general_nodes.find_index(row_node)
-					pos_col = general_nodes.find_index(column_node)
-					general_kernel[pos_row,pos_col] = value[0][i,j]
-				end
-			end
-
-			@kernels_in_genmatrix[kernel] = [general_kernel, general_nodes]
-		end
+		@general_nodes.uniq!
 	end
 
-	def integrate(integration_type = "mean")
-		if integration_type == "mean"
-			integrate_mean()
-		elsif integration_type == "integration_mean_by_presence"
-			integrate_mean_by_presence()
+	def integrate
+		general_nodes = @general_nodes.clone
+    hash2nodes={}     
+		@kernels_raw.each do |id, kernel|
+			build_matrix_index(hash2nodes, kernel[1], id)
+		end
+		nodes_dimension=general_nodes.length
+		#print nodes_dimension
+		general_kernel = Numo::DFloat.zeros(nodes_dimension,nodes_dimension)
+		n_kernel = @kernels_raw.keys.length
+		i = 0
+		#reverse_nodes=general_nodes.reverse
+		while general_nodes.length > 1
+			node_A = general_nodes.pop
+			ind = general_nodes.length - 1
+			general_nodes.reverse_each do |node_B|
+				#x = nodes_dimension - i
+				#print x 
+				j = ind
+				values = get_values(node_A, node_B, hash2nodes)
+				if !values.empty?
+					result = yield(values, n_kernel)
+					general_kernel[nodes_dimension -1 - i,j] = result
+					general_kernel[j,nodes_dimension - 1 - i] = result
+				end
+				ind -= 1
+			end
+			i += 1
+		end
+
+		# general_nodes.each_with_index do |inode, i| 
+		# 	general_nodes.each_with_index do |jnode, j|
+		# 		values = get_values(inode, jnode, hash2nodes)
+		# 	 	general_kernel[i,j] = yield(values, n_kernel)
+		# 	end
+		# end
+
+		@integrated_kernel = [general_kernel, @general_nodes]
+	end
+
+	def get_values(node_A, node_B, hash2nodes)
+		rows=hash2nodes[node_A]
+		# rows = @local_indexes.map{|idx| idx[node_A]}
+		cols=hash2nodes[node_B]
+		rows_cols={}
+		#Load just the pairs in both sides of the kernel matrix.
+		rows.each_key do |mat_id|
+			if !cols[mat_id].nil?
+			  rows_cols[mat_id] = [rows[mat_id],cols[mat_id]]
+		  end
+		end
+		values=[]
+		rows_cols.each do |mat_id, row_col|
+			values << @kernels_raw[mat_id][0][row_col[0],row_col[1]]
+		end
+		return values
+	end
+
+	def integrate_matrix(method)
+		integrate do |values, n_kernel|
+       if method == "mean" 
+			 	values.sum.fdiv(n_kernel)
+       elsif method == "integration_mean_by_presence"
+       	values.mean
+       end
 		end
 	end
 
 	## AUXILIAR METHODS
 	##############################
 	private
-
-	def minmax_normalize(kernel)
-		normalized_kernel = (1.to_f/(kernel.max-kernel.min)) * kernel 
-		return normalized_kernel
-	end
-
-	def minmax_normalize_by_column(kernel)
-		diag_max = (1/kernel.max(1)).diag
-		normalized_kernel = diag_max.dot(kernel)
-		return normalized_kernel
-	end
-
-	def integrate_mean
-		general_nodes = []
-		matrixes = []
-
-		@kernels_in_genmatrix.each do |key, kernel|
-			matrixes.append(kernel[0])
-			general_nodes = kernel[1] if general_nodes.empty?
-		end
-
-		matrix = matrixes.sum()
-		integrated_gen_mat = (1/matrixes.length.to_f) * matrix
-		@integrated_kernel = [integrated_gen_mat, general_nodes]
-	end
-
-	def integrate_mean_by_presence
-		general_nodes = []
-		matrixes = []
-
-		@kernels_in_genmatrix.each do |key, kernel|
-			matrixes.append(kernel[0])
-			general_nodes = kernel[1] if general_nodes.empty?
-		end
-
-		integrated_general_matrix = Numo::DFloat.zeros(general_nodes.length,general_nodes.length)
-		(0..general_nodes.length-1).each do |i|
-			(0..general_nodes.length-1).each do |j|
-				kernel_values = []
-				matrixes.each do |matrix|
-					kernel_values.append(matrix[i,j])
-				end
-				number_present_in_kernel = kernel_values.length - kernel_values.count(0)
-				if number_present_in_kernel == 0 
-					integrated_general_matrix[i,j] = 0
-				else
-					integrated_general_matrix[i,j] = kernel_values.sum()/number_present_in_kernel
-				end
-				kernel_values=[]
-			end
-		end
-
-		@integrated_kernel = [integrated_general_matrix, general_nodes]
-	end
 
 	def lst2arr(lst_file)
 		nodes = []
@@ -134,6 +116,17 @@ class Kernels
 		end
 
 		return nodes
+	end
+
+	def build_matrix_index(hash_nodes, node_list, id)
+		node_list.each_with_index do |node, i|
+			query=hash_nodes[node]
+			if query.nil?
+				hash_nodes[node]={id => i}
+			else
+				query[id] = i
+			end
+		end
 	end
 	
 end
@@ -189,25 +182,34 @@ end
 
 #if options[:input_format] == "bin"
 #	kernels.load_kernels_by_bin_matrixes(options[:kernel_files], options[:node_files], options[:kernel_ids])
+#	kernels.create_general_index
 #end
 #
-#kernels.kernels2generalMatrix
 #
 #if !options[:integration_type].nil?
-#	kernels.kernels2generalMatrix
-#	kernels.integrate(options[:integration_type])
+#	kernels.integrate_matrix(options[:integration_type])
 #end
 #
 #if !options[:output_matrix_file].nil?
-#	Npy.save(options[:output_matrix_file], kernels.integrated_kernel[0] )
-#	File.open(options[:output_matrix_file] +'.lst', 'w'){|f| f.print kernels.integrated_kernel[1].join("\n")}
+#	kernel, names = kernels.integrated_kernel
+#	kernel.save(
+#		options[:output_matrix_file], 
+#		x_axis_names = names, 
+#		x_axis_file = options[:output_matrix_file] +'.lst')
 #end
 
 Benchmark.bm do |x|
-  x.report("load binary matrixes: ") { kernels.load_kernels_by_bin_matrixes(options[:kernel_files], options[:node_files], options[:kernel_ids]) }
-  x.report("pass to general matrixes: ") { kernels.kernels2generalMatrix }
-  x.report("Final integration") { kernels.integrate(options[:integration_type]) }
-  x.report("Save numpy matrix") {  Npy.save(options[:output_matrix_file], kernels.integrated_kernel[0]) }
-  x.report("Write node list") { File.open(options[:output_matrix_file] +'.lst', 'w'){|f| f.print kernels.integrated_kernel[1].join("\n")} }
+  x.report("load binary matrixes: ") { 
+  	kernels.load_kernels_by_bin_matrixes(options[:kernel_files], options[:node_files], options[:kernel_ids]) 
+  	kernels.create_general_index
+  }
+  x.report("Final integration") { kernels.integrate_matrix(options[:integration_type]) }
+  x.report("Save numpy matrix") {  
+  kernel, names = kernels.integrated_kernel
+	kernel.save(
+		options[:output_matrix_file], 
+		x_axis_names = names, 
+		x_axis_file = options[:output_matrix_file] +'.lst')
+  }
 end
 

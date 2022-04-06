@@ -6,7 +6,8 @@ integrate_kernel_[$kernels_varflow]){
 	source ~soft_bio_267/initializes/init_netanalyzer
 	# source ~federogc/software/initializes/init_integrate_kernel
 	echo -e "$integration_type_(*)\t$integration_type\t(*)" > tracker
-	folder_kernel_paths=`awk '{print $0,NR}' $ugot_path | sort -k 5 -r -u | awk '{ if ( $1 ~ /(*)/ ) {print $4}}' | tr "\n" " "`
+	#folder_kernel_paths=`awk '{print $0,NR}' $ugot_path | sort -k 5 -r -u |  awk '{ if ( $1 ~ /(*)/ ) {print $4}}' | tr "\n" " "`
+	folder_kernel_paths=`awk '{ if ( $1 ~ /(*)/ ) {print $4}}' $ugot_path | tr "\n" " "`
 	integrate_path=`pwd`
 
 	path_kernels=`echo "$folder_kernel_paths" | sed 's/ /\/kernel_matrix_bin /g'`

@@ -1,5 +1,5 @@
 <%
-         def order_columns(name, column)
+        def order_columns(name, column)
                 tab_header = @hash_vars[name].shift
                 @hash_vars[name].sort!{|s1, s2| s1[column] <=> s2[column] }
                 @hash_vars[name].unshift(tab_header)
@@ -21,7 +21,7 @@
 
 
 <div style="width:90%; background-color:#FFFFFF; margin:50 auto; align-content: center;">
-        <h1 style="text-align:center; background-color:#ecf0f1, color: powderblue; ">Analysis of the algorithm: From rankings to backup genes.</h1>
+        <h1 style="text-align:center; background-color:#ecf0f1, color: powderblue; "> Analysis of the algorithm: From rankings to backup genes.</h1>
 
         <h2 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Ranking section </h2>
 
@@ -96,35 +96,39 @@ Once this was done, the position for every known backup gene was obtained and th
 
         </div>
 
-        <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> CDF plots of non integrated kernels </h3>
-
-        <div style="overflow: hidden; text-align:center">
-                <%= embed_img("report/cdfs/non_integrated_cdf_plots/cdf_plots.png", 'width="50%" height="50%"') %>
-        </div>
-
-        <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> CDF plots of non integrated kernels  </h3>
-
-        <div style="overflow: hidden; text-align:center">
-                <%= embed_img("report/cdfs/integrated_cdf_plots/cdf_plots.png", 'width="50%" height="50%"') %>
-        </div>
-
-        <!--
         <div style="overflow: hidden";>
-                <p style="text-align:center;"> Seed Gen number of annotations for each type of information .</p> 
+                <p style="text-align:center;"> CDF plots of non integrated kernels </p> 
                 <%= 
-                if !@hash_vars['parsed_annotation_grade_metrics'].nil?
-                       line(id: "parsed_annotation_grade_metrics", fields: [1,2] , header: true, row_names: true,
-                                responsive: false,
-                                height: '400px', width: '400px', x_label: 'Annotations',
-                                title: "Number of annotations for each gene seed",
+                if !@hash_vars['non_integrated_rank_list'].nil?
+                       scatter2D(id: "non_integrated_rank_list", fields: [5,6] , header: true, row_names: false, responsive: false,
+                                height: '400px', width: '400px', x_label: 'percentiles', smp_attr: [0,1,2],
+                                title: "cummulative distribution function plot",
                                 config: {
                                         'showLegend' => true,
-                                        'graphOrientation' => 'vertical',
+                                        'lineBy' => 'kernel',
+                                        'colorBy' => 'kernel',
+                                        'segregateVariablesBy' => 'annot'
                                         })
                 end
                 %>
         </div>
-        -->
+
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"> CDF plots of integrated kernels </p> 
+                <%= 
+                if !@hash_vars['integrated_rank_list'].nil?
+                       scatter2D(id: "integrated_rank_list", fields: [5,6] , header: true, row_names: false, responsive: false,
+                                height: '400px', width: '400px', x_label: 'percentiles', smp_attr: [0,1,2],
+                                title: "cummulative distribution function plot",
+                                config: {
+                                        'showLegend' => true,
+                                        'lineBy' => 'kernel',
+                                        'colorBy' => 'kernel',
+                                        'segregateVariablesBy' => 'integration'
+                                        })
+                end
+                %>
+        </div>
 
 </div>
 

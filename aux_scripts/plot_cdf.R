@@ -32,7 +32,8 @@ names(data_table)[opt$column_first_separator] <- "first_separator"
 names(data_table)[opt$column_second_separator] <- "second_separator"
 
 cdf_plot <- ggplot(data_table, aes(x=values,group=second_separator,col=second_separator)) + stat_ecdf() +
-  labs(x="percentile",y="CDF",colour = "ker", title = "CDF plots") + theme_minimal() + facet_wrap(~ first_separator)
+  labs(x="percentile",y="CDF",colour = "ker", title = "CDF plots") + theme_minimal() + facet_wrap(~ first_separator) + theme(axis.text=element_text(size=6), axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+        axis.title=element_text(size=7,face="bold"), strip.text = element_text(size = 6, face="bold"))
 
 output_file <- file.path(opt$output, paste0(opt$output_name, ".png"))
 png(output_file, width = opt$width, height = opt$height, units = "cm", res = 200)

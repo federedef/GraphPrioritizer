@@ -5,10 +5,4 @@ molecular_function	GO	ontology	GO:0003674	NF
 biological_process	GO	ontology	GO:0008150	NF
 cellular_component	GO	ontology	GO:0005575	NF	
 interaction	-	network	-	NF
-pathway	-	network	-t pair -l 'gen,HGNC:;pathway,REACT:' -m "jaccard" -u 'gen,gen;pathway'	NF
-
-
-
-
-
-code --> -s lin -S "," -T "$parent_id"
+pathway	-	network	-	NF

@@ -1,8 +1,7 @@
 calc_similarity){
-	# Input: Tab file gen\tOnto_element1;Onto_element2;... + Archivo .obo
-	# Output: Similarity binary Matrix + Metrics
-	#source ~soft_bio_267/initializes/init_ruby 
-	#source ~josecordoba/software/initializes/init_semtools_script 
+	resources: -m '60gb' -t '1-00:00:00'
+	# Input: Tab file in: paco format for ontologies, pairs format for network.
+	# Output: Similarity list
 	source ~soft_bio_267/initializes/init_netanalyzer
 	source ~soft_bio_267/initializes/init_R
 
@@ -15,39 +14,46 @@ calc_similarity){
 	filter_factor=`grep -P '^$annotation' $net2custom | cut -f 5`
 	?
 	if [ "$exec_mode" == "ontology" ] ; then
-		# Perform gen gen similiratiry list
+		# Perform gen-gen similiratiry list
 		if [ $simil_code == "-" ] ; then 
-			time semtools.rb -i $input_path/input_processed/$annotation -o ./results.txt -O $ont_id -s lin -S ","
+			time semtools.rb -i $input_path/input_processed/$annotation -o ./results.txt -O $ont_id -s lin -S "," -o $annotation_similarity_list
 	    else
-	    	time semtools.rb -i $input_path/input_processed/$annotation -o ./results.txt -O $ont_id -s lin -S "," -c -T $simil_code
+	    	time semtools.rb -i $input_path/input_processed/$annotation -o ./results.txt -O $ont_id -s lin -S "," -c -T $simil_code -o $annotation_similarity_list
 		fi
 		awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $annotation_semantic_similarity_list > similarity_list # Set diagonal to 0.
-    elif [ "$annotation" == "pathway" ] ; then 
-    	# Perform a projection layer
-    	NetAnalyzer.rb -i $input_path/input_processed/$annotation -a "$annotation_similarity_list" -t pair -l 'gen,HGNC:;pathway,REACT:' -m "jaccard" -u 'gen,gen;pathway' # $simil_code Put output as semantic_similarity_list
-    	awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $annotation_similarity_list > similarity_list # Set diagonal to 0.
-    elif [ "$annotation" == "interaction" ] ; then 
-    	# Keep it without changes
-    	awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $input_path/input_processed/$annotation > similarity_list
-	fi
+    elif [ "$exec_mode" == "network" ] ; then
+    	if [ "$annotation" == "pathway" ] ; then 
+    		# Perform a projection layer with jaccard
+    		NetAnalyzer.rb -i $input_path/input_processed/$annotation -a "$annotation_similarity_list" -t pair -l 'gen,HGNC:;pathway,REACT:' -m "jaccard" -u 'gen,gen;pathway'
+    		# Perform a projection layer with counts
+    		NetAnalyzer.rb -i $input_path/input_processed/$annotation -a "counts_similarity_list" -t pair -l 'gen,HGNC:;pathway,REACT:' -m "counts" -u 'gen,gen;pathway'
+    		# Select just the interactions of jaccard filtering by the counts values.
+    		paste $annotation_similarity_list <(cut -f 3 counts_similarity_list) | awk 'BEGIN{FS="\t";OFS="\t"}{if( $4 >= 3 ) print $1,$2,$3}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list
+    		#awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $annotation_similarity_list > similarity_list # Set diagonal to 0.
+    	elif [ "$annotation" == "interaction" ] ; then 
+    		# Keep it without changes
+    		cp $input_path/input_processed/$annotation ./similarity_list
+    	fi
+    fi
 
 	if [ ! -s similarity_list ] ; then 
 		exit 1
 	fi
 
-	#TODO (Maybe): Add the next topic in the report section.
-	if [ $filter_factor == "F" ] ; then
-		disparity_filter.R -i semantic_matrix_bin -o "./" -O semantic_matrix_bin
-		text2binary_matrix.rb -i semantic_matrix_bin -o "filtered_semantic_matrix_bin" -t bin -s > filtered_metrics
-		if [ -s filtered_metrics ] ; then 
-		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' filtered_metrics >> ../../../filtered_metrics 
-		else
-			exit 1
-		fi
-	fi
+	##TODO (Maybe): Add the next topic in the report section.
+	#if [ $filter_factor == "F" ] ; then
+	#	disparity_filter.R -i semantic_matrix_bin -o "./" -O semantic_matrix_bin
+	#	text2binary_matrix.rb -i semantic_matrix_bin -o "filtered_semantic_matrix_bin" -t bin -s > filtered_metrics
+	#	if [ -s filtered_metrics ] ; then 
+	#	awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' filtered_metrics >> ../../../filtered_metrics 
+	#	else
+	#		exit 1
+	#	fi
+	#fi
 }
 
 list2matrix_similarity){
+	resources: -m '60gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_netanalyzer
 	echo -e "$annotation_sim" > tracker
 	?
@@ -60,13 +66,15 @@ list2matrix_similarity){
 	fi
 }
 
-calc_kernel_[$kernels_varflow]){
+%calc_kernel_[$kernels_varflow]){
+	resources: -c 16 -m '60gb' -t '1-00:00:00'
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
 	source ~soft_bio_267/initializes/init_netanalyzer
 	echo -e "$annotation_(*)\t$annotation\t(*)" > tracker
 	cp list2matrix_similarity)/similarity_matrix_bin.lst kernel_bin.lst # To pass the list of node names.
 	kern_net_path=`pwd`
+	export OMP_NUM_THREADS=[cpu]
 	?
 	NetAnalyzer.rb -i list2matrix_similarity)/similarity_matrix_bin -f bin -l 'genes' -k (*) -n kernel_bin.lst -u 'genes' -K ./kernel_matrix_bin
 	if [ -s kernel_matrix_bin ] ; then
@@ -76,7 +84,8 @@ calc_kernel_[$kernels_varflow]){
   	fi
 }
 
-stats_kernels_[$kernels_varflow]){
+%stats_kernels_[$kernels_varflow]){
+	resources: -m '60gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_netanalyzer
 	ln -s !calc_kernel_*!/tracker
 	?
