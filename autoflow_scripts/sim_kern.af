@@ -1,5 +1,5 @@
 calc_similarity){
-	resources: -m '60gb' -t '1-00:00:00'
+	resources: -m '60gb' -t '4-00:00:00'
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
 	source ~soft_bio_267/initializes/init_netanalyzer
@@ -66,7 +66,7 @@ list2matrix_similarity){
 	fi
 }
 
-%calc_kernel_[$kernels_varflow]){
+calc_kernel_[$kernels_varflow]){
 	resources: -c 16 -m '60gb' -t '1-00:00:00'
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
@@ -84,7 +84,7 @@ list2matrix_similarity){
   	fi
 }
 
-%stats_kernels_[$kernels_varflow]){
+stats_kernels_[$kernels_varflow]){
 	resources: -m '60gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_netanalyzer
 	ln -s !calc_kernel_*!/tracker

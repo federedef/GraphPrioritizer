@@ -11,7 +11,7 @@ output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
 #Custom variables.
-annotations="pathway" #phenotype molecular_function biological_process cellular_component disease interaction
+annotations="phenotype molecular_function biological_process cellular_component disease interaction pathway"
 kernels="ka ct el rf"
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom'
@@ -41,10 +41,18 @@ if [ "$exec_mode" == "download" ] ; then
     find ./data_downloaded/aux -name "*.obo*" -delete 
   fi
 
-  # Downloading ontologies and pathway annotation files.
+  # Downloading ONTOLOGIES and PATHWAY ANNOTATION files from MONARCH.
   downloader.rb -i ./input_source/source_data -o ./data_downloaded
   mkdir -p ./input_raw
   cp ./data_downloaded/raw/monarch/tsv/all_associations/* ./input_raw
+
+  # Downloading INTERACTIONS and ALIASES from STRING.
+  wget https://stringdb-static.org/download/protein.links.v11.5/9606.protein.links.v11.5.txt.gz -O input_raw/string_data.v11.5.txt.gz
+  gzip -d input_raw/string_data.v11.5.txt.gz
+ 
+  wget https://stringdb-static.org/download/protein.aliases.v11.5/9606.protein.aliases.v11.5.txt.gz -O input_raw/protein_aliases.v11.5.txt.gz
+  gzip -d input_raw/protein_aliases.v11.5.txt.gz
+  grep -w "Ensembl_HGNC_HGNC_ID" input_raw/protein_aliases.v11.5.txt | cut -f 1,2 > ./input_raw/Ensembl_HGNC_HGNC_ID
 
 elif [ "$exec_mode" == "process_download" ] ; then
 
@@ -67,7 +75,7 @@ elif [ "$exec_mode" == "process_download" ] ; then
   gene_ontology=( molecular_function cellular_component biological_process )
   for branch in ${gene_ontology[@]} ; do
     cp input_processed/function input_processed/$branch
-    echo -e "input_processed/$branch"
+    #echo -e "input_processed/$branch"
   done
   rm input_processed/function
 
@@ -76,7 +84,7 @@ elif [ "$exec_mode" == "process_download" ] ; then
    cut -f 1,5 > input_processed/pathway # | head -n 230
   
   # PROCESS INTERACTIONS #
-  geneid_translator.rb -t ./ppi_string/input/Ensembl_HGNC_HGNC_ID -f ./ppi_string/input/string_data.txt -c 0,1 > ./input_processed/interaction_scored
+  geneid_translator.rb -t ./input_raw/Ensembl_HGNC_HGNC_ID -f input_raw/string_data.v11.5.txt -c 0,1 > ./input_processed/interaction_scored
   awk '{OFS="\t"}{if ( $3 > 700 ) {print $1,$2}}' ./input_processed/interaction_scored > ./input_processed/interaction
   rm ./input_processed/interaction_scored
 
@@ -106,6 +114,30 @@ elif [ "$exec_mode" == "white_list" ] ; then
   mv input_processed/filtered_interaction input_processed/interaction
 
   echo "Annotation files filtered"
+
+elif [ "$exec_mode" == "backup_preparation" ] ; then 
+  
+  mkdir -p ./backupgens/processed_backups 
+
+  #AdHoc added backups
+  cp ./backupgens/data/AdHoc_Backups ./backupgens/processed_backups/AdHoc_Backups
+  # Big Papi.
+  grep -w 'All 6' ./backupgens/data/Big_Papi | awk '{FS="\t";OFS="\t"}{if ( $6 <= 0.05) print $1,$2}' > ./backupgens/data/filtered_Big_Papi
+  # Digenic Paralog.
+  awk '{FS="\t"}{if ( $2 <= 0.05 && $3 <= 0.05 && $4 <= 0.05 && $5 <= 0.05 && $6 <= 0.05 && $7 <= 0.05 && $8 <= 0.05 && $9 <= 0.05 && $10 <= 0.05 && $11 <= 0.05 && $12 <= 0.05) print $1}' ./backupgens/data/Digenic_Paralog | \
+   tr -s ";" "\t" | tr -d "\"" > ./backupgens/data/filtered_Digenic_Paralog
+
+  # Download the necessary tab to translation from symbol to HGNC.
+  #wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./backupgens/data/HGNC_symbol
+  awk '{OFS="\t"}{print $2,$1}' ./backupgens/data/HGNC_symbol > ./backupgens/data/symbol_HGNC
+  geneid_translator.rb -t ./backupgens/data/symbol_HGNC -f ./backupgens/data/filtered_Big_Papi -c 0,1 > ./backupgens/processed_backups/Big_Papi
+  geneid_translator.rb -t ./backupgens/data/symbol_HGNC -f ./backupgens/data/filtered_Digenic_Paralog -c 0,1 > ./backupgens/processed_backups/Digenic_Paralog
+  
+  # Positive control.
+  cat ./backupgens/processed_backups/* | sort | uniq -u  > ./backupgens/backup_gens
+  # Negative control.
+  grep -w 'All 6' ./backupgens/data/Big_Papi | awk '{FS="\t";OFS="\t"}{if ( $7 <= 0.05) print $1,$2}' > ./backupgens/data/filtered_Big_Papi_negative_control
+  geneid_translator.rb -t ./backupgens/data/symbol_HGNC -f ./backupgens/data/filtered_Big_Papi_negative_control -c 0,1 | awk '{if (!( $1 == $2 )) print $0 }' > ./backupgens/non_backup_gens
 
 elif [ "$exec_mode" == "backup_type" ] ; then 
 
