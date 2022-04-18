@@ -1,4 +1,4 @@
-calc_similarity){
+%calc_similarity){
 	resources: -m '60gb' -t '4-00:00:00'
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
@@ -20,7 +20,7 @@ calc_similarity){
 	    else
 	    	time semtools.rb -i $input_path/input_processed/$annotation -o ./results.txt -O $ont_id -s lin -S "," -c -T $simil_code -o $annotation_similarity_list
 		fi
-		awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $annotation_semantic_similarity_list > similarity_list # Set diagonal to 0.
+		awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $annotation_similarity_list > similarity_list # Set diagonal to 0.
     elif [ "$exec_mode" == "network" ] ; then
     	if [ "$annotation" == "pathway" ] ; then 
     		# Perform a projection layer with jaccard
@@ -52,7 +52,7 @@ calc_similarity){
 	#fi
 }
 
-list2matrix_similarity){
+%list2matrix_similarity){
 	resources: -m '60gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_netanalyzer
 	echo -e "$annotation_sim" > tracker
@@ -76,7 +76,7 @@ calc_kernel_[$kernels_varflow]){
 	kern_net_path=`pwd`
 	export OMP_NUM_THREADS=[cpu]
 	?
-	NetAnalyzer.rb -i list2matrix_similarity)/similarity_matrix_bin -f bin -l 'genes' -k (*) -n kernel_bin.lst -u 'genes' -K ./kernel_matrix_bin
+	NetAnalyzer.rb -i list2matrix_similarity)/similarity_matrix_bin -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
 	if [ -s kernel_matrix_bin ] ; then
 		echo -e "$annotation_(*)\t$annotation\t(*)\t$kern_net_path" >> ../../ugot_path
 	else 

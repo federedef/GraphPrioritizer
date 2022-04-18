@@ -1,21 +1,22 @@
 #!/usr/bin/env bash
 . ~soft_bio_267/initializes/init_autoflow 
 
+#Input variables.
 exec_mode=$1 
-add_opt=$2 # flags to autoflow
+add_opt=$2 
+
+# Used Paths.
 input_path=`pwd`
 export PATH=$input_path/aux_scripts:~soft_bio_267/programs/x86_64/scripts:$PATH
-
 autoflow_scripts=$input_path/autoflow_scripts
 output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
-#Custom variables.
+# Custom variables.
 annotations="phenotype molecular_function biological_process cellular_component disease interaction pathway"
 kernels="ka ct el rf"
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom'
-gens_seed=$input_path'/gens_seed' # What are the knocked genes?
 backup_gens=$input_path'/backup_gens' # What are its backups?
 
 kernels_varflow=`echo $kernels | tr " " ";"`
@@ -128,7 +129,9 @@ elif [ "$exec_mode" == "backup_preparation" ] ; then
    tr -s ";" "\t" | tr -d "\"" > ./backupgens/data/filtered_Digenic_Paralog
 
   # Download the necessary tab to translation from symbol to HGNC.
-  #wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./backupgens/data/HGNC_symbol
+  if [ ! -s ./backupgens/data/HGNC_symbol ] ; then 
+    wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./backupgens/data/HGNC_symbol
+  fi
   awk '{OFS="\t"}{print $2,$1}' ./backupgens/data/HGNC_symbol > ./backupgens/data/symbol_HGNC
   geneid_translator.rb -t ./backupgens/data/symbol_HGNC -f ./backupgens/data/filtered_Big_Papi -c 0,1 > ./backupgens/processed_backups/Big_Papi
   geneid_translator.rb -t ./backupgens/data/symbol_HGNC -f ./backupgens/data/filtered_Digenic_Paralog -c 0,1 > ./backupgens/processed_backups/Digenic_Paralog
@@ -144,14 +147,23 @@ elif [ "$exec_mode" == "backup_type" ] ; then
 ##################################################################
 # OPTIONAL STAGE : SEE IF THE RELATION BACKUP-GENSEED IS SYMMETRIC
 ##################################################################
+  pos_or_neg=$3
 
   if [ $add_opt == "reverse" ] ; then 
-    awk '{OFS="\t"}{print $2,$1}' ./backupgens/backup_gens | aggregate_column_data.rb -i - -x 0 -a 1 > backup_gens    
+    if [ $pos_or_neg == "positive" ] ; then 
+      awk '{OFS="\t"}{print $2,$1}' ./backupgens/backup_gens | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens  
+    elif [ $pos_or_neg == "negative" ] ; then
+      awk '{OFS="\t"}{print $2,$1}' ./backupgens/non_backup_gens | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens  
+    fi    
   elif [ $add_opt == "right" ] ; then 
-    cat ./backupgens/backup_gens | aggregate_column_data.rb -i - -x 0 -a 1 > backup_gens    
+    if [ $pos_or_neg == "positive" ] ; then 
+      cat ./backupgens/backup_gens | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens
+    elif [ $pos_or_neg == "negative" ] ; then
+      cat ./backupgens/non_backup_gens | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
+    fi        
   fi
 
-  cut -f1 backup_gens > gens_seed 
+  #cut -f1 backup_gens > gens_seed 
 
 elif [ "$exec_mode" == "input_stats" ] ; then 
 
@@ -174,7 +186,7 @@ elif [ "$exec_mode" == "input_stats" ] ; then
   done
 
 #########################################################
-#STAGE 2 AUTOFLOW EXECUTION
+# STAGE 2 AUTOFLOW EXECUTION
 #########################################################
 
 elif [ "$exec_mode" == "kernels" ] ; then
@@ -192,15 +204,14 @@ elif [ "$exec_mode" == "kernels" ] ; then
       \\$kernels_varflow=$kernels_varflow
       " | tr -d [:space:]`
 
-      # CAUTION, PUT THIS IF NECESSARY -m 60gb -t 4-00:00:00
       AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt 
 
   done
 
 elif [ "$exec_mode" == "ranking" ] ; then
   #########################################################
-  #STAGE 2.2 OBTAIN RANKING FROM NON INTEGRATED KERNELS
-
+  # STAGE 2.2 OBTAIN RANKING FROM NON INTEGRATED KERNELS
+  rm $output_folder/rankings # To not mix executions.
   prepare_autoflow_folder $output_folder/rankings
 
   for annotation in $annotations ; do 
@@ -216,12 +227,12 @@ elif [ "$exec_mode" == "ranking" ] ; then
         \\$kernel=$kernel,
         \\$input_path=$input_path,
         \\$folder_kernel_path=$folder_kernel_path,
-        \\$gens_seed=$gens_seed,
-        \\$backup_gens=$backup_gens
+        \\$kernel_name='kernel_matrix_bin',
+        \\$control_gens=$control_gens,
+        \\$output_name='non_integrated_rank'
         " | tr -d [:space:]`
 
-        # CAUTION, PUT THIS IF NECESSARY -m 60gb -t 4-00:00:00
-        AutoFlow -w $autoflow_scripts/ranking_non_int.af -V $autoflow_vars -o $output_folder/rankings/ranking_${kernel}_${annotation} -m 60gb -t 4-00:00:00 $add_opt 
+        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/rankings/ranking_${kernel}_${annotation} -m 60gb -t 4-00:00:00 $add_opt 
       fi
 
     done
@@ -230,7 +241,7 @@ elif [ "$exec_mode" == "ranking" ] ; then
 
 elif [ "$exec_mode" == "integrate" ] ; then 
   #########################################################
-  #STAGE 2.3 INTEGRATE THE KERNELS
+  # STAGE 2.3 INTEGRATE THE KERNELS
 
   prepare_autoflow_folder $output_folder/integrations
 
@@ -250,8 +261,8 @@ elif [ "$exec_mode" == "integrate" ] ; then
 
 elif [ "$exec_mode" == "integrated_ranking" ] ; then
   #########################################################
-  #STAGE 2.4 OBTAIN RANKING FROM INTEGRATED KERNELS
-  
+  # STAGE 2.4 OBTAIN RANKING FROM INTEGRATED KERNELS
+  rm $output_folder/integrated_rankings # To not mix executions.
   prepare_autoflow_folder $output_folder/integrated_rankings
 
   for integration_type in ${integration_types} ; do 
@@ -267,12 +278,12 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
         \\$kernel=$kernel,
         \\$input_path=$input_path,
         \\$folder_kernel_path=$folder_kernel_path,
-        \\$gens_seed=$gens_seed,
-        \\$backup_gens=$backup_gens
+        \\$kernel_name='general_matrix',
+        \\$control_gens=$control_gens,
+        \\$output_name='integrated_rank'
         " | tr -d [:space:]`
 
-        # CAUTION, PUT THIS IF NECESSARY -m 60gb -t 4-00:00:00
-        AutoFlow -w $autoflow_scripts/ranking_int.af -V $autoflow_vars -o $output_folder/integrated_rankings/ranking_${kernel}_${integration_type} -m 60gb -t 4-00:00:00 $add_opt 
+        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/integrated_rankings/ranking_${kernel}_${integration_type} -m 60gb -t 4-00:00:00 $add_opt 
       fi
 
     done
@@ -338,6 +349,7 @@ elif [ "$exec_mode" == "report" ] ; then
 
 report_html -t ./report/templates/kernel_report.erb -d $report_folder/metrics/parsed_annotations_metrics,$report_folder/metrics/parsed_uncomb_kernel_metrics,$report_folder/metrics/parsed_comb_kernel_metrics,$report_folder/metrics/parsed_similarity_metrics -o report_kernel
 report_html -t ./report/templates/ranking_report.erb -d $report_folder/metrics/parsed_non_integrated_rank_metrics,$report_folder/metrics/parsed_integrated_rank_metrics,$report_folder/metrics/non_integrated_rank_list,$report_folder/metrics/integrated_rank_list -o report_ranking
+#report_html -t ./report/templates/ranking_report.erb -d $report_folder/metrics/parsed_non_integrated_rank_metrics,$report_folder/metrics/non_integrated_rank_list -o report_ranking
 
 #########################################################
 # STAGE TO CHECK AUTOFLOW IS RIGHT
