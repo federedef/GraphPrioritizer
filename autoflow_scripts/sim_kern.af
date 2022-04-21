@@ -30,9 +30,11 @@
     		# Select just the interactions of jaccard filtering by the counts values.
     		paste $annotation_similarity_list <(cut -f 3 counts_similarity_list) | awk 'BEGIN{FS="\t";OFS="\t"}{if( $4 >= 3 ) print $1,$2,$3}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list
     		#awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $annotation_similarity_list > similarity_list # Set diagonal to 0.
-    	elif [ "$annotation" == "interaction" ] ; then 
+    	elif [ "$annotation" == "protein_interaction" ] ; then 
     		# Keep it without changes
     		cp $input_path/input_processed/$annotation ./similarity_list
+    	elif [ "$annotation" == "genetic_interaction" ] ; then
+    		#(...)
     	fi
     fi
 
@@ -72,7 +74,7 @@ calc_kernel_[$kernels_varflow]){
 	# output: binary Kernel from similarity matrix + metrics
 	source ~soft_bio_267/initializes/init_netanalyzer
 	echo -e "$annotation_(*)\t$annotation\t(*)" > tracker
-	cp list2matrix_similarity)/similarity_matrix_bin.lst kernel_bin.lst # To pass the list of node names.
+	cp list2matrix_similarity)/similarity_matrix_bin.lst kernel_matrix_bin.lst # To pass the list of node names.
 	kern_net_path=`pwd`
 	export OMP_NUM_THREADS=[cpu]
 	?

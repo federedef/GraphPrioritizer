@@ -4,5 +4,6 @@ disease	MONDO	ontology	-	NF
 molecular_function	GO	ontology	GO:0003674	NF
 biological_process	GO	ontology	GO:0008150	NF
 cellular_component	GO	ontology	GO:0005575	NF	
-interaction	-	network	-	NF
+protein_interaction	-	network	-	NF
 pathway	-	network	-	NF
+genetic_interaction	-	network	-	NF

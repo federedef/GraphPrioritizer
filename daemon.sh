@@ -47,13 +47,27 @@ if [ "$exec_mode" == "download" ] ; then
   mkdir -p ./input_raw
   cp ./data_downloaded/raw/monarch/tsv/all_associations/* ./input_raw
 
-  # Downloading INTERACTIONS and ALIASES from STRING.
+  # Downloading PROTEIN INTERACTIONS and ALIASES from STRING.
   wget https://stringdb-static.org/download/protein.links.v11.5/9606.protein.links.v11.5.txt.gz -O input_raw/string_data.v11.5.txt.gz
   gzip -d input_raw/string_data.v11.5.txt.gz
- 
-  wget https://stringdb-static.org/download/protein.aliases.v11.5/9606.protein.aliases.v11.5.txt.gz -O input_raw/protein_aliases.v11.5.txt.gz
-  gzip -d input_raw/protein_aliases.v11.5.txt.gz
-  grep -w "Ensembl_HGNC_HGNC_ID" input_raw/protein_aliases.v11.5.txt | cut -f 1,2 > ./input_raw/Ensembl_HGNC_HGNC_ID
+
+  # Downloading GENETIC INTERACTIONS from DEPMAP.
+  wget https://ndownloader.figshare.com/files/34008491 -O input_raw/CRISPR_gene_effect
+
+  ############################
+  ## Obtain TRANSLATOR TABLES.
+  mkdir -p ./translators
+
+  # Downloading Ensemble_HGNC from STRING.
+  wget https://stringdb-static.org/download/protein.aliases.v11.5/9606.protein.aliases.v11.5.txt.gz -O ./translators/protein_aliases.v11.5.txt.gz
+  gzip -d translators/protein_aliases.v11.5.txt.gz
+  grep -w "Ensembl_HGNC_HGNC_ID" translators/protein_aliases.v11.5.txt | cut -f 1,2 > ./translators/Ensemble_HGNC
+  rm ./translators/protein_aliases.v11.5.txt
+
+  # Downloading HGNC_symbol
+  wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./translators/HGNC_symbol
+  awk '{OFS="\t"}{print $2,$1}' ./translators/HGNC_symbol > ./translators/symbol_HGNC
+  rm ./translators/HGNC_symbol
 
 elif [ "$exec_mode" == "process_download" ] ; then
 
@@ -84,10 +98,16 @@ elif [ "$exec_mode" == "process_download" ] ; then
   zgrep "REACT:" input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | \
    cut -f 1,5 > input_processed/pathway # | head -n 230
   
-  # PROCESS INTERACTIONS #
-  geneid_translator.rb -t ./input_raw/Ensembl_HGNC_HGNC_ID -f input_raw/string_data.v11.5.txt -c 0,1 > ./input_processed/interaction_scored
-  awk '{OFS="\t"}{if ( $3 > 700 ) {print $1,$2}}' ./input_processed/interaction_scored > ./input_processed/interaction
-  rm ./input_processed/interaction_scored
+  # PROCESS PROTEIN INTERACTIONS #
+  idconverter.rb -d ./translators/Ensemble_HGNC -i input_raw/string_data.v11.5.txt -c 0,1 > ./input_raw/interaction_scored
+  awk '{OFS="\t"}{if ( $3 > 700 ) {print $1,$2}}' ./input_raw/interaction_scored > ./input_processed/protein_interaction
+  rm ./input_raw/interaction_scored
+
+  # PROCESS GENETIC INTERACTIONS # 
+  sed 's/([0-9]*)//1g' ./input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g'  > ./input_raw/CRISPR_gene_effect_symbol
+  idconverter.rb -d ./translators/symbol_HGNC -i ./input_raw/CRISPR_gene_effect_symbol -r 0 > ./input_processed/genetic_interaction
+  rm ./input_raw/CRISPR_gene_effect_symbol
+
 
 elif [ "$exec_mode" == "white_list" ] ; then
 
@@ -129,18 +149,19 @@ elif [ "$exec_mode" == "backup_preparation" ] ; then
    tr -s ";" "\t" | tr -d "\"" > ./backupgens/data/filtered_Digenic_Paralog
 
   # Download the necessary tab to translation from symbol to HGNC.
-  if [ ! -s ./backupgens/data/HGNC_symbol ] ; then 
-    wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./backupgens/data/HGNC_symbol
+  if [ ! -s ./translators/symbol_HGNC ] ; then 
+    wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./translators/HGNC_symbol
+    awk '{OFS="\t"}{print $2,$1}' ./translators/HGNC_symbol > ./translators/symbol_HGNC
   fi
-  awk '{OFS="\t"}{print $2,$1}' ./backupgens/data/HGNC_symbol > ./backupgens/data/symbol_HGNC
-  geneid_translator.rb -t ./backupgens/data/symbol_HGNC -f ./backupgens/data/filtered_Big_Papi -c 0,1 > ./backupgens/processed_backups/Big_Papi
-  geneid_translator.rb -t ./backupgens/data/symbol_HGNC -f ./backupgens/data/filtered_Digenic_Paralog -c 0,1 > ./backupgens/processed_backups/Digenic_Paralog
+
+  idconverter.rb -d ./translators/symbol_HGNC -i ./backupgens/data/filtered_Big_Papi -c 0,1 > ./backupgens/processed_backups/Big_Papi
+  idconverter.rb -d ./translators/symbol_HGNC -i ./backupgens/data/filtered_Digenic_Paralog -c 0,1 > ./backupgens/processed_backups/Digenic_Paralog
   
   # Positive control.
   cat ./backupgens/processed_backups/* | sort | uniq -u  > ./backupgens/backup_gens
   # Negative control.
   grep -w 'All 6' ./backupgens/data/Big_Papi | awk '{FS="\t";OFS="\t"}{if ( $7 <= 0.05) print $1,$2}' > ./backupgens/data/filtered_Big_Papi_negative_control
-  geneid_translator.rb -t ./backupgens/data/symbol_HGNC -f ./backupgens/data/filtered_Big_Papi_negative_control -c 0,1 | awk '{if (!( $1 == $2 )) print $0 }' > ./backupgens/non_backup_gens
+  idconverter.rb -d ./backupgens/data/symbol_HGNC -i ./backupgens/data/filtered_Big_Papi_negative_control -c 0,1 | awk '{if (!( $1 == $2 )) print $0 }' > ./backupgens/non_backup_gens
 
 elif [ "$exec_mode" == "backup_type" ] ; then 
 
