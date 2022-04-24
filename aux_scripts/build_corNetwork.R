@@ -14,13 +14,12 @@ option_list <- list(
 )
 
 opt <- parse_args(OptionParser(option_list=option_list))
-
-# Load table data.
-table_data <- read.table(opt$input_table,sep=opt$separator,header=T, row.names=1)
+# Load table data opt$separator
+table_data <- read.table(opt$input_table,sep="\t",header=T)
 cor_m <- cor(table_data)
 cor_m <- 0.5 + 0.5*cor_m
 
-# Return npy matrix and list of nodes.
-output_matrix <- file.path(opt$output_path, opt$output_name) # Return the matrix network.
-npySave(output_matrix,cor_m)
-write.table(colnames(cor_m), paste(output_matrix,".lst",sep="") , append = FALSE, sep = "\n", dec = ".")
+# Return list of corrs
+output_list <- file.path(opt$output_path, opt$output_name)
+cor_pairs <- as.data.frame(as.table(cor_m))
+write.table(cor_pairs,output_list,sep="\t",col.names=F,row.names=F,quote=F)

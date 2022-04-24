@@ -1,4 +1,4 @@
-%calc_similarity){
+calc_similarity){
 	resources: -m '60gb' -t '4-00:00:00'
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
@@ -34,38 +34,54 @@
     		# Keep it without changes
     		cp $input_path/input_processed/$annotation ./similarity_list
     	elif [ "$annotation" == "genetic_interaction" ] ; then
-    		#(...)
+    		build_corNetwork.R -i $input_path/input_processed/$annotation -s "\t" -O $annotation_similarity_list
+    		cat $annotation_similarity_list | sed 's/HGNC./HGNC:/g' | awk '{if ( $3 != "NA" ) {print $0}}' > similarity_list
     	fi
     fi
+
+    # TODO: Set diagonal to 0.
 
 	if [ ! -s similarity_list ] ; then 
 		exit 1
 	fi
-
-	##TODO (Maybe): Add the next topic in the report section.
-	#if [ $filter_factor == "F" ] ; then
-	#	disparity_filter.R -i semantic_matrix_bin -o "./" -O semantic_matrix_bin
-	#	text2binary_matrix.rb -i semantic_matrix_bin -o "filtered_semantic_matrix_bin" -t bin -s > filtered_metrics
-	#	if [ -s filtered_metrics ] ; then 
-	#	awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' filtered_metrics >> ../../../filtered_metrics 
-	#	else
-	#		exit 1
-	#	fi
-	#fi
 }
 
-%list2matrix_similarity){
+list2matrix_similarity){
 	resources: -m '60gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_netanalyzer
 	echo -e "$annotation_sim" > tracker
 	?
-	text2binary_matrix.rb -i calc_similarity)/similarity_list -o similarity_matrix_bin -t pair -s > similarity_metrics # Obtain statistical metrics and pass to matrix bin.
+	text2binary_matrix.rb -i calc_similarity)/similarity_list -o similarity_matrix_bin -t pair -s > similarity_metrics
 	if [ -s similarity_metrics ] ; then 
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' similarity_metrics >> ../../../similarity_metrics 
-		#echo -e "$annotation\t$similarity_path/semantic_matrix_bin" >> ../similarity_tracker
 	else
 		exit 1
 	fi
+}
+
+filter_similarity){
+	resources: -m '60gb' -t '1-00:00:00'
+	source ~soft_bio_267/initializes/init_R
+	source ~soft_bio_267/initializes/init_netanalyzer
+	echo -e "$annotation_sim" > tracker
+	filter_factor=`grep -P '^$annotation' $net2custom | cut -f 5`
+	cp list2matrix_similarity)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
+	if [ $filter_factor == "F" ] ; then
+	    ?
+		disparity_filter.R -i list2matrix_similarity)/similarity_matrix_bin -o "./" -O similarity_matrix_bin
+		text2binary_matrix.rb -i similarity_matrix_bin -t bin -s > filtered_similarity_metrics
+		if [ -s filtered_similarity_metrics ] ; then
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' filtered_similarity_metrics >> ../../../filtered_similarity_metrics
+		else
+			exit 1
+		fi
+	elif [ $filter_factor == "NF" ] ; then
+		cp list2matrix_similarity)/similarity_matrix_bin ./similarity_matrix_bin
+    fi
+
+    if [ ! -s similarity_matrix_bin ] ; then
+    	exit 1
+    fi
 }
 
 calc_kernel_[$kernels_varflow]){
@@ -74,11 +90,11 @@ calc_kernel_[$kernels_varflow]){
 	# output: binary Kernel from similarity matrix + metrics
 	source ~soft_bio_267/initializes/init_netanalyzer
 	echo -e "$annotation_(*)\t$annotation\t(*)" > tracker
-	cp list2matrix_similarity)/similarity_matrix_bin.lst kernel_matrix_bin.lst # To pass the list of node names.
+	cp filter_similarity)/similarity_matrix_bin.lst kernel_matrix_bin.lst # To pass the list of node names.
 	kern_net_path=`pwd`
 	export OMP_NUM_THREADS=[cpu]
 	?
-	NetAnalyzer.rb -i list2matrix_similarity)/similarity_matrix_bin -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
+	NetAnalyzer.rb -i filter_similarity)/similarity_matrix_bin -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
 	if [ -s kernel_matrix_bin ] ; then
 		echo -e "$annotation_(*)\t$annotation\t(*)\t$kern_net_path" >> ../../ugot_path
 	else 

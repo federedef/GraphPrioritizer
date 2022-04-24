@@ -13,7 +13,7 @@ output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="phenotype molecular_function biological_process cellular_component disease interaction pathway"
+annotations="phenotype molecular_function biological_process cellular_component disease protein_interaction pathway genetic_interaction"
 kernels="ka ct el rf"
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom'
@@ -83,7 +83,7 @@ elif [ "$exec_mode" == "process_download" ] ; then
   # PROCESS ONTOLOGIES #
   for sample in phenotype disease function ; do
     zgrep ${tag_filter[$sample]} input_raw/gene_${sample}.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
-    aggregate_column_data.rb -i - -x 0 -a 4 > input_processed/$sample
+    aggregate_column_data.rb -i - -x 0 -a 4 > input_processed/$sample # | head -n 230
   done
 
   ## Creating paco files for each go branch.
@@ -94,20 +94,19 @@ elif [ "$exec_mode" == "process_download" ] ; then
   done
   rm input_processed/function
 
-  # PROCESS REACTIONS #
+  # PROCESS REACTIONS # | head -n 230 
   zgrep "REACT:" input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | \
    cut -f 1,5 > input_processed/pathway # | head -n 230
   
-  # PROCESS PROTEIN INTERACTIONS #
-  idconverter.rb -d ./translators/Ensemble_HGNC -i input_raw/string_data.v11.5.txt -c 0,1 > ./input_raw/interaction_scored
-  awk '{OFS="\t"}{if ( $3 > 700 ) {print $1,$2}}' ./input_raw/interaction_scored > ./input_processed/protein_interaction
-  rm ./input_raw/interaction_scored
+  # PROCESS PROTEIN INTERACTIONS # | head -n 200 
+  cat input_raw/string_data.v11.5.txt | tr -s " " "\t" > string_data.v11.5.txt
+  idconverter.rb -d ./translators/Ensemble_HGNC -i string_data.v11.5.txt -c 0,1 > ./input_raw/interaction_scored && rm string_data.v11.5.txt
+  awk '{OFS="\t"}{if ( $3 > 700 ) {print $1,$2}}' ./input_raw/interaction_scored > ./input_processed/protein_interaction # && rm ./input_raw/interaction_scored
 
-  # PROCESS GENETIC INTERACTIONS # 
-  sed 's/([0-9]*)//1g' ./input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g'  > ./input_raw/CRISPR_gene_effect_symbol
+  # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 100
+  sed 's/([0-9]*)//1g' ./input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input_raw/CRISPR_gene_effect_symbol
   idconverter.rb -d ./translators/symbol_HGNC -i ./input_raw/CRISPR_gene_effect_symbol -r 0 > ./input_processed/genetic_interaction
   rm ./input_raw/CRISPR_gene_effect_symbol
-
 
 elif [ "$exec_mode" == "white_list" ] ; then
 
