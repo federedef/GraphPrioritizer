@@ -35,7 +35,7 @@ calc_similarity){
     		cp $input_path/input_processed/$annotation ./similarity_list
     	elif [ "$annotation" == "genetic_interaction" ] ; then
     		build_corNetwork.R -i $input_path/input_processed/$annotation -s "\t" -O $annotation_similarity_list
-    		cat $annotation_similarity_list | sed 's/HGNC./HGNC:/g' | awk '{if ( $3 != "NA" ) {print $0}}' > similarity_list
+    		cat $annotation_similarity_list | awk '{if ( $3 != "NA" ) {print $0}}' > similarity_list
     	fi
     fi
 
@@ -60,7 +60,7 @@ list2matrix_similarity){
 }
 
 filter_similarity){
-	resources: -m '60gb' -t '1-00:00:00'
+	resources: -m '60gb' -t '4-00:00:00'
 	source ~soft_bio_267/initializes/init_R
 	source ~soft_bio_267/initializes/init_netanalyzer
 	echo -e "$annotation_sim" > tracker
@@ -68,15 +68,17 @@ filter_similarity){
 	cp list2matrix_similarity)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
 	if [ $filter_factor == "F" ] ; then
 	    ?
-		disparity_filter.R -i list2matrix_similarity)/similarity_matrix_bin -o "./" -O similarity_matrix_bin
-		text2binary_matrix.rb -i similarity_matrix_bin -t bin -s > filtered_similarity_metrics
-		if [ -s filtered_similarity_metrics ] ; then
+		disparity_filter.R -i list2matrix_similarity)/similarity_matrix_bin -o "./" -O similarity_matrix_bin -n list2matrix_similarity)/similarity_matrix_bin.lst
+		text2binary_matrix.rb -i similarity_matrix_bin -t bin -o similarity_matrix_bin_undo -s > filtered_similarity_metrics
+		if [ -s similarity_matrix_bin_undo ] ; then
+			rm similarity_matrix_bin_undo
 			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' filtered_similarity_metrics >> ../../../filtered_similarity_metrics
 		else
 			exit 1
 		fi
 	elif [ $filter_factor == "NF" ] ; then
 		cp list2matrix_similarity)/similarity_matrix_bin ./similarity_matrix_bin
+        cp list2matrix_similarity)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
     fi
 
     if [ ! -s similarity_matrix_bin ] ; then
@@ -84,8 +86,8 @@ filter_similarity){
     fi
 }
 
-calc_kernel_[$kernels_varflow]){
-	resources: -c 16 -m '60gb' -t '1-00:00:00'
+%calc_kernel_[$kernels_varflow]){
+	resources: -c 16 -m '60gb' -t '2-00:00:00'
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
 	source ~soft_bio_267/initializes/init_netanalyzer
@@ -102,7 +104,7 @@ calc_kernel_[$kernels_varflow]){
   	fi
 }
 
-stats_kernels_[$kernels_varflow]){
+%stats_kernels_[$kernels_varflow]){
 	resources: -m '60gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_netanalyzer
 	ln -s !calc_kernel_*!/tracker

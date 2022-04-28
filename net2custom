@@ -6,4 +6,4 @@ biological_process	GO	ontology	GO:0008150	NF
 cellular_component	GO	ontology	GO:0005575	NF	
 protein_interaction	-	network	-	NF
 pathway	-	network	-	NF
-genetic_interaction	-	network	-	NF
+genetic_interaction	-	network	-	F

@@ -13,11 +13,11 @@ output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="phenotype molecular_function biological_process cellular_component disease protein_interaction pathway genetic_interaction"
+annotations="disease genetic_interaction"
 kernels="ka ct el rf"
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom'
-backup_gens=$input_path'/backup_gens' # What are its backups?
+control_gens=$input_path'/control_gens' # What are its backups?
 
 kernels_varflow=`echo $kernels | tr " " ";"`
 
@@ -83,7 +83,7 @@ elif [ "$exec_mode" == "process_download" ] ; then
   # PROCESS ONTOLOGIES #
   for sample in phenotype disease function ; do
     zgrep ${tag_filter[$sample]} input_raw/gene_${sample}.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
-    aggregate_column_data.rb -i - -x 0 -a 4 > input_processed/$sample # | head -n 230
+    aggregate_column_data.rb -i - -x 0 -a 4  | head -n 1000 > input_processed/$sample # | head -n 230
   done
 
   ## Creating paco files for each go branch.
@@ -104,7 +104,7 @@ elif [ "$exec_mode" == "process_download" ] ; then
   awk '{OFS="\t"}{if ( $3 > 700 ) {print $1,$2}}' ./input_raw/interaction_scored > ./input_processed/protein_interaction # && rm ./input_raw/interaction_scored
 
   # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 100
-  sed 's/([0-9]*)//1g' ./input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input_raw/CRISPR_gene_effect_symbol
+  sed 's/([0-9]*)//1g' ./input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' | cut -f 1-300 | head -n 300 > ./input_raw/CRISPR_gene_effect_symbol
   idconverter.rb -d ./translators/symbol_HGNC -i ./input_raw/CRISPR_gene_effect_symbol -r 0 > ./input_processed/genetic_interaction
   rm ./input_raw/CRISPR_gene_effect_symbol
 
@@ -231,7 +231,7 @@ elif [ "$exec_mode" == "kernels" ] ; then
 elif [ "$exec_mode" == "ranking" ] ; then
   #########################################################
   # STAGE 2.2 OBTAIN RANKING FROM NON INTEGRATED KERNELS
-  rm $output_folder/rankings # To not mix executions.
+  rm -r $output_folder/rankings # To not mix executions.
   prepare_autoflow_folder $output_folder/rankings
 
   for annotation in $annotations ; do 
@@ -243,7 +243,7 @@ elif [ "$exec_mode" == "ranking" ] ; then
       if [ ! -z ${folder_kernel_path} ] ; then # This kernel for this annotation is done? 
 
         autoflow_vars=`echo " 
-        \\$annotation=$annotation,
+        \\$param1=$annotation,
         \\$kernel=$kernel,
         \\$input_path=$input_path,
         \\$folder_kernel_path=$folder_kernel_path,
