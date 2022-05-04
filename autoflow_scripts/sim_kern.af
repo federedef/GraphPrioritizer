@@ -35,7 +35,7 @@ calc_similarity){
     		cp $input_path/input_processed/$annotation ./similarity_list
     	elif [ "$annotation" == "genetic_interaction" ] ; then
     		build_corNetwork.R -i $input_path/input_processed/$annotation -s "\t" -O $annotation_similarity_list
-    		cat $annotation_similarity_list | awk '{if ( $3 != "NA" ) {print $0}}' > similarity_list
+    		cat $annotation_similarity_list | awk '{if ( $3 != "NA" ) {print $0}}' > similarity_list # sed 's/HGNC./HGNC:/g'|
     	fi
     fi
 
@@ -60,12 +60,13 @@ list2matrix_similarity){
 }
 
 filter_similarity){
-	resources: -m '60gb' -t '4-00:00:00'
+	resources: -c 8 -m '60gb' -t '5-00:00:00'
 	source ~soft_bio_267/initializes/init_R
 	source ~soft_bio_267/initializes/init_netanalyzer
 	echo -e "$annotation_sim" > tracker
 	filter_factor=`grep -P '^$annotation' $net2custom | cut -f 5`
 	cp list2matrix_similarity)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
+	export OMP_NUM_THREADS=[cpu]
 	if [ $filter_factor == "F" ] ; then
 	    ?
 		disparity_filter.R -i list2matrix_similarity)/similarity_matrix_bin -o "./" -O similarity_matrix_bin -n list2matrix_similarity)/similarity_matrix_bin.lst

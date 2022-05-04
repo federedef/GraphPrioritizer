@@ -13,7 +13,7 @@ output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="disease genetic_interaction"
+annotations="disease genetic_interaction" # phenotype molecular_function biological_process cellular_component protein_interaction pathway
 kernels="ka ct el rf"
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom'
@@ -83,7 +83,7 @@ elif [ "$exec_mode" == "process_download" ] ; then
   # PROCESS ONTOLOGIES #
   for sample in phenotype disease function ; do
     zgrep ${tag_filter[$sample]} input_raw/gene_${sample}.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
-    aggregate_column_data.rb -i - -x 0 -a 4  | head -n 1000 > input_processed/$sample # | head -n 230
+    aggregate_column_data.rb -i - -x 0 -a 4 | head -n 230 > input_processed/$sample # | head -n 230
   done
 
   ## Creating paco files for each go branch.
@@ -104,7 +104,7 @@ elif [ "$exec_mode" == "process_download" ] ; then
   awk '{OFS="\t"}{if ( $3 > 700 ) {print $1,$2}}' ./input_raw/interaction_scored > ./input_processed/protein_interaction # && rm ./input_raw/interaction_scored
 
   # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 100
-  sed 's/([0-9]*)//1g' ./input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' | cut -f 1-300 | head -n 300 > ./input_raw/CRISPR_gene_effect_symbol
+  sed 's/([0-9]*)//1g' ./input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' | cut -f 1-100 | head -n 100 > ./input_raw/CRISPR_gene_effect_symbol
   idconverter.rb -d ./translators/symbol_HGNC -i ./input_raw/CRISPR_gene_effect_symbol -r 0 > ./input_processed/genetic_interaction
   rm ./input_raw/CRISPR_gene_effect_symbol
 
@@ -113,6 +113,8 @@ elif [ "$exec_mode" == "white_list" ] ; then
 #########################################################
 # OPTIONAL STAGE : SELECT GENES FROM WHITELIST
 #########################################################
+
+#TODO(Fede-03/05/2022): Use this in a script (this would allow other people to reuse it... maybe not necessary?)
 
   echo -e "sample\tpre-filtered\tpos-filtered" > input_processed/filter_metrics
 
@@ -136,6 +138,7 @@ elif [ "$exec_mode" == "white_list" ] ; then
   echo "Annotation files filtered"
 
 elif [ "$exec_mode" == "backup_preparation" ] ; then 
+  source ~soft_bio_267/initializes/init_R
   
   mkdir -p ./backupgens/processed_backups 
 
@@ -161,6 +164,10 @@ elif [ "$exec_mode" == "backup_preparation" ] ; then
   # Negative control.
   grep -w 'All 6' ./backupgens/data/Big_Papi | awk '{FS="\t";OFS="\t"}{if ( $7 <= 0.05) print $1,$2}' > ./backupgens/data/filtered_Big_Papi_negative_control
   idconverter.rb -d ./backupgens/data/symbol_HGNC -i ./backupgens/data/filtered_Big_Papi_negative_control -c 0,1 | awk '{if (!( $1 == $2 )) print $0 }' > ./backupgens/non_backup_gens
+  
+  # Finally add new column indicating which pairs are paralogs.
+  which_are_paralogs.R -i ./backupgens/backup_gens -o "./backupgens" -O "backup_gens"
+  which_are_paralogs.R -i ./backupgens/non_backup_gens -o "./backupgens" -O "non_backup_gens"
 
 elif [ "$exec_mode" == "backup_type" ] ; then 
 
@@ -171,15 +178,19 @@ elif [ "$exec_mode" == "backup_type" ] ; then
 
   if [ $add_opt == "reverse" ] ; then 
     if [ $pos_or_neg == "positive" ] ; then 
+      awk '{OFS="\t"}{print $2,$1,$3}' ./backupgens/backup_gens > ./paralog_feature
       awk '{OFS="\t"}{print $2,$1}' ./backupgens/backup_gens | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens  
     elif [ $pos_or_neg == "negative" ] ; then
+      awk '{OFS="\t"}{print $2,$1,$3}' ./backupgens/non_backup_gens > ./paralog_feature
       awk '{OFS="\t"}{print $2,$1}' ./backupgens/non_backup_gens | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens  
     fi    
   elif [ $add_opt == "right" ] ; then 
     if [ $pos_or_neg == "positive" ] ; then 
-      cat ./backupgens/backup_gens | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens
+      awk '{OFS="\t"}{print $1,$2,$3}' ./backupgens/backup_gens > ./paralog_feature
+      awk '{OFS="\t"}{print $1,$2}' ./backupgens/backup_gens | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens
     elif [ $pos_or_neg == "negative" ] ; then
-      cat ./backupgens/non_backup_gens | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
+      awk '{OFS="\t"}{print $1,$2,$3}' ./backupgens/non_backup_gens > ./paralog_feature
+      awk '{OFS="\t"}{print $1,$2}' ./backupgens/non_backup_gens | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
     fi        
   fi
 
@@ -213,7 +224,8 @@ elif [ "$exec_mode" == "kernels" ] ; then
   #########################################################
   #STAGE 2.1 PROCESS SIMILARITY AND OBTAIN KERNELS
 
-  prepare_autoflow_folder $output_folder/similarity_kernels
+  #prepare_autoflow_folder $output_folder/similarity_kernels
+  mkdir -p $output_folder/similarity_kernels
 
   for annotation in $annotations ; do 
 

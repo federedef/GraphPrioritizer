@@ -46,20 +46,20 @@ option_list <- list(
 opt <- parse_args(OptionParser(option_list=option_list))
 # Load table data opt$separator
 table_data <- read.table(opt$input_table,sep="\t",header=T,check.names = F)
-print(table_data[1:10,1:20])
+#print(table_data[1:10,1:20])
 cor_m <- cor(table_data)
 if ( !is.na(opt$test) ) {
   print("con el test")
   cor_m <- apply(cor_m,c(1,2),cor_test,n=nrow(table_data),type="upper",cut_off=0.01,binary=FALSE)
 } else if ( is.na(opt$test) ) {
-  print("sin el test")
-  #cor_m <- 0.5 + 0.5*cor_m
-  print("holaaaa")
-  cor_m <- cor_m
+  #print("sin el test")
+  cor_m <- 0.5 + 0.5*cor_m
+  #print("holaaaa")
+  #cor_m <- cor_m
 }
 
 # Return list of corrs
 output_list <- file.path(opt$output_path, opt$output_name)
 cor_pairs <- as.data.frame(as.table(cor_m))
-cor_pairs <- cor_pairs[which(cor_pairs[,3] < 0.5),]
-write.table(cor_pairs,output_list,sep="\t",col.names=F,row.names=F,quote=F,check.names = F)
+#cor_pairs <- cor_pairs[which(cor_pairs[,3] < 0.5),]
+write.table(cor_pairs,output_list,sep="\t",col.names=F,row.names=F,quote=F)
