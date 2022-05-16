@@ -1,37 +1,62 @@
-rank_genes){
+rank_genes_classic){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_ruby
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
+	if [ $method != "classic" ] ; then
+		exit 0
+	fi
 	echo -e "$param1_$kernel\t$param1\t$kernel" > tracker
 	ranking_path=`pwd`
-    genes_iterator=`cut -f1 $control_gens | tr "\n" "\t"`
-    #name=${kernel_name}
-	echo "$control_gens" > probando
-    for gene in ${genes_iterator} ; do 
-    	echo "$gene" > genes
-    	?
-		ranker_gene.rb -k $folder_kernel_path/kernel_matrix_bin -n $folder_kernel_path/kernel_matrix_bin.lst -s "${gene}" -o "${gene}_"
-	done
-	number_of_all_candidates=`ls *_all_candidates | wc -l`
-	number_of_non_candidates=`ls *_non_candidates | wc -l`
-	if [ $number_of_all_candidates -ge 1 ] ; then 
-		paths_candidates_file=`echo *_all_candidates | tr " " ","`
-	    echo "$paths_candidates_file" > probandos
-		rank_metrics.rb -r $paths_candidates_file -c $control_gens -e "stats" > rank_metrics
-		rank_metrics.rb -r $paths_candidates_file -c $control_gens -e "ranks" > rank_list
-		if [ -a rank_metrics ] ; then
-			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' rank_metrics >> ../../../$output_name_metrics
-			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' rank_list >> ../../../$output_name_list
-			echo -e "$param1_$kernel\t$param1\t$kernel\t$ranking_path" >> ../../ugot_path
+	awk 'BEGIN{OFS="\t";}{print $1,$1}' $control_gens > seed_by_group
+	awk 'BEGIN{OFS="\t";}{print $1,$2}' $control_gens > filter_by_group 
+	?
+	ranker_gene.rb -k $folder_kernel_path/$input_name -n $folder_kernel_path/$input_name.lst -s seed_by_group -f filter_by_group 
+	number_of_all_candidates=`wc -l ranked_genes_all_candidates | cut -f1 -d " "`
+    if [ $number_of_all_candidates -ge 1 ] ; then 
+		rank_metrics.rb -r ranked_genes_all_candidates -e "stats" > prerank_metrics
+		rank_metrics.rb -r ranked_genes_all_candidates  -e "ranks" > prerank_list
+		if [ -a prerank_metrics ] ; then
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' \ 
+			  prerank_metrics > rank_metrics 
+			# ../../../$output_name_metrics TODO: Try this.
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' prerank_list > rank_list 
+            #../../../$output_name_list
 		else 
 		  	exit 1
 		fi
 	else 
-		if [ $number_of_non_candidates -ge 1 ] ; then
-			echo -e "$param1_$kernel\t$param1\t$kernel\t$ranking_path" >> ../../ugot_path
+		exit 0
+	fi
+}
+
+rank_genes_with_leave_one_out){
+	# Input: seed_gens + kernel.
+	# Output: rank genes for every gen.
+	source ~soft_bio_267/initializes/init_ruby
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
+	if [ $method != "leave_one_out" ] ; then
+		exit 0
+	fi
+	echo -e "$param1_$kernel\t$param1\t$kernel" > tracker
+	ranking_path=`pwd`
+	?
+	ranker_gene.rb -k $folder_kernel_path/$input_name -n $folder_kernel_path/$input_name.lst -s $control_gens -l  
+	number_of_all_candidates=`wc -l ranked_genes_all_candidates | cut -f1 -d " "`
+    if [ $number_of_all_candidates -ge 1 ] ; then 
+		rank_metrics.rb -r ranked_genes_all_candidates -e "stats" > prerank_metrics
+		rank_metrics.rb -r ranked_genes_all_candidates  -e "ranks" > prerank_list
+		if [ -a prerank_metrics ] ; then
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' \ 
+			  prerank_metrics > rank_metrics
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' prerank_list > rank_list 
 		else 
 		  	exit 1
 		fi
+	else 
+		exit 0
 	fi
 }
+
+
 

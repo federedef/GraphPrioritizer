@@ -21,16 +21,20 @@ opt <- parse_args(OptionParser(option_list=option_list))
 sem_m <- npyLoad(opt$input_matrix)
 sem_nodes <- read.table(opt$node_names, header=F, check.names = F)
 sem_nodes <- sem_nodes[,1] # To vector object
-sem_g <- graph_from_adjacency_matrix(sem_m, mode="undirected",diag=TRUE,weighted = TRUE)
-
+print("Load graph")
+system.time(sem_g <- graph_from_adjacency_matrix(sem_m, mode="undirected",diag=TRUE,weighted = TRUE))
 # Extract graph backbone.
-bb_graph <- backbone(sem_g) # Warning: Removing diagonal values, not great issue (?)
+print("backbone filtering")
+system.time(bb_graph <- backbone(sem_g)) # Warning: Removing diagonal values, not great issue (?)
 
 sem_m = matrix(0,nrow=nrow(sem_m),ncol=ncol(sem_m))
-for(i in 1:nrow(bb_graph)){
-  sem_m[bb_graph$from[i],bb_graph$to[i]] <- bb_graph$weight[i]
-  sem_m[bb_graph$to[i],bb_graph$from[i]] <- bb_graph$weight[i]
-}
+print("New matrix fill")
+system.time({
+  for(i in 1:nrow(bb_graph)){
+    sem_m[bb_graph$from[i],bb_graph$to[i]] <- bb_graph$weight[i]
+    sem_m[bb_graph$to[i],bb_graph$from[i]] <- bb_graph$weight[i]
+  }
+})
 
 #Load list of nodes.
 colnames(sem_m) <- sem_nodes

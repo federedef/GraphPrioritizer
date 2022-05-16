@@ -1,9 +1,9 @@
 Net 	Ontology	Type	Code	Filter
-phenotype	HPO	ontology	HP:0000001	NF
+phenotype	HPO	ontology	HP:0000001	F
 disease	MONDO	ontology	-	F
-molecular_function	GO	ontology	GO:0003674	NF
-biological_process	GO	ontology	GO:0008150	NF
-cellular_component	GO	ontology	GO:0005575	NF	
+molecular_function	GO	ontology	GO:0003674	F
+biological_process	GO	ontology	GO:0008150	F
+cellular_component	GO	ontology	GO:0005575	F	
 protein_interaction	-	network	-	NF
-pathway	-	network	-	NF
-genetic_interaction	-	network	-	F
+pathway	-	network	-	F
+genetic_interaction	-	network	-	NF

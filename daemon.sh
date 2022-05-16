@@ -13,21 +13,13 @@ output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="disease genetic_interaction" # phenotype molecular_function biological_process cellular_component protein_interaction pathway
+annotations="genetic_interaction disease phenotype molecular_function biological_process cellular_component protein_interaction pathway"
 kernels="ka ct el rf"
 integration_types="mean integration_mean_by_presence"
-net2custom=$input_path'/net2custom'
+net2custom=$input_path'/net2custom' 
 control_gens=$input_path'/control_gens' # What are its backups?
 
 kernels_varflow=`echo $kernels | tr " " ";"`
-
-prepare_autoflow_folder () {
-  folder_path=$1
-  mkdir -p ${folder_path}
-  if [ -s ${folder_path}/ugot_path ] ; then
-    rm ${folder_path}/ugot_path # Needed to not mix executions.
-  fi
-}
 
 if [ "$exec_mode" == "download" ] ; then
   #########################################################
@@ -83,20 +75,19 @@ elif [ "$exec_mode" == "process_download" ] ; then
   # PROCESS ONTOLOGIES #
   for sample in phenotype disease function ; do
     zgrep ${tag_filter[$sample]} input_raw/gene_${sample}.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
-    aggregate_column_data.rb -i - -x 0 -a 4 | head -n 230 > input_processed/$sample # | head -n 230
+    aggregate_column_data.rb -i - -x 0 -a 4 > input_processed/$sample # | head -n 230
   done
 
   ## Creating paco files for each go branch.
   gene_ontology=( molecular_function cellular_component biological_process )
   for branch in ${gene_ontology[@]} ; do
     cp input_processed/function input_processed/$branch
-    #echo -e "input_processed/$branch"
   done
   rm input_processed/function
 
   # PROCESS REACTIONS # | head -n 230 
   zgrep "REACT:" input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | \
-   cut -f 1,5 > input_processed/pathway # | head -n 230
+   cut -f 1,5 > input_processed/pathway
   
   # PROCESS PROTEIN INTERACTIONS # | head -n 200 
   cat input_raw/string_data.v11.5.txt | tr -s " " "\t" > string_data.v11.5.txt
@@ -104,7 +95,7 @@ elif [ "$exec_mode" == "process_download" ] ; then
   awk '{OFS="\t"}{if ( $3 > 700 ) {print $1,$2}}' ./input_raw/interaction_scored > ./input_processed/protein_interaction # && rm ./input_raw/interaction_scored
 
   # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 100
-  sed 's/([0-9]*)//1g' ./input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' | cut -f 1-100 | head -n 100 > ./input_raw/CRISPR_gene_effect_symbol
+  sed 's/([0-9]*)//1g' ./input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input_raw/CRISPR_gene_effect_symbol
   idconverter.rb -d ./translators/symbol_HGNC -i ./input_raw/CRISPR_gene_effect_symbol -r 0 > ./input_processed/genetic_interaction
   rm ./input_raw/CRISPR_gene_effect_symbol
 
@@ -141,8 +132,9 @@ elif [ "$exec_mode" == "backup_preparation" ] ; then
   source ~soft_bio_267/initializes/init_R
   
   mkdir -p ./backupgens/processed_backups 
-
-  #AdHoc added backups
+  
+  # POSITIVE CONTROL #
+  # AdHoc added backups
   cp ./backupgens/data/AdHoc_Backups ./backupgens/processed_backups/AdHoc_Backups
   # Big Papi.
   grep -w 'All 6' ./backupgens/data/Big_Papi | awk '{FS="\t";OFS="\t"}{if ( $6 <= 0.05) print $1,$2}' > ./backupgens/data/filtered_Big_Papi
@@ -159,48 +151,51 @@ elif [ "$exec_mode" == "backup_preparation" ] ; then
   idconverter.rb -d ./translators/symbol_HGNC -i ./backupgens/data/filtered_Big_Papi -c 0,1 > ./backupgens/processed_backups/Big_Papi
   idconverter.rb -d ./translators/symbol_HGNC -i ./backupgens/data/filtered_Digenic_Paralog -c 0,1 > ./backupgens/processed_backups/Digenic_Paralog
   
-  # Positive control.
   cat ./backupgens/processed_backups/* | sort | uniq -u  > ./backupgens/backup_gens
-  # Negative control.
+
+  # NEGATIVE CONTROL #
   grep -w 'All 6' ./backupgens/data/Big_Papi | awk '{FS="\t";OFS="\t"}{if ( $7 <= 0.05) print $1,$2}' > ./backupgens/data/filtered_Big_Papi_negative_control
   idconverter.rb -d ./backupgens/data/symbol_HGNC -i ./backupgens/data/filtered_Big_Papi_negative_control -c 0,1 | awk '{if (!( $1 == $2 )) print $0 }' > ./backupgens/non_backup_gens
   
-  # Finally add new column indicating which pairs are paralogs.
+  # Finally add new column indicating which pairs are paralogs in NEGATIVE AND POSITIVE CONTROLS.
   which_are_paralogs.R -i ./backupgens/backup_gens -o "./backupgens" -O "backup_gens"
   which_are_paralogs.R -i ./backupgens/non_backup_gens -o "./backupgens" -O "non_backup_gens"
 
-elif [ "$exec_mode" == "backup_type" ] ; then 
+elif [ "$exec_mode" == "control_type" ] ; then 
 
 ##################################################################
 # OPTIONAL STAGE : SEE IF THE RELATION BACKUP-GENSEED IS SYMMETRIC
 ##################################################################
   pos_or_neg=$3
+  filter_feature=$4 # Paralogs, Not_Paralogs, ".*"
+
+  echo "$filter_feature"
 
   if [ $add_opt == "reverse" ] ; then 
     if [ $pos_or_neg == "positive" ] ; then 
-      awk '{OFS="\t"}{print $2,$1,$3}' ./backupgens/backup_gens > ./paralog_feature
-      awk '{OFS="\t"}{print $2,$1}' ./backupgens/backup_gens | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens  
+      awk '{OFS="\t"}{print $2,$1,$3}' ./backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 > ./control_gens 
     elif [ $pos_or_neg == "negative" ] ; then
-      awk '{OFS="\t"}{print $2,$1,$3}' ./backupgens/non_backup_gens > ./paralog_feature
-      awk '{OFS="\t"}{print $2,$1}' ./backupgens/non_backup_gens | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens  
+      awk '{OFS="\t"}{print $2,$1,$3}' ./backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 > ./control_gens 
     fi    
   elif [ $add_opt == "right" ] ; then 
     if [ $pos_or_neg == "positive" ] ; then 
-      awk '{OFS="\t"}{print $1,$2,$3}' ./backupgens/backup_gens > ./paralog_feature
-      awk '{OFS="\t"}{print $1,$2}' ./backupgens/backup_gens | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens
+      awk '{OFS="\t"}{print $1,$2,$3}' ./backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 > ./control_gens 
     elif [ $pos_or_neg == "negative" ] ; then
-      awk '{OFS="\t"}{print $1,$2,$3}' ./backupgens/non_backup_gens > ./paralog_feature
-      awk '{OFS="\t"}{print $1,$2}' ./backupgens/non_backup_gens | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
+      awk '{OFS="\t"}{print $1,$2,$3}' ./backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 > ./control_gens 
     fi        
   fi
 
-  #cut -f1 backup_gens > gens_seed 
+  if [ $add_opt == "disease" ] ; then
+    cp ./diseasegens/processed_diseasome ./control_gens
+  fi
 
 elif [ "$exec_mode" == "input_stats" ] ; then 
 
 ##################################################################
 # OPTIONAL STAGE : STABLISH THE STATS FOR EACH LAYER
 ##################################################################
+  
+  # TODO: Adapt this area.
 
   mkdir -p $output_folder/input_stats
 
@@ -221,10 +216,8 @@ elif [ "$exec_mode" == "input_stats" ] ; then
 #########################################################
 
 elif [ "$exec_mode" == "kernels" ] ; then
-  #########################################################
+  #######################################################
   #STAGE 2.1 PROCESS SIMILARITY AND OBTAIN KERNELS
-
-  #prepare_autoflow_folder $output_folder/similarity_kernels
   mkdir -p $output_folder/similarity_kernels
 
   for annotation in $annotations ; do 
@@ -243,8 +236,13 @@ elif [ "$exec_mode" == "kernels" ] ; then
 elif [ "$exec_mode" == "ranking" ] ; then
   #########################################################
   # STAGE 2.2 OBTAIN RANKING FROM NON INTEGRATED KERNELS
-  rm -r $output_folder/rankings # To not mix executions.
-  prepare_autoflow_folder $output_folder/rankings
+  if [ -s $output_folder/rankings ] ; then
+    rm -r $output_folder/rankings 
+  fi
+  mkdir -p $output_folder/rankings
+  method=$2
+  
+  cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path
 
   for annotation in $annotations ; do 
     for kernel in $kernels ; do 
@@ -259,12 +257,14 @@ elif [ "$exec_mode" == "ranking" ] ; then
         \\$kernel=$kernel,
         \\$input_path=$input_path,
         \\$folder_kernel_path=$folder_kernel_path,
-        \\$kernel_name='kernel_matrix_bin',
+        \\$input_name='kernel_matrix_bin',
         \\$control_gens=$control_gens,
-        \\$output_name='non_integrated_rank'
+        \\$paralog_feature=$input_path/paralog_feature,
+        \\$output_name='non_integrated_rank',
+        \\$method=$method
         " | tr -d [:space:]`
 
-        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/rankings/ranking_${kernel}_${annotation} -m 60gb -t 4-00:00:00 $add_opt 
+        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/rankings/ranking_${kernel}_${annotation} -m 60gb -t 4-00:00:00 $3
       fi
 
     done
@@ -274,8 +274,8 @@ elif [ "$exec_mode" == "ranking" ] ; then
 elif [ "$exec_mode" == "integrate" ] ; then 
   #########################################################
   # STAGE 2.3 INTEGRATE THE KERNELS
-
-  prepare_autoflow_folder $output_folder/integrations
+  mkdir -p $output_folder/integrations
+  cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path # What I got?
 
   for integration_type in ${integration_types} ; do 
 
@@ -294,8 +294,12 @@ elif [ "$exec_mode" == "integrate" ] ; then
 elif [ "$exec_mode" == "integrated_ranking" ] ; then
   #########################################################
   # STAGE 2.4 OBTAIN RANKING FROM INTEGRATED KERNELS
-  rm $output_folder/integrated_rankings # To not mix executions.
-  prepare_autoflow_folder $output_folder/integrated_rankings
+  if [ -s $output_folder/integrated_rankings ] ; then
+    rm -r $output_folder/integrated_rankings # To not mix executions.
+  fi
+  mkdir -p $output_folder/integrated_rankings
+  cat  $output_folder/integrations/*/*/ugot_path > $output_folder/integrations/ugot_path # What I got?
+  method=$2
 
   for integration_type in ${integration_types} ; do 
     for kernel in $kernels ; do 
@@ -306,60 +310,40 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
       if [ ! -z ${folder_kernel_path} ] ; then # This kernel for this integration_type is done? 
 
         autoflow_vars=`echo " 
-        \\$integration_type=$integration_type,
+        \\$param1=$integration_type,
         \\$kernel=$kernel,
         \\$input_path=$input_path,
         \\$folder_kernel_path=$folder_kernel_path,
-        \\$kernel_name='general_matrix',
+        \\$input_name='general_matrix',
         \\$control_gens=$control_gens,
-        \\$output_name='integrated_rank'
+        \\$paralog_feature=$input_path/paralog_feature,
+        \\$output_name='integrated_rank',
+        \\$method=$method
         " | tr -d [:space:]`
 
-        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/integrated_rankings/ranking_${kernel}_${integration_type} -m 60gb -t 4-00:00:00 $add_opt 
+        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/integrated_rankings/ranking_${kernel}_${integration_type} -m 60gb -t 4-00:00:00 $3
       fi
 
     done
   done
 
-##########################################################
-## STAGE 3 PREPARING PLOTS FOR THE REPORT
-##########################################################
-#
-#elif [ "$exec_mode" == "metrics" ] ; then
-#  source ~soft_bio_267/initializes/init_R
-#  mkdir -p $report_folder
-#
-#  # TODO: Pensar en el método adecuado para medir la similitud entre capas o kernels.
-#  # (quizas acortando por los rankings) o por medio de la referencia en similitud.
-#  
-#
-#  #########################################################
-#  #STAGE 3.1 OBTAIN THE AMOUNT OF DATA FOR EACH SEED-GEN
-#  #          ON EACH ANNOTATION LAYER
-#  #annotation_grade.sh $gens_seed $output_folder $net2custom "$annotations" $input_path/input_processed
-#
-#  #########################################################
-#  #STAGE 3.2 OBTAIN CDF PLOTS FROM NON INTEGRATED
-#  mkdir -p $report_folder/non_integrated_cdf_plots
-#  plot_cdf.R -d $output_folder/non_integrated_rank_list -f 2 -s 3 -c 6 -o cdf_plots -O $report_folder/non_integrated_cdf_plots -w 10 -g 10
-#
-#  #########################################################
-#  #STAGE 3.3 OBTAIN CDF PLOTS FROM INTEGRATED
-#  mkdir -p $report_folder/integrated_cdf_plots
-#  plot_cdf.R -d $output_folder/integrated_rank_list -f 2 -s 3 -c 6 -o cdf_plots -O $report_folder/integrated_cdf_plots -w 10 -g 10
-
 #########################################################
-# STAGE 4 OBTAIN REPORT FROM RESULTS
+# STAGE 3 OBTAIN REPORT FROM RESULTS
 #########################################################
 
 elif [ "$exec_mode" == "report" ] ; then 
   source ~soft_bio_267/initializes/init_ruby
   
   #############################################
-  #mkdir -p report/cdfs_list
-  echo -e "annot_kernel\tannot\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density" | cat - $output_folder/non_integrated_rank_list > $report_folder/metrics/non_integrated_rank_list
-  echo -e "integration_kernel\tintegration\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density" | cat - $output_folder/integrated_rank_list > $report_folder/metrics/integrated_rank_list
-  #cp -r $report_folder/integrated_rank_list $report_folder/metrics
+
+  cat $output_folder/rankings/*/*/rank_list > $output_folder/non_integrated_rank_list
+  cat $output_folder/integrated_rankings/*/*/rank_list > $output_folder/integrated_rank_list
+  
+  cat $output_folder/rankings/*/*/rank_metrics > $output_folder/non_integrated_rank_metrics
+  cat $output_folder/integrated_rankings/*/*/rank_metrics > $output_folder/integrated_rank_metrics
+
+  echo -e "annot_kernel\tannot\tkernel\tseed_gen\tbackup_gen\tparalog_type\trank\tcummulative_density" | cat - $output_folder/non_integrated_rank_list > $report_folder/metrics/non_integrated_rank_list
+  echo -e "integration_kernel\tintegration\tkernel\tseed_gen\tbackup_gen\tparalog_type\trank\tcummulative_density" | cat - $output_folder/integrated_rank_list > $report_folder/metrics/integrated_rank_list
 
   mkdir -p $report_folder/metrics
 
@@ -381,14 +365,12 @@ elif [ "$exec_mode" == "report" ] ; then
 
 report_html -t ./report/templates/kernel_report.erb -d $report_folder/metrics/parsed_annotations_metrics,$report_folder/metrics/parsed_uncomb_kernel_metrics,$report_folder/metrics/parsed_comb_kernel_metrics,$report_folder/metrics/parsed_similarity_metrics -o report_kernel
 report_html -t ./report/templates/ranking_report.erb -d $report_folder/metrics/parsed_non_integrated_rank_metrics,$report_folder/metrics/parsed_integrated_rank_metrics,$report_folder/metrics/non_integrated_rank_list,$report_folder/metrics/integrated_rank_list -o report_ranking
-#report_html -t ./report/templates/ranking_report.erb -d $report_folder/metrics/parsed_non_integrated_rank_metrics,$report_folder/metrics/non_integrated_rank_list -o report_ranking
 
 #########################################################
 # STAGE TO CHECK AUTOFLOW IS RIGHT
 #########################################################
 elif [ "$exec_mode" == "check" ] ; then
   #STAGE 3 CHECK EXECUTION
-  # La sección del check la realizado por bucle o en selección directa.
   for folder in `ls $output_folder/$add_opt/` ; do 
     if [ -d $output_folder/$add_opt/$folder ] ; then
       echo "$folder"

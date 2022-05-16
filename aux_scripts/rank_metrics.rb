@@ -5,28 +5,17 @@ require 'expcalc'
 ########################### FUNCTIONS #######################
 #############################################################
 
-def search_candidates(rank_file, backups)
-	seed_gene = rank_file.split("_")[0]
-	known_backups = backups[seed_gene] # An array with every backup gene.
-	known_backups_rank = []
+def open_rank_file(rank_file)
+	known_ranks = []
 	File.open(rank_file,"r").each do |line|
 		line.chomp!
-		possible_gene = line.split("\t")[0]
-		if known_backups.include? possible_gene
-			known_backups_rank.append([seed_gene, possible_gene, line.split("\t")[2].to_f])
-		end
+		line = line.split("\t")
+		group_name = line.last
+		candidate_gene = line[0]
+		percentage_score = line[2]
+		known_ranks.append([candidate_gene, percentage_score, group_name])
 	end
-	return known_backups_rank if !known_backups_rank.empty?
-end
-
-def file2hash(backup_file)
-	seed2backup = {}
-	File.open(backup_file,"r").each do |line|
-		line.chomp!
-		seed_gene, backup_genes = line.split("\t")
-		seed2backup[seed_gene] = backup_genes.split(",")
-	end
-	return seed2backup
+	return known_ranks
 end
 
 def report_stats(data)
@@ -50,19 +39,13 @@ def report_ranks(gene_pos_ranks)
 	return report_ranks
 end
 
-
-#def genseed_name_from_filename(rank_file)
-#	seed_gene = rank_file.split("_")[0]
-#	return seed_gene
-#end
-
-def get_cdf_values(known_backups)
-	known_backups.sort_by!{|known_backup| known_backup[2]}
-	number_known_backups = known_backups.length
-	known_backups.each_with_index do |known_backup , i|
-			known_backup = known_backup.append((i+1).fdiv(number_known_backups))
+def get_cdf_values(known_ranks)
+	known_ranks.sort_by!{|known_rank| known_rank[1].to_f}
+	number_known_ranks = known_ranks.length
+	known_ranks.each_with_index do |known_rank , i|
+			known_rank = known_rank.insert(2,(i+1).fdiv(number_known_ranks))
 	end
-	return known_backups
+	return known_ranks
 end
 
 
@@ -73,13 +56,8 @@ options = {}
 OptionParser.new do  |opts|
 
   options[:rankings] = nil
-  opts.on("-r","-rankings RANKS", "The roots to the rankings files ") do |rankings|
-    options[:rankings] = rankings.split(",")
-  end
-
-  options[:backups] = nil
-  opts.on("-c","-backups NODE", "The path to the backup files") do |backups|
-    options[:backups] = backups
+  opts.on("-r","-rankings RANKS", "The roots to the rankings file") do |rankings|
+    options[:rankings] = rankings
   end
 
   options[:execution_mode] = "stats" 
@@ -94,26 +72,17 @@ end.parse!
 
 rankings = options[:rankings]
 
-if !options[:backups].nil?
-	backups = file2hash(options[:backups])
-end
+known_ranks = open_rank_file(options[:rankings])
+known_ranks = get_cdf_values(known_ranks)
 
-known_backups_ranks = []
-rankings.each do |ranking|
-	candidates = search_candidates(ranking, backups)
-	known_backups_ranks += candidates if !candidates.nil?
-end
-
-known_backups_ranks = get_cdf_values(known_backups_ranks)
-
-if !known_backups_ranks.empty?
+if !known_ranks.empty?
 	if options[:execution_mode] == "stats"
-		all_ranks = known_backups_ranks.map{|rank_row| rank_row[2]}
+		all_ranks = known_ranks.map{|rank_row| rank_row[1].to_f}
 		report_stats(all_ranks).each do |stat|
 	    puts stat.join("\t")
 	  end
 	elsif options[:execution_mode] == "ranks"
-		report_ranks(known_backups_ranks).each do |rank|
+		report_ranks(known_ranks).each do |rank|
 			puts rank.join("\t")
 	  end
 	end

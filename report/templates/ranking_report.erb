@@ -100,7 +100,7 @@ Once this was done, the position for every known backup gene was obtained and th
                 <p style="text-align:center;"> CDF plots of non integrated kernels </p> 
                 <%= 
                 if !@hash_vars['non_integrated_rank_list'].nil?
-                       scatter2D(id: "non_integrated_rank_list", fields: [5,6] , header: true, row_names: false, responsive: false,
+                       scatter2D(id: "non_integrated_rank_list", fields: [4,5] , header: true, row_names: false, responsive: false,
                                 height: '400px', width: '400px', x_label: 'percentiles', smp_attr: [0,1,2],
                                 title: "cummulative distribution function plot",
                                 config: {
@@ -117,7 +117,7 @@ Once this was done, the position for every known backup gene was obtained and th
                 <p style="text-align:center;"> CDF plots of integrated kernels </p> 
                 <%= 
                 if !@hash_vars['integrated_rank_list'].nil?
-                       scatter2D(id: "integrated_rank_list", fields: [5,6] , header: true, row_names: false, responsive: false,
+                       scatter2D(id: "integrated_rank_list", fields: [4,5] , header: true, row_names: false, responsive: false,
                                 height: '400px', width: '400px', x_label: 'percentiles', smp_attr: [0,1,2],
                                 title: "cummulative distribution function plot",
                                 config: {

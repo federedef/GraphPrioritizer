@@ -14,12 +14,12 @@ get_paralogs <- function(gene_hgnc,identity_filter=30){
                  values = gene_hgnc,
                  mart = human)
   # Stay with the paralogous with at least identity_filter %
-  print(results)
+  #print(results)
   ensemble_paralogs_names <- results[which(results$hsapiens_paralog_perc_id >= identity_filter | results$hsapiens_paralog_perc_id_r1 >= identity_filter),1]
-  print(ensemble_paralogs_names)
+  #print(ensemble_paralogs_names)
   ensemble_paralogs_names <- ensemble_paralogs_names[!is.na(ensemble_paralogs_names)]
   ensemble_paralogs_names <- ensemble_paralogs_names[ensemble_paralogs_names != "" ]
-  print(ensemble_paralogs_names)
+  #print(ensemble_paralogs_names)
   # Obtain the HGNCs from those paralogs.
   if (length(ensemble_paralogs_names)>0){
   	results2 <- getBM(attributes = c("ensembl_gene_id", 
@@ -33,7 +33,7 @@ get_paralogs <- function(gene_hgnc,identity_filter=30){
   	} else {
         hgnc_paralogs_names <- c()
   	}
-  print(hgnc_paralogs_names)
+  #print(hgnc_paralogs_names)
   return(hgnc_paralogs_names)
 }
 
@@ -59,7 +59,7 @@ query_genes <- unique(gene_pairs_data[,1])
 
 for (query_gene in query_genes) {
 	paralogs <- get_paralogs(gene_hgnc=query_gene,identity_filter=1)
-	print(gene_pairs_data[which(gene_pairs_data[,1] == query_gene & gene_pairs_data[,2] %in% paralogs),])
+	#print(gene_pairs_data[which(gene_pairs_data[,1] == query_gene & gene_pairs_data[,2] %in% paralogs),])
 	gene_pairs_data[which(gene_pairs_data[,1] == query_gene & gene_pairs_data[,2] %in% paralogs),3] <- "Paralogs"
 }
 
