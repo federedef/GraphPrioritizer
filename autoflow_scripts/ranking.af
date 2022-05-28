@@ -1,7 +1,8 @@
 rank_genes_classic){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
-	source ~soft_bio_267/initializes/init_ruby
+	# source ~soft_bio_267/initializes/init_netanalyzer
+	. ~soft_bio_267/initializes/init_ruby
 	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	if [ $method != "classic" ] ; then
 		exit 0
@@ -33,7 +34,8 @@ rank_genes_classic){
 rank_genes_with_leave_one_out){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
-	source ~soft_bio_267/initializes/init_ruby
+	# source ~soft_bio_267/initializes/init_netanalyzer
+	. ~soft_bio_267/initializes/init_ruby
 	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	if [ $method != "leave_one_out" ] ; then
 		exit 0

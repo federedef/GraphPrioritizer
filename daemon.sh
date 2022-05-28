@@ -13,7 +13,7 @@ output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="genetic_interaction disease phenotype molecular_function biological_process cellular_component protein_interaction pathway"
+annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction" # disease phenotype molecular_function biological_process cellular_component protein_interaction pathway 
 kernels="ka ct el rf"
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom' 
@@ -105,28 +105,24 @@ elif [ "$exec_mode" == "white_list" ] ; then
 # OPTIONAL STAGE : SELECT GENES FROM WHITELIST
 #########################################################
 
-#TODO(Fede-03/05/2022): Use this in a script (this would allow other people to reuse it... maybe not necessary?)
+  cd input_processed
+  filter_by_whitelist.rb -f phenotype,disease,biological_process,cellular_component,molecular_function,pathway,protein_interaction \
+  -c "0;0;0;0;0;0;0,1" -t ../white_list/hgnc_white_list
+  filter_by_whitelist.rb -f genetic_interaction -c "0;" -t ../white_list/hgnc_white_list -r
 
-  echo -e "sample\tpre-filtered\tpos-filtered" > input_processed/filter_metrics
-
-  for sample in phenotype disease biological_process cellular_component molecular_function pathway interaction ; do
-    # Using a process substitution
-    join -t $'\t' -1 1 -2 1 <(sort -k 1 input_processed/$sample) <(sort $input_path/white_list/hgnc_white_list) > input_processed/filtered_$sample
-    nrows_prefiltered=`wc -l input_processed/$sample | tr " " "\t" | cut -f1 `
-    nrows_posfiltered=`wc -l input_processed/filtered_$sample | tr " " "\t" | cut -f1 `
-    echo -e "$sample\t$nrows_prefiltered\t$nrows_posfiltered" >> input_processed/filter_metrics
-    rm input_processed/$sample
-    mv input_processed/filtered_$sample input_processed/$sample
+  echo -e "sample\tprefiltered_rows\tprefiltered_cols\tposfiltered_rows\tposfiltered_cols" > filter_metrics
+  for sample in phenotype disease biological_process cellular_component molecular_function pathway protein_interaction genetic_interaction ; do
+    nrows_prefiltered=`wc -l $sample | tr " " "\t" | cut -f1 `
+    nrows_posfiltered=`wc -l filtered_$sample | tr " " "\t" | cut -f1 `
+    ncols_prefiltered=`head -n 1 $sample | tr '\t' '\n' | wc -l`
+    ncols_posfiltered=`head -n 1 filtered_$sample | tr '\t' '\n' | wc -l`
+    echo -e "$sample\t$nrows_prefiltered\t$ncols_prefiltered\t$nrows_posfiltered\t$ncols_posfiltered" >> filter_metrics
+    rm $sample
+    mv filtered_$sample $sample
   done
-
-  join -t $'\t' -1 2 -2 1 <(sort -k 2 input_processed/interaction) <(sort $input_path/white_list/hgnc_white_list) > input_processed/filtered_interaction
-  nrows_prefiltered=`wc -l input_processed/interaction | tr " " "\t" | cut -f1 `
-  nrows_posfiltered=`wc -l input_processed/filtered_interaction | tr " " "\t" | cut -f1 `
-  echo -e "interaction\t$nrows_prefiltered\t$nrows_posfiltered" >> input_processed/filter_metrics
-  rm input_processed/interaction
-  mv input_processed/filtered_interaction input_processed/interaction
-
+  
   echo "Annotation files filtered"
+  cd..
 
 elif [ "$exec_mode" == "backup_preparation" ] ; then 
   source ~soft_bio_267/initializes/init_R
@@ -173,15 +169,15 @@ elif [ "$exec_mode" == "control_type" ] ; then
 
   if [ $add_opt == "reverse" ] ; then 
     if [ $pos_or_neg == "positive" ] ; then 
-      awk '{OFS="\t"}{print $2,$1,$3}' ./backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 > ./control_gens 
+      awk '{OFS="\t"}{print $2,$1,$3}' ./backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
     elif [ $pos_or_neg == "negative" ] ; then
-      awk '{OFS="\t"}{print $2,$1,$3}' ./backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 > ./control_gens 
+      awk '{OFS="\t"}{print $2,$1,$3}' ./backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
     fi    
   elif [ $add_opt == "right" ] ; then 
     if [ $pos_or_neg == "positive" ] ; then 
-      awk '{OFS="\t"}{print $1,$2,$3}' ./backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 > ./control_gens 
+      awk '{OFS="\t"}{print $1,$2,$3}' ./backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
     elif [ $pos_or_neg == "negative" ] ; then
-      awk '{OFS="\t"}{print $1,$2,$3}' ./backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 > ./control_gens 
+      awk '{OFS="\t"}{print $1,$2,$3}' ./backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
     fi        
   fi
 
@@ -219,6 +215,7 @@ elif [ "$exec_mode" == "kernels" ] ; then
   #######################################################
   #STAGE 2.1 PROCESS SIMILARITY AND OBTAIN KERNELS
   mkdir -p $output_folder/similarity_kernels
+
 
   for annotation in $annotations ; do 
 
@@ -333,6 +330,7 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
 
 elif [ "$exec_mode" == "report" ] ; then 
   source ~soft_bio_267/initializes/init_ruby
+  html_name=$2
   
   #############################################
 
@@ -342,8 +340,8 @@ elif [ "$exec_mode" == "report" ] ; then
   cat $output_folder/rankings/*/*/rank_metrics > $output_folder/non_integrated_rank_metrics
   cat $output_folder/integrated_rankings/*/*/rank_metrics > $output_folder/integrated_rank_metrics
 
-  echo -e "annot_kernel\tannot\tkernel\tseed_gen\tbackup_gen\tparalog_type\trank\tcummulative_density" | cat - $output_folder/non_integrated_rank_list > $report_folder/metrics/non_integrated_rank_list
-  echo -e "integration_kernel\tintegration\tkernel\tseed_gen\tbackup_gen\tparalog_type\trank\tcummulative_density" | cat - $output_folder/integrated_rank_list > $report_folder/metrics/integrated_rank_list
+  echo -e "annot_kernel\tannot\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density" | cat - $output_folder/non_integrated_rank_list > $report_folder/metrics/non_integrated_rank_list
+  echo -e "integration_kernel\tintegration\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density" | cat - $output_folder/integrated_rank_list > $report_folder/metrics/integrated_rank_list
 
   mkdir -p $report_folder/metrics
 
@@ -351,20 +349,21 @@ elif [ "$exec_mode" == "report" ] ; then
   declare -A references
   references[annotations_metrics]='Net'
   references[similarity_metrics]='Net'
+  references[filtered_similarity_metrics]='Net'
   references[uncomb_kernel_metrics]='Sample,Net,Kernel'
   references[comb_kernel_metrics]='Sample,Integration,Kernel'
   references[non_integrated_rank_metrics]='Sample,Net,Kernel'
   references[integrated_rank_metrics]='Sample,Integration,Kernel'
   #references[annotation_grade_metrics]='Gene_seed'
 
-  for metric in annotations_metrics similarity_metrics uncomb_kernel_metrics comb_kernel_metrics non_integrated_rank_metrics integrated_rank_metrics ; do
+  for metric in annotations_metrics similarity_metrics uncomb_kernel_metrics comb_kernel_metrics non_integrated_rank_metrics integrated_rank_metrics filtered_similarity_metrics ; do
     if [ -s $output_folder/$metric ] ; then
     create_metric_table.rb $output_folder/$metric ${references[$metric]} $report_folder/metrics/parsed_${metric} 
     fi
   done
 
-report_html -t ./report/templates/kernel_report.erb -d $report_folder/metrics/parsed_annotations_metrics,$report_folder/metrics/parsed_uncomb_kernel_metrics,$report_folder/metrics/parsed_comb_kernel_metrics,$report_folder/metrics/parsed_similarity_metrics -o report_kernel
-report_html -t ./report/templates/ranking_report.erb -d $report_folder/metrics/parsed_non_integrated_rank_metrics,$report_folder/metrics/parsed_integrated_rank_metrics,$report_folder/metrics/non_integrated_rank_list,$report_folder/metrics/integrated_rank_list -o report_ranking
+report_html -t ./report/templates/kernel_report.erb -d $report_folder/metrics/parsed_annotations_metrics,$report_folder/metrics/parsed_uncomb_kernel_metrics,$report_folder/metrics/parsed_comb_kernel_metrics,$report_folder/metrics/parsed_similarity_metrics,$report_folder/metrics/parsed_filtered_similarity_metrics -o "report_kernel$html_name"
+report_html -t ./report/templates/ranking_report.erb -d $report_folder/metrics/parsed_non_integrated_rank_metrics,$report_folder/metrics/parsed_integrated_rank_metrics,$report_folder/metrics/non_integrated_rank_list,$report_folder/metrics/integrated_rank_list -o "report_ranking$html_name"
 
 #########################################################
 # STAGE TO CHECK AUTOFLOW IS RIGHT

@@ -15,7 +15,7 @@ cor_test <- function(rho, n, type, cut_off, binary, bonferroni = NA){
     p_val <- 2*(1 - pt(abs(t),(n-2)))
   }
   # Adjusting p-value.
-  if (bonferroni == TRUE){
+  if (!is.na(bonferroni)){
     p_val <- p_val * bonferroni
   }
   if (p_val <= cut_off){
@@ -23,7 +23,6 @@ cor_test <- function(rho, n, type, cut_off, binary, bonferroni = NA){
         return(1)
       } else if (binary == FALSE) {
         return(rho)
-        #return(rho)
       }
   } else {
     return(0)
@@ -44,32 +43,35 @@ option_list <- list(
   make_option(c("-O", "--output_name"), type="character",
               help="Output name "),
   make_option(c("-t","--test"), default = NA , type="character",
-              help="upper, lower , both")
+              help="upper, lower , both"),
+  make_option(c("-b", "--binarize"), action="store_true", default=FALSE,
+        help="Binarize the matrix"),
+  make_option(c("-f","--bonferroni"), action="store_true", default=FALSE,
+        help="apply bonferroni correction")
 )
 
 ######################## MAIN #########################
 #######################################################
-# make_option(c("-b","--binarize"), action= "store_true", default = FALSE,
-#             help="binarize matrix")
 
 opt <- parse_args(OptionParser(option_list=option_list))
 # Load table data opt$separator
 table_data <- read.table(opt$input_table,sep="\t",header=T,check.names = F)
-#print(table_data[1:10,1:20])
 cor_m <- cor(table_data, use = "complete.obs")
 if ( !is.na(opt$test) ) {
   print("con el test")
-  alpha <- ncol(table_data) * (ncol(table_data) - 1) / 2
-  cor_m <- apply(cor_m,c(1,2),cor_test,n=nrow(table_data),type="upper",cut_off=0.05,binary=FALSE, bonferroni = alpha)
+  alpha <- NA
+  if (opt$bonferroni == TRUE) {
+    print("aplicando bonferroni")
+    alpha <- ncol(table_data) * (ncol(table_data) - 1) / 2
+  }
+  cor_m <- apply(cor_m,c(1,2),cor_test,n=nrow(table_data),type="upper",cut_off=0.05,binary=opt$binarize, bonferroni = alpha)
 } else if ( is.na(opt$test) ) {
   print("sin el test")
   cor_m <- 0.5 + 0.5*cor_m
-  #print("holaaaa")
-  #cor_m <- cor_m
 }
 
 # Return list of corrs
 output_list <- file.path(opt$output_path, opt$output_name)
 cor_pairs <- as.data.frame(as.table(cor_m))
-#cor_pairs <- cor_pairs[which(cor_pairs[,3] < 0.5),]
+cor_pairs <- cor_pairs[which(cor_pairs[,3] != 0),]
 write.table(cor_pairs,output_list,sep="\t",col.names=F,row.names=F,quote=F)

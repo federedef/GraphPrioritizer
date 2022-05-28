@@ -7,6 +7,7 @@
 
         order_columns('parsed_annotations_metrics',0) if !@hash_vars['parsed_annotations_metrics'].nil?
         order_columns('parsed_similarity_metrics',0) if !@hash_vars['parsed_similarity_metrics'].nil?
+        order_columns('parsed_filtered_similarity_metrics',0) if !@hash_vars['parsed_filtered_similarity_metrics'].nil?
         order_columns('parsed_uncomb_kernel_metrics',0) if !@hash_vars['parsed_uncomb_kernel_metrics'].nil?
         order_columns('parsed_comb_kernel_metrics',0) if !@hash_vars['parsed_comb_kernel_metrics'].nil?
 
@@ -62,8 +63,8 @@
         <div style="overflow: hidden";>
                 <p style="text-align:center;"><b>Table 3.</b> Filtered similarity matrixes </p> 
                 <%= 
-                if !@hash_vars["parsed_filtered_metrics"].nil?
-                        table(id: "parsed_filtered_metrics", text: true, header: true, 
+                if !@hash_vars["parsed_filtered_similarity_metrics"].nil?
+                        table(id: "parsed_filtered_similarity_metrics", text: true, header: true, 
                                 fields: [0,1,2,3],
                                 cell_align: ['left', 'center', 'center', 'center'],
                                 border: 2,
