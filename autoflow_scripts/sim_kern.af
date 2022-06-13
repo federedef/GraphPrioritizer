@@ -1,4 +1,4 @@
-calc_similarity){
+%calc_similarity){
 	resources: -m '60gb' -t '4-00:00:00'
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
@@ -30,12 +30,12 @@ calc_similarity){
     		# Select just the interactions of jaccard filtering by the counts values.
     		paste $annotation_similarity_list <(cut -f 3 counts_similarity_list) | awk 'BEGIN{FS="\t";OFS="\t"}{if( $4 >= 3 ) print $1,$2,$3}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list
     		#awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $annotation_similarity_list > similarity_list # Set diagonal to 0.
-    	elif [ "$annotation" == "protein_interaction" ] ; then 
-    		# Keep it without changes
-    		cp $input_path/input_processed/$annotation ./similarity_list
     	elif [ "$annotation" == "genetic_interaction" ] ; then
     		build_corNetwork.R -i $input_path/input_processed/$annotation -s "\t" -O $annotation_similarity_list -t "upper" -f
     		cat $annotation_similarity_list | awk '{if ( $3 != "NA" ) {print $0}}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list # sed 's/HGNC./HGNC:/g'|
+    	else
+    		# Keep it without changes
+    		cp $input_path/input_processed/$annotation ./similarity_list
     	fi
     fi
 
@@ -46,7 +46,7 @@ calc_similarity){
 	fi
 }
 
-list2matrix_similarity){
+%list2matrix_similarity){
 	resources: -m '60gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_netanalyzer
 	echo -e "$annotation_sim" > tracker
@@ -69,7 +69,7 @@ filter_similarity){
 	export OMP_NUM_THREADS=[cpu]
 	if [ $filter_factor == "F" ] ; then
 	    ?
-		custom_disparity_filter.R -i list2matrix_similarity)/similarity_matrix_bin -o "./" -O similarity_matrix_bin -n list2matrix_similarity)/similarity_matrix_bin.lst
+		custom_disparity_filter.R -i list2matrix_similarity)/similarity_matrix_bin -o "./" -O similarity_matrix_bin -n list2matrix_similarity)/similarity_matrix_bin.lst -b
 		text2binary_matrix.rb -i similarity_matrix_bin -t bin -o similarity_matrix_bin_undo -s > filtered_similarity_metrics
 		if [ -s similarity_matrix_bin_undo ] ; then
 			rm similarity_matrix_bin_undo

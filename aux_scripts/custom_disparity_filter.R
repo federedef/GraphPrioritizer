@@ -23,17 +23,21 @@ backbone_cal = function(weighted_adj_mat){
 }
 
 # Create edge list from that p value matrix
-adj_mat_from_pvalmat = function(pvalmat, threshold, weighted_adj_mat){
+adj_mat_from_pvalmat = function(pvalmat, threshold, weighted_adj_mat, binarize = FALSE){
   result_mat = pvalmat < threshold
   # adjacency matrix, obtained when both p[i,j] and p[j,i] match the criteria
   new_adj = t(result_mat)*result_mat
   new_adj[is.na(new_adj)] = 0
   # remove genes with no significance
   k = apply(new_adj, 2, sum)
-  weighted_adj_mat = weighted_adj_mat[,k>0]
-  weighted_adj_mat = weighted_adj_mat[k>0,]
-  
-  return(weighted_adj_mat)
+  if(binarize == TRUE) {
+    final_adj_mat = new_adj[,k>0]
+    final_adj_mat = final_adj_mat[k>0,]
+  } else {
+    final_adj_mat = weighted_adj_mat[,k>0]
+    final_adj_mat = final_adj_mat[k>0,]
+  }
+  return(final_adj_mat)
 }
 
 ###################### OPTPARSE ####################
@@ -47,13 +51,18 @@ option_list <- list(
   make_option(c("-O", "--output_name"), type="character",
               help="Output name "),
   make_option(c("-n","--node_names"), default=NA, type="character",
-              help="list of node names")
+              help="list of node names"),
+  make_option(c("-b", "--binarize"), action="store_true", default=FALSE,
+                help="Binarize the output matrix")
 )
 
 ##################### MAIN #########################
 ####################################################
 
+
 opt <- parse_args(OptionParser(option_list=option_list))
+
+print(opt$binarize)
 
 # Load npy adjacency matrix and create graph object.
 sem_m <- npyLoad(opt$input_matrix)
@@ -66,7 +75,7 @@ rownames(sem_m) <- sem_nodes
 # obtaining the p-values
 pval_matrix <- backbone_cal(sem_m)
 # selecting the nodes weight < 0.05
-sem_m <- adj_mat_from_pvalmat(pval_matrix, 0.1, sem_m)
+sem_m <- adj_mat_from_pvalmat(pval_matrix, 0.1, sem_m, opt$binarize)
 
 # Preparing output path
 output_matrix <- file.path(opt$output_path, opt$output_name) # Return the matrix network.

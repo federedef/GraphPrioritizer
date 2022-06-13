@@ -13,7 +13,7 @@ output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction" # disease phenotype molecular_function biological_process cellular_component protein_interaction pathway 
+annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction" # disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction paper_coDep
 kernels="ka ct el rf"
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom' 

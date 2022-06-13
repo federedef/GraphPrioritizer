@@ -7,3 +7,4 @@ cellular_component	GO	ontology	GO:0005575	F
 protein_interaction	-	network	-	NF
 pathway	-	network	-	F
 genetic_interaction	-	network	-	NF
+paper_coDep	-	network	-	NF
