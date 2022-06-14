@@ -1,4 +1,4 @@
-%calc_similarity){
+calc_similarity){
 	resources: -m '60gb' -t '4-00:00:00'
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
@@ -31,7 +31,8 @@
     		paste $annotation_similarity_list <(cut -f 3 counts_similarity_list) | awk 'BEGIN{FS="\t";OFS="\t"}{if( $4 >= 3 ) print $1,$2,$3}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list
     		#awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $annotation_similarity_list > similarity_list # Set diagonal to 0.
     	elif [ "$annotation" == "genetic_interaction" ] ; then
-    		build_corNetwork.R -i $input_path/input_processed/$annotation -s "\t" -O $annotation_similarity_list -t "upper" -f
+    		#build_corNetwork.R -i $input_path/input_processed/$annotation -s "\t" -O $annotation_similarity_list -t "upper" -f
+    		sim_umap.R -i $input_path/input_processed/$annotation -O $annotation_similarity_list -t
     		cat $annotation_similarity_list | awk '{if ( $3 != "NA" ) {print $0}}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list # sed 's/HGNC./HGNC:/g'|
     	else
     		# Keep it without changes
@@ -46,7 +47,7 @@
 	fi
 }
 
-%list2matrix_similarity){
+list2matrix_similarity){
 	resources: -m '60gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_netanalyzer
 	echo -e "$annotation_sim" > tracker

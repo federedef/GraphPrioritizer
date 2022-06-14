@@ -13,7 +13,7 @@ output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction" # disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction paper_coDep
+annotations="genetic_interaction" # disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction paper_coDep
 kernels="ka ct el rf"
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom' 
@@ -226,7 +226,15 @@ elif [ "$exec_mode" == "kernels" ] ; then
       \\$kernels_varflow=$kernels_varflow
       " | tr -d [:space:]`
 
-      AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt 
+      AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt
+      #TODO
+      #process_type=`grep -P '^$annotation' $net2custom | cut -f 6`
+      #if [ $process_type == "kernel" ] ; then
+      #  AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt 
+      #elif [ $process_type == "umap" ]; then
+      #  AutoFlow -w $autoflow_scripts/sim_umap.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt 
+      #fi
+      #ODOT
 
   done
 
