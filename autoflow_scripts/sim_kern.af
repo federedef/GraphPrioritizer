@@ -30,9 +30,13 @@ calc_similarity){
     		# Select just the interactions of jaccard filtering by the counts values.
     		paste $annotation_similarity_list <(cut -f 3 counts_similarity_list) | awk 'BEGIN{FS="\t";OFS="\t"}{if( $4 >= 3 ) print $1,$2,$3}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list
     		#awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $annotation_similarity_list > similarity_list # Set diagonal to 0.
-    	elif [ "$annotation" == "genetic_interaction" ] ; then
-    		#build_corNetwork.R -i $input_path/input_processed/$annotation -s "\t" -O $annotation_similarity_list -t "upper" -f
-    		sim_umap.R -i $input_path/input_processed/$annotation -O $annotation_similarity_list -t
+    	elif [ "$annotation" == "genetic_interaction_unweighted" ] ; then
+    		build_corNetwork.R -i $input_path/input_processed/$annotation -s "\t" -O $annotation_similarity_list -t "upper" -f -b
+    		#sim_umap.R -i $input_path/input_processed/$annotation -O $annotation_similarity_list -t
+    		cat $annotation_similarity_list | awk '{if ( $3 != "NA" ) {print $0}}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list # sed 's/HGNC./HGNC:/g'|
+    	elif [ "$annotation" == "genetic_interaction_weighted" ] ; then
+    		build_corNetwork.R -i $input_path/input_processed/$annotation -s "\t" -O $annotation_similarity_list -t "upper" -f
+    		#sim_umap.R -i $input_path/input_processed/$annotation -O $annotation_similarity_list -t
     		cat $annotation_similarity_list | awk '{if ( $3 != "NA" ) {print $0}}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list # sed 's/HGNC./HGNC:/g'|
     	else
     		# Keep it without changes

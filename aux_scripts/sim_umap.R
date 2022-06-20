@@ -74,6 +74,12 @@ if (opt$transpose) {
 
 names <- table[,opt$field_for_subjects]
 data <- table[,-opt$field_for_subjects]
+data <- as.data.frame(apply(data, 2, as.numeric))
+print(is.na(data))
+print(dim(data))
+data <- data[ , apply(data, 2, function(x) !any(is.na(x)))]
+print(is.na(data))
+print(dim(data))
 
 data_umap = umap(data)
 data_umap = data_umap$layout

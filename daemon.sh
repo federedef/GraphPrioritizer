@@ -13,7 +13,7 @@ output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="genetic_interaction" # disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction paper_coDep
+annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction_unweighted protein_interaction_weighted pathway genetic_interaction_unweighted genetic_interaction_weighted" # disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction paper_coDep
 kernels="ka ct el rf"
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom' 
@@ -92,11 +92,13 @@ elif [ "$exec_mode" == "process_download" ] ; then
   # PROCESS PROTEIN INTERACTIONS # | head -n 200 
   cat input_raw/string_data.v11.5.txt | tr -s " " "\t" > string_data.v11.5.txt
   idconverter.rb -d ./translators/Ensemble_HGNC -i string_data.v11.5.txt -c 0,1 > ./input_raw/interaction_scored && rm string_data.v11.5.txt
-  awk '{OFS="\t"}{if ( $3 > 700 ) {print $1,$2}}' ./input_raw/interaction_scored > ./input_processed/protein_interaction # && rm ./input_raw/interaction_scored
+  awk '{OFS="\t"}{if ( $3 > 700 ) {print $1,$2}}' ./input_raw/interaction_scored > ./input_processed/protein_interaction_unweighted # && rm ./input_raw/interaction_scored
+  awk '{OFS="\t"}{if ( $3 > 700 ) {print $1,$2,$3}}' ./input_raw/interaction_scored > ./input_processed/protein_interaction_weighted
 
   # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 100
   sed 's/([0-9]*)//1g' ./input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input_raw/CRISPR_gene_effect_symbol
-  idconverter.rb -d ./translators/symbol_HGNC -i ./input_raw/CRISPR_gene_effect_symbol -r 0 > ./input_processed/genetic_interaction
+  idconverter.rb -d ./translators/symbol_HGNC -i ./input_raw/CRISPR_gene_effect_symbol -r 0 > ./input_processed/genetic_interaction_unweighted
+  cp ./input_processed/genetic_interaction_unweighted ./input_processed/genetic_interaction_weighted
   rm ./input_raw/CRISPR_gene_effect_symbol
 
 elif [ "$exec_mode" == "white_list" ] ; then
@@ -348,8 +350,8 @@ elif [ "$exec_mode" == "report" ] ; then
   cat $output_folder/rankings/*/*/rank_metrics > $output_folder/non_integrated_rank_metrics
   cat $output_folder/integrated_rankings/*/*/rank_metrics > $output_folder/integrated_rank_metrics
 
-  echo -e "annot_kernel\tannot\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density" | cat - $output_folder/non_integrated_rank_list > $report_folder/metrics/non_integrated_rank_list
-  echo -e "integration_kernel\tintegration\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density" | cat - $output_folder/integrated_rank_list > $report_folder/metrics/integrated_rank_list
+  echo -e "annot_kernel\tannot\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | cat - $output_folder/non_integrated_rank_list > $report_folder/metrics/non_integrated_rank_list
+  echo -e "integration_kernel\tintegration\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | cat - $output_folder/integrated_rank_list > $report_folder/metrics/integrated_rank_list
 
   mkdir -p $report_folder/metrics
 
