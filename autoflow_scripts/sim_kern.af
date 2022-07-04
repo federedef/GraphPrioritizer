@@ -1,4 +1,4 @@
-calc_similarity){
+%calc_similarity){
 	resources: -m '60gb' -t '4-00:00:00'
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
@@ -51,7 +51,7 @@ calc_similarity){
 	fi
 }
 
-list2matrix_similarity){
+%list2matrix_similarity){
 	resources: -m '60gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_netanalyzer
 	echo -e "$annotation_sim" > tracker
@@ -74,7 +74,7 @@ filter_similarity){
 	export OMP_NUM_THREADS=[cpu]
 	if [ $filter_factor == "F" ] ; then
 	    ?
-		custom_disparity_filter.R -i list2matrix_similarity)/similarity_matrix_bin -o "./" -O similarity_matrix_bin -n list2matrix_similarity)/similarity_matrix_bin.lst -b
+		custom_disparity_filter.R -i list2matrix_similarity)/similarity_matrix_bin -o "./" -O similarity_matrix_bin -n list2matrix_similarity)/similarity_matrix_bin.lst
 		text2binary_matrix.rb -i similarity_matrix_bin -t bin -o similarity_matrix_bin_undo -s > filtered_similarity_metrics
 		if [ -s similarity_matrix_bin_undo ] ; then
 			rm similarity_matrix_bin_undo

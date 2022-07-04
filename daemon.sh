@@ -350,30 +350,30 @@ elif [ "$exec_mode" == "report" ] ; then
   cat $output_folder/rankings/*/*/rank_metrics > $output_folder/non_integrated_rank_metrics
   cat $output_folder/integrated_rankings/*/*/rank_metrics > $output_folder/integrated_rank_metrics
 
-  echo -e "annot_kernel\tannot\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | cat - $output_folder/non_integrated_rank_list > $report_folder/metrics/non_integrated_rank_list
-  echo -e "integration_kernel\tintegration\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | cat - $output_folder/integrated_rank_list > $report_folder/metrics/integrated_rank_list
+ echo -e "annot_kernel\tannot\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | cat - $output_folder/non_integrated_rank_list > $report_folder/metrics/non_integrated_rank_list
+ echo -e "integration_kernel\tintegration\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | cat - $output_folder/integrated_rank_list > $report_folder/metrics/integrated_rank_list
 
-  mkdir -p $report_folder/metrics
+ mkdir -p $report_folder/metrics
 
 
-  declare -A references
-  references[annotations_metrics]='Net'
-  references[similarity_metrics]='Net'
-  references[filtered_similarity_metrics]='Net'
-  references[uncomb_kernel_metrics]='Sample,Net,Kernel'
-  references[comb_kernel_metrics]='Sample,Integration,Kernel'
-  references[non_integrated_rank_metrics]='Sample,Net,Kernel'
-  references[integrated_rank_metrics]='Sample,Integration,Kernel'
-  #references[annotation_grade_metrics]='Gene_seed'
+ declare -A references
+ references[annotations_metrics]='Net'
+ references[similarity_metrics]='Net'
+ references[filtered_similarity_metrics]='Net'
+ references[uncomb_kernel_metrics]='Sample,Net,Kernel'
+ references[comb_kernel_metrics]='Sample,Integration,Kernel'
+ references[non_integrated_rank_metrics]='Sample,Net,Kernel'
+ references[integrated_rank_metrics]='Sample,Integration,Kernel'
+ references[annotation_grade_metrics]='Gene_seed'
 
-  for metric in annotations_metrics similarity_metrics uncomb_kernel_metrics comb_kernel_metrics non_integrated_rank_metrics integrated_rank_metrics filtered_similarity_metrics ; do
-    if [ -s $output_folder/$metric ] ; then
-    create_metric_table.rb $output_folder/$metric ${references[$metric]} $report_folder/metrics/parsed_${metric} 
-    fi
-  done
+ for metric in annotations_metrics similarity_metrics uncomb_kernel_metrics comb_kernel_metrics non_integrated_rank_metrics integrated_rank_metrics filtered_similarity_metrics ; do
+   if [ -s $output_folder/$metric ] ; then
+     create_metric_table.rb $output_folder/$metric ${references[$metric]} $report_folder/metrics/parsed_${metric} 
+   fi
+ done
 
-report_html -t ./report/templates/kernel_report.erb -d $report_folder/metrics/parsed_annotations_metrics,$report_folder/metrics/parsed_uncomb_kernel_metrics,$report_folder/metrics/parsed_comb_kernel_metrics,$report_folder/metrics/parsed_similarity_metrics,$report_folder/metrics/parsed_filtered_similarity_metrics -o "report_kernel$html_name"
-report_html -t ./report/templates/ranking_report.erb -d $report_folder/metrics/parsed_non_integrated_rank_metrics,$report_folder/metrics/parsed_integrated_rank_metrics,$report_folder/metrics/non_integrated_rank_list,$report_folder/metrics/integrated_rank_list -o "report_ranking$html_name"
+report_html -t ./report/templates/kernel_report.erb -d $report_folder/metrics/parsed_annotations_metrics,$report_folder/metrics/parsed_uncomb_kernel_metrics,$report_folder/metrics/parsed_similarity_metrics,$report_folder/metrics/parsed_filtered_similarity_metrics -o "report_kernel$html_name"
+report_html -t ./report/templates/ranking_report.erb -d $report_folder/metrics/parsed_non_integrated_rank_metrics,$report_folder/metrics/non_integrated_rank_list -o "report_ranking$html_name"
 
 #########################################################
 # STAGE TO CHECK AUTOFLOW IS RIGHT
