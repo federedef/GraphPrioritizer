@@ -13,8 +13,9 @@ output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction_unweighted protein_interaction_weighted pathway genetic_interaction_unweighted genetic_interaction_weighted" # disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction paper_coDep
-kernels="ka ct el rf"
+annotations="genetic_interaction_weighted" # #disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction paper_coDep
+#disease phenotype molecular_function biological_process cellular_component protein_interaction_unweighted pathway
+kernels="ka rf" #ka ct el rf
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom' 
 control_gens=$input_path'/control_gens' # What are its backups?
@@ -372,8 +373,11 @@ elif [ "$exec_mode" == "report" ] ; then
    fi
  done
 
-report_html -t ./report/templates/kernel_report.erb -d $report_folder/metrics/parsed_annotations_metrics,$report_folder/metrics/parsed_uncomb_kernel_metrics,$report_folder/metrics/parsed_similarity_metrics,$report_folder/metrics/parsed_filtered_similarity_metrics -o "report_kernel$html_name"
-report_html -t ./report/templates/ranking_report.erb -d $report_folder/metrics/parsed_non_integrated_rank_metrics,$report_folder/metrics/non_integrated_rank_list -o "report_ranking$html_name"
+report_html -t ./report/templates/kernel_report.erb -d $report_folder/metrics/parsed_annotations_metrics,$report_folder/metrics/parsed_uncomb_kernel_metrics,$report_folder/metrics/parsed_comb_kernel_metrics,$report_folder/metrics/parsed_similarity_metrics,$report_folder/metrics/parsed_filtered_similarity_metrics -o "report_kernel$html_name"
+report_html -t ./report/templates/ranking_report.erb -d $report_folder/metrics/parsed_non_integrated_rank_metrics,$report_folder/metrics/parsed_integrated_rank_metrics,$report_folder/metrics/non_integrated_rank_list,$report_folder/metrics/integrated_rank_list -o "report_ranking$html_name"
+
+#report_html -t ./report/templates/kernel_report.erb -d $report_folder/metrics/parsed_annotations_metrics,$report_folder/metrics/parsed_uncomb_kernel_metrics,$report_folder/metrics/parsed_similarity_metrics,$report_folder/metrics/parsed_filtered_similarity_metrics -o "report_kernel$html_name"
+#report_html -t ./report/templates/ranking_report.erb -d $report_folder/metrics/parsed_non_integrated_rank_metrics,$report_folder/metrics/non_integrated_rank_list -o "report_ranking$html_name"
 
 #########################################################
 # STAGE TO CHECK AUTOFLOW IS RIGHT

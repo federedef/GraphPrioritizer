@@ -1,6 +1,7 @@
 #!/usr/bin/env Rscript
 library(umap)
 library(optparse)
+# Based on paper -> https://doi.org/10.1038/s41467-020-15351-4 
 
 dist2sim <- function(d){
   sim <- 1/(1+d)
@@ -72,18 +73,22 @@ if (opt$transpose) {
 	table <- t(table)
 }
 
+#table <- table[1:200,1:300]
+
 names <- table[,opt$field_for_subjects]
 data <- table[,-opt$field_for_subjects]
 data <- as.data.frame(apply(data, 2, as.numeric))
-print(is.na(data))
+print(any(is.na(data)))
 print(dim(data))
 data <- data[ , apply(data, 2, function(x) !any(is.na(x)))]
-print(is.na(data))
+print(any(is.na(data)))
 print(dim(data))
 
 data_umap = umap(data)
+print("ya esta listo el umap")
 data_umap = data_umap$layout
 sim_list = build_sim_list(data_umap,names)
+print("pasando a poner el output")
 
 # Return list of similarities
 output_list <- file.path(opt$output_path, opt$output_name)
