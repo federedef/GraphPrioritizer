@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 # coding: utf-8
-#import sys
-#import traceback
 import argparse
 import networkx as nx
 from node2vec import Node2Vec
@@ -18,7 +16,16 @@ if __name__=="__main__":
         # now we got options.input and options.output
 
 A=np.load(options.input)
-G = nx.from_numpy_matrix(A) # <- TODO: ADD NODE NAMES (FROM THE LIST).
+graph = nx.from_numpy_matrix(A)
 node2vec = Node2Vec(graph, dimensions=64, walk_length=30, num_walks=200)
 model = node2vec.fit(window=10, min_count=1, batch_words=4)
-# <- TODO: Create the matrix embedding.
+# min_count: is the minimun number of counts a wors must have.
+# batch_words: are Target size (in words) for batches of examples
+# passed to worker threads (and thus cython routines).
+# link: https://radimrehurek.com/gensim/models/word2vec.html
+list_arrays=[model.wv.get_vector(str(n)) for n in graph.nodes()]
+n_cols=list_arrays[0].shape[0] # Number of col
+n_rows=len(list_arrays)# Number of rows
+emb_pos = np.concatenate(list_arrays).reshape([n_rows,n_cols]) # Concat all the arrays at one.
+sim_mat = emb_pos.dot(emb_pos.T) # Obtain dot product of each vector.
+np.save(options.output, sim_mat)

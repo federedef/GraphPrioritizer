@@ -8,5 +8,5 @@ protein_interaction_unweighted	-	network	-	NF	kernel
 protein_interaction_weighted	-	network	-	NF	kernel
 pathway	-	network	-	NF	kernel
 genetic_interaction_unweighted	-	network	-	NF	kernel
-genetic_interaction_weighted	-	network	-	NF	kernel
+genetic_interaction_weighted	-	network	-	NF	umap
 paper_coDep	-	network	-	NF	kernel
