@@ -13,9 +13,10 @@ output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="genetic_interaction_weighted" # #disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction paper_coDep
+annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction_unweighted pathway genetic_interaction_weighted" 
+#disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction paper_coDep
 #disease phenotype molecular_function biological_process cellular_component protein_interaction_unweighted pathway
-kernels="ka rf" #ka ct el rf
+kernels="ka rf node2vec" #ka ct el rf
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom' 
 control_gens=$input_path'/control_gens' # What are its backups?
@@ -45,7 +46,9 @@ if [ "$exec_mode" == "download" ] ; then
   gzip -d input_raw/string_data.v11.5.txt.gz
 
   # Downloading GENETIC INTERACTIONS from DEPMAP.
-  wget https://ndownloader.figshare.com/files/34008491 -O input_raw/CRISPR_gene_effect
+  wget https://ndownloader.figshare.com/files/34989919 -O input_raw/CRISPR_gene_effect 
+  # Gene Expression: https://ndownloader.figshare.com/files/34989919
+  # Cell Surpervivence score: https://ndownloader.figshare.com/files/34008491
 
   ############################
   ## Obtain TRANSLATOR TABLES.
@@ -154,7 +157,7 @@ elif [ "$exec_mode" == "backup_preparation" ] ; then
 
   # NEGATIVE CONTROL #
   grep -w 'All 6' ./backupgens/data/Big_Papi | awk '{FS="\t";OFS="\t"}{if ( $7 <= 0.05) print $1,$2}' > ./backupgens/data/filtered_Big_Papi_negative_control
-  idconverter.rb -d ./backupgens/data/symbol_HGNC -i ./backupgens/data/filtered_Big_Papi_negative_control -c 0,1 | awk '{if (!( $1 == $2 )) print $0 }' > ./backupgens/non_backup_gens
+  idconverter.rb -d ./translators/symbol_HGNC -i ./backupgens/data/filtered_Big_Papi_negative_control -c 0,1 | awk '{if (!( $1 == $2 )) print $0 }' > ./backupgens/non_backup_gens
   
   # Finally add new column indicating which pairs are paralogs in NEGATIVE AND POSITIVE CONTROLS.
   which_are_paralogs.R -i ./backupgens/backup_gens -o "./backupgens" -O "backup_gens"
@@ -229,7 +232,6 @@ elif [ "$exec_mode" == "kernels" ] ; then
       \\$kernels_varflow=$kernels_varflow
       " | tr -d [:space:]`
 
-      #AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt
       process_type=`grep -P "^$annotation" $net2custom | cut -f 6`
       if [ "$process_type" == "kernel" ] ; then
         AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt 
@@ -344,39 +346,39 @@ elif [ "$exec_mode" == "report" ] ; then
   
   #############################################
 
-#  cat $output_folder/rankings/*/*/rank_list > $output_folder/non_integrated_rank_list
-#  cat $output_folder/integrated_rankings/*/*/rank_list > $output_folder/integrated_rank_list
-#  
-#  cat $output_folder/rankings/*/*/rank_metrics > $output_folder/non_integrated_rank_metrics
-#  cat $output_folder/integrated_rankings/*/*/rank_metrics > $output_folder/integrated_rank_metrics
-#
-# echo -e "annot_kernel\tannot\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | cat - $output_folder/non_integrated_rank_list > $report_folder/metrics/non_integrated_rank_list
-# echo -e "integration_kernel\tintegration\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | cat - $output_folder/integrated_rank_list > $report_folder/metrics/integrated_rank_list
-#
-# mkdir -p $report_folder/metrics
-#
-#
-# declare -A references
-# references[annotations_metrics]='Net'
-# references[similarity_metrics]='Net'
-# references[filtered_similarity_metrics]='Net'
-# references[uncomb_kernel_metrics]='Sample,Net,Kernel'
-# references[comb_kernel_metrics]='Sample,Integration,Kernel'
-# references[non_integrated_rank_metrics]='Sample,Net,Kernel'
-# references[integrated_rank_metrics]='Sample,Integration,Kernel'
-# references[annotation_grade_metrics]='Gene_seed'
-#
-# for metric in annotations_metrics similarity_metrics uncomb_kernel_metrics comb_kernel_metrics non_integrated_rank_metrics integrated_rank_metrics filtered_similarity_metrics ; do
-#   if [ -s $output_folder/$metric ] ; then
-#     create_metric_table.rb $output_folder/$metric ${references[$metric]} $report_folder/metrics/parsed_${metric} 
-#   fi
-# done
+  cat $output_folder/rankings/*/*/rank_list > $output_folder/non_integrated_rank_list
+  cat $output_folder/integrated_rankings/*/*/rank_list > $output_folder/integrated_rank_list
+  
+  cat $output_folder/rankings/*/*/rank_metrics > $output_folder/non_integrated_rank_metrics
+  cat $output_folder/integrated_rankings/*/*/rank_metrics > $output_folder/integrated_rank_metrics
 
-report_html -t ./report/templates/kernel_report.erb -d $report_folder/metrics/parsed_annotations_metrics,$report_folder/metrics/parsed_uncomb_kernel_metrics,$report_folder/metrics/parsed_comb_kernel_metrics,$report_folder/metrics/parsed_similarity_metrics,$report_folder/metrics/parsed_filtered_similarity_metrics -o "report_kernel$html_name"
-report_html -t ./report/templates/ranking_report.erb -d $report_folder/metrics/parsed_non_integrated_rank_metrics,$report_folder/metrics/parsed_integrated_rank_metrics,$report_folder/metrics/non_integrated_rank_list,$report_folder/metrics/integrated_rank_list -o "report_ranking$html_name"
+  echo -e "annot_kernel\tannot\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | cat - $output_folder/non_integrated_rank_list > $report_folder/metrics/non_integrated_rank_list
+  echo -e "integration_kernel\tintegration\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | cat - $output_folder/integrated_rank_list > $report_folder/metrics/integrated_rank_list
 
-#report_html -t ./report/templates/kernel_report.erb -d $report_folder/metrics/parsed_annotations_metrics,$report_folder/metrics/parsed_uncomb_kernel_metrics,$report_folder/metrics/parsed_similarity_metrics,$report_folder/metrics/parsed_filtered_similarity_metrics -o "report_kernel$html_name"
-#report_html -t ./report/templates/ranking_report.erb -d $report_folder/metrics/parsed_non_integrated_rank_metrics,$report_folder/metrics/non_integrated_rank_list -o "report_ranking$html_name"
+  mkdir -p $report_folder/metrics
+
+
+  declare -A references
+  references[annotations_metrics]='Net'
+  references[similarity_metrics]='Net'
+  references[filtered_similarity_metrics]='Net'
+  references[uncomb_kernel_metrics]='Sample,Net,Kernel'
+  references[comb_kernel_metrics]='Sample,Integration,Kernel'
+  references[non_integrated_rank_metrics]='Sample,Net,Kernel'
+  references[integrated_rank_metrics]='Sample,Integration,Kernel'
+  references[annotation_grade_metrics]='Gene_seed'
+
+  for metric in annotations_metrics similarity_metrics uncomb_kernel_metrics comb_kernel_metrics non_integrated_rank_metrics integrated_rank_metrics filtered_similarity_metrics ; do
+    if [ -s $output_folder/$metric ] ; then
+      create_metric_table.rb $output_folder/$metric ${references[$metric]} $report_folder/metrics/parsed_${metric} 
+    fi
+  done
+
+  report_html -t ./report/templates/kernel_report.erb -d $report_folder/metrics/parsed_annotations_metrics,$report_folder/metrics/parsed_uncomb_kernel_metrics,$report_folder/metrics/parsed_comb_kernel_metrics,$report_folder/metrics/parsed_similarity_metrics,$report_folder/metrics/parsed_filtered_similarity_metrics -o "report_kernel$html_name"
+  report_html -t ./report/templates/ranking_report.erb -d $report_folder/metrics/parsed_non_integrated_rank_metrics,$report_folder/metrics/parsed_integrated_rank_metrics,$report_folder/metrics/non_integrated_rank_list,$report_folder/metrics/integrated_rank_list -o "report_ranking$html_name"
+  
+  report_html -t ./report/templates/kernel_report.erb -d $report_folder/metrics/parsed_annotations_metrics,$report_folder/metrics/parsed_uncomb_kernel_metrics,$report_folder/metrics/parsed_similarity_metrics,$report_folder/metrics/parsed_filtered_similarity_metrics -o "report_kernel$html_name"
+  report_html -t ./report/templates/ranking_report.erb -d $report_folder/metrics/parsed_non_integrated_rank_metrics,$report_folder/metrics/non_integrated_rank_list -o "report_ranking$html_name"
 
 #########################################################
 # STAGE TO CHECK AUTOFLOW IS RIGHT

@@ -96,6 +96,7 @@ calc_kernel_[$kernels_varflow]){
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
 	source ~soft_bio_267/initializes/init_netanalyzer
+	module load python/3.8.8
 	echo -e "$annotation_(*)\t$annotation\t(*)" > tracker
 	cp filter_similarity)/similarity_matrix_bin.lst kernel_matrix_bin.lst # To pass the list of node names.
 	kern_net_path=`pwd`
@@ -104,7 +105,12 @@ calc_kernel_[$kernels_varflow]){
 		rm ugot_path
 	fi
 	?
-	NetAnalyzer.rb -i filter_similarity)/similarity_matrix_bin -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
+	if [ "(*)" == "node2vec" ] ; then
+		nod2vec.py -i filter_similarity)/similarity_matrix_bin -o kernel_matrix_bin
+		mv kernel_matrix_bin.npy kernel_matrix_bin
+	else
+		NetAnalyzer.rb -i filter_similarity)/similarity_matrix_bin -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
+	fi
 	if [ -s kernel_matrix_bin ] ; then
 		echo -e "$annotation_(*)\t$annotation\t(*)\t$kern_net_path" > ugot_path # ../../ugot_path
 	else 
