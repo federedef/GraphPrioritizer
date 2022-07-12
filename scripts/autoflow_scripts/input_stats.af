@@ -1,0 +1,31 @@
+statistics_ontology_profiles){
+	source ~soft_bio_267/initializes/init_ruby 
+	echo -e "$annotation" > tracker
+	ont_id=`grep -P '^$annotation' $net2custom | cut -f 2`
+	exec_mode=`grep -P '^$annotation' $net2custom | cut -f 3`
+	simil_code=`grep -P '^$annotation' $net2custom | cut -f 4`
+	?
+    if [ "$exec_mode" == "ontology" ] ; then
+    	if [ $simil_code == "-" ] ; then 
+			time semtools.rb -i $input_path/input_processed/$annotation -o ./results.txt -O $ont_id -n -S "," > annotations_metrics
+	    else
+	    	time semtools.rb -i $input_path/input_processed/$annotation -o ./results.txt -O $ont_id -n -S "," -c -T $simil_code > annotations_metrics
+		fi
+    else 
+    	if [ "$annotation" == "pathway" -o "$annotation" == "protein_interaction" ] ; then
+	    	sort -k1 $input_path/input_processed/$annotation| cut -f 1 | uniq -c | awk '{print $1}' > data_list
+	    elif [ "$annotation" == "genetic_interaction" ] ; then
+	    	summInfo_genetic_interaction.rb -f $input_path/input_processed/$annotation > data_list
+	    fi
+	    get_stats.rb -d data_list > annotations_metrics
+    fi
+
+	if [ -s annotations_metrics ] ; then 
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' annotations_metrics >> ../../../annotations_metrics
+	else
+		exit 1
+	fi
+}
+
+
+

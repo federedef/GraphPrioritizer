@@ -7,8 +7,9 @@ add_opt=$2
 
 # Used Paths.
 input_path=`pwd`
-export PATH=$input_path/aux_scripts:~soft_bio_267/programs/x86_64/scripts:$PATH
-autoflow_scripts=$input_path/autoflow_scripts
+export PATH=$input_path/scripts/aux_scripts:~soft_bio_267/programs/x86_64/scripts:$PATH
+autoflow_scripts=$input_path/scripts/autoflow_scripts
+control_genes_folder=$input_path/control_genes
 output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
@@ -31,22 +32,22 @@ if [ "$exec_mode" == "download" ] ; then
   . ~soft_bio_267/initializes/init_ruby
 
   # Pass raw downloaded files.
-  if [ -s ./data_downloaded/aux ] ; then
+  if [ -s ./input/data_downloaded/aux ] ; then
     echo "removing pre-existed obos files"
-    find ./data_downloaded/aux -name "*.obo*" -delete 
+    find ./input/data_downloaded/aux -name "*.obo*" -delete 
   fi
 
   # Downloading ONTOLOGIES and PATHWAY ANNOTATION files from MONARCH.
-  downloader.rb -i ./input_source/source_data -o ./data_downloaded
-  mkdir -p ./input_raw
-  cp ./data_downloaded/raw/monarch/tsv/all_associations/* ./input_raw
+  downloader.rb -i ./input/input_source/source_data -o ./input/data_downloaded
+  mkdir -p ./input/input_raw
+  cp ./input/data_downloaded/raw/monarch/tsv/all_associations/* ./input/input_raw
 
   # Downloading PROTEIN INTERACTIONS and ALIASES from STRING.
-  wget https://stringdb-static.org/download/protein.links.v11.5/9606.protein.links.v11.5.txt.gz -O input_raw/string_data.v11.5.txt.gz
-  gzip -d input_raw/string_data.v11.5.txt.gz
+  wget https://stringdb-static.org/download/protein.links.v11.5/9606.protein.links.v11.5.txt.gz -O ./input/input_raw/string_data.v11.5.txt.gz
+  gzip -d ./input/input_raw/string_data.v11.5.txt.gz
 
   # Downloading GENETIC INTERACTIONS from DEPMAP.
-  wget https://ndownloader.figshare.com/files/34989919 -O input_raw/CRISPR_gene_effect 
+  wget https://ndownloader.figshare.com/files/34989919 -O ./input/input_raw/CRISPR_gene_effect 
   # Gene Expression: https://ndownloader.figshare.com/files/34989919
   # Cell Surpervivence score: https://ndownloader.figshare.com/files/34008491
 
@@ -67,7 +68,7 @@ if [ "$exec_mode" == "download" ] ; then
 
 elif [ "$exec_mode" == "process_download" ] ; then
 
-  mkdir -p ./input_processed
+  mkdir -p ./input/input_processed
 
   declare -A tag_filter 
   tag_filter[phenotype]='HP:'
@@ -78,32 +79,32 @@ elif [ "$exec_mode" == "process_download" ] ; then
 
   # PROCESS ONTOLOGIES #
   for sample in phenotype disease function ; do
-    zgrep ${tag_filter[$sample]} input_raw/gene_${sample}.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
-    aggregate_column_data.rb -i - -x 0 -a 4 > input_processed/$sample # | head -n 230
+    zgrep ${tag_filter[$sample]} ./input/input_raw/gene_${sample}.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
+    aggregate_column_data.rb -i - -x 0 -a 4 > ./input/input_processed/$sample # | head -n 230
   done
 
   ## Creating paco files for each go branch.
   gene_ontology=( molecular_function cellular_component biological_process )
   for branch in ${gene_ontology[@]} ; do
-    cp input_processed/function input_processed/$branch
+    cp ./input/input_processed/function ./input/input_processed/$branch
   done
-  rm input_processed/function
+  rm ./input/input_processed/function
 
   # PROCESS REACTIONS # | head -n 230 
-  zgrep "REACT:" input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | \
-   cut -f 1,5 > input_processed/pathway
+  zgrep "REACT:" ./input/input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | \
+   cut -f 1,5 > ./input/input_processed/pathway
   
   # PROCESS PROTEIN INTERACTIONS # | head -n 200 
-  cat input_raw/string_data.v11.5.txt | tr -s " " "\t" > string_data.v11.5.txt
-  idconverter.rb -d ./translators/Ensemble_HGNC -i string_data.v11.5.txt -c 0,1 > ./input_raw/interaction_scored && rm string_data.v11.5.txt
-  awk '{OFS="\t"}{if ( $3 > 700 ) {print $1,$2}}' ./input_raw/interaction_scored > ./input_processed/protein_interaction_unweighted # && rm ./input_raw/interaction_scored
-  awk '{OFS="\t"}{if ( $3 > 700 ) {print $1,$2,$3}}' ./input_raw/interaction_scored > ./input_processed/protein_interaction_weighted
+  cat ./input/input_raw/string_data.v11.5.txt | tr -s " " "\t" > string_data.v11.5.txt
+  idconverter.rb -d ./translators/Ensemble_HGNC -i string_data.v11.5.txt -c 0,1 > ./input/input_raw/interaction_scored && rm string_data.v11.5.txt
+  awk '{OFS="\t"}{if ( $3 > 700 ) {print $1,$2}}' ./input/input_raw/interaction_scored > ./input/input_processed/protein_interaction_unweighted # && rm ./input_raw/interaction_scored
+  awk '{OFS="\t"}{if ( $3 > 700 ) {print $1,$2,$3}}' ./input/input_raw/interaction_scored > .input/input_processed/protein_interaction_weighted
 
   # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 100
-  sed 's/([0-9]*)//1g' ./input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input_raw/CRISPR_gene_effect_symbol
-  idconverter.rb -d ./translators/symbol_HGNC -i ./input_raw/CRISPR_gene_effect_symbol -r 0 > ./input_processed/genetic_interaction_unweighted
-  cp ./input_processed/genetic_interaction_unweighted ./input_processed/genetic_interaction_weighted
-  rm ./input_raw/CRISPR_gene_effect_symbol
+  sed 's/([0-9]*)//1g' ./input/input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/input_raw/CRISPR_gene_effect_symbol
+  idconverter.rb -d ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_effect_symbol -r 0 > ./input/input_processed/genetic_interaction_unweighted
+  cp ./input/input_processed/genetic_interaction_unweighted ./input/input_processed/genetic_interaction_weighted
+  rm ./input/input_raw/CRISPR_gene_effect_symbol
 
 elif [ "$exec_mode" == "white_list" ] ; then
 
@@ -111,7 +112,7 @@ elif [ "$exec_mode" == "white_list" ] ; then
 # OPTIONAL STAGE : SELECT GENES FROM WHITELIST
 #########################################################
 
-  cd input_processed
+  cd ./input/input_processed
   filter_by_whitelist.rb -f phenotype,disease,biological_process,cellular_component,molecular_function,pathway,protein_interaction \
   -c "0;0;0;0;0;0;0,1" -t ../white_list/hgnc_white_list
   filter_by_whitelist.rb -f genetic_interaction -c "0;" -t ../white_list/hgnc_white_list -r
@@ -128,21 +129,21 @@ elif [ "$exec_mode" == "white_list" ] ; then
   done
   
   echo "Annotation files filtered"
-  cd..
+  cd ../..
 
 elif [ "$exec_mode" == "backup_preparation" ] ; then 
   source ~soft_bio_267/initializes/init_R
   
-  mkdir -p ./backupgens/processed_backups 
+  mkdir -p $control_genes_folder/backupgens/processed_backups 
   
   # POSITIVE CONTROL #
   # AdHoc added backups
-  cp ./backupgens/data/AdHoc_Backups ./backupgens/processed_backups/AdHoc_Backups
+  cp $control_genes_folder/backupgens/data/AdHoc_Backups $control_genes_folder/backupgens/processed_backups/AdHoc_Backups
   # Big Papi.
-  grep -w 'All 6' ./backupgens/data/Big_Papi | awk '{FS="\t";OFS="\t"}{if ( $6 <= 0.05) print $1,$2}' > ./backupgens/data/filtered_Big_Papi
+  grep -w 'All 6' $control_genes_folder/backupgens/data/Big_Papi | awk '{FS="\t";OFS="\t"}{if ( $6 <= 0.05) print $1,$2}' > $control_genes_folder/backupgens/data/filtered_Big_Papi
   # Digenic Paralog.
-  awk '{FS="\t"}{if ( $2 <= 0.05 && $3 <= 0.05 && $4 <= 0.05 && $5 <= 0.05 && $6 <= 0.05 && $7 <= 0.05 && $8 <= 0.05 && $9 <= 0.05 && $10 <= 0.05 && $11 <= 0.05 && $12 <= 0.05) print $1}' ./backupgens/data/Digenic_Paralog | \
-   tr -s ";" "\t" | tr -d "\"" > ./backupgens/data/filtered_Digenic_Paralog
+  awk '{FS="\t"}{if ( $2 <= 0.05 && $3 <= 0.05 && $4 <= 0.05 && $5 <= 0.05 && $6 <= 0.05 && $7 <= 0.05 && $8 <= 0.05 && $9 <= 0.05 && $10 <= 0.05 && $11 <= 0.05 && $12 <= 0.05) print $1}' $control_genes_folder/backupgens/data/Digenic_Paralog | \
+   tr -s ";" "\t" | tr -d "\"" > $control_genes_folder/backupgens/data/filtered_Digenic_Paralog
 
   # Download the necessary tab to translation from symbol to HGNC.
   if [ ! -s ./translators/symbol_HGNC ] ; then 
@@ -150,18 +151,18 @@ elif [ "$exec_mode" == "backup_preparation" ] ; then
     awk '{OFS="\t"}{print $2,$1}' ./translators/HGNC_symbol > ./translators/symbol_HGNC
   fi
 
-  idconverter.rb -d ./translators/symbol_HGNC -i ./backupgens/data/filtered_Big_Papi -c 0,1 > ./backupgens/processed_backups/Big_Papi
-  idconverter.rb -d ./translators/symbol_HGNC -i ./backupgens/data/filtered_Digenic_Paralog -c 0,1 > ./backupgens/processed_backups/Digenic_Paralog
+  idconverter.rb -d ./translators/symbol_HGNC -i $control_genes_folder/backupgens/data/filtered_Big_Papi -c 0,1 > $control_genes_folder/backupgens/processed_backups/Big_Papi
+  idconverter.rb -d ./translators/symbol_HGNC -i $control_genes_folder/backupgens/data/filtered_Digenic_Paralog -c 0,1 > $control_genes_folder/backupgens/processed_backups/Digenic_Paralog
   
-  cat ./backupgens/processed_backups/* | sort | uniq -u  > ./backupgens/backup_gens
+  cat $control_genes_folder/backupgens/processed_backups/* | sort | uniq -u  > $control_genes_folder/backupgens/backup_gens
 
   # NEGATIVE CONTROL #
-  grep -w 'All 6' ./backupgens/data/Big_Papi | awk '{FS="\t";OFS="\t"}{if ( $7 <= 0.05) print $1,$2}' > ./backupgens/data/filtered_Big_Papi_negative_control
-  idconverter.rb -d ./translators/symbol_HGNC -i ./backupgens/data/filtered_Big_Papi_negative_control -c 0,1 | awk '{if (!( $1 == $2 )) print $0 }' > ./backupgens/non_backup_gens
+  grep -w 'All 6' $control_genes_folder/backupgens/data/Big_Papi | awk '{FS="\t";OFS="\t"}{if ( $7 <= 0.05) print $1,$2}' > $control_genes_folder/backupgens/data/filtered_Big_Papi_negative_control
+  idconverter.rb -d ./translators/symbol_HGNC -i $control_genes_folder/backupgens/data/filtered_Big_Papi_negative_control -c 0,1 | awk '{if (!( $1 == $2 )) print $0 }' > $control_genes_folder/backupgens/non_backup_gens
   
   # Finally add new column indicating which pairs are paralogs in NEGATIVE AND POSITIVE CONTROLS.
-  which_are_paralogs.R -i ./backupgens/backup_gens -o "./backupgens" -O "backup_gens"
-  which_are_paralogs.R -i ./backupgens/non_backup_gens -o "./backupgens" -O "non_backup_gens"
+  which_are_paralogs.R -i $control_genes_folder/backupgens/backup_gens -o "$control_genes_folder/backupgens" -O "backup_gens"
+  which_are_paralogs.R -i $control_genes_folder/backupgens/non_backup_gens -o "$control_genes_folder/backupgens" -O "non_backup_gens"
 
 elif [ "$exec_mode" == "control_type" ] ; then 
 
@@ -175,20 +176,20 @@ elif [ "$exec_mode" == "control_type" ] ; then
 
   if [ $add_opt == "reverse" ] ; then 
     if [ $pos_or_neg == "positive" ] ; then 
-      awk '{OFS="\t"}{print $2,$1,$3}' ./backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
+      awk '{OFS="\t"}{print $2,$1,$3}' $control_genes_folder/backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
     elif [ $pos_or_neg == "negative" ] ; then
-      awk '{OFS="\t"}{print $2,$1,$3}' ./backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
+      awk '{OFS="\t"}{print $2,$1,$3}' $control_genes_folder/backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
     fi    
   elif [ $add_opt == "right" ] ; then 
     if [ $pos_or_neg == "positive" ] ; then 
-      awk '{OFS="\t"}{print $1,$2,$3}' ./backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
+      awk '{OFS="\t"}{print $1,$2,$3}' $control_genes_folder/backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
     elif [ $pos_or_neg == "negative" ] ; then
-      awk '{OFS="\t"}{print $1,$2,$3}' ./backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
+      awk '{OFS="\t"}{print $1,$2,$3}' $control_genes_folder/backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
     fi        
   fi
 
   if [ $add_opt == "disease" ] ; then
-    cp ./diseasegens/processed_diseasome ./control_gens
+    cp $control_genes_folder/diseasegens/processed_diseasome ./control_gens
   fi
 
 elif [ "$exec_mode" == "input_stats" ] ; then 
@@ -268,9 +269,9 @@ elif [ "$exec_mode" == "ranking" ] ; then
         \\$folder_kernel_path=$folder_kernel_path,
         \\$input_name='kernel_matrix_bin',
         \\$control_gens=$control_gens,
-        \\$paralog_feature=$input_path/paralog_feature,
         \\$output_name='non_integrated_rank',
-        \\$method=$method
+        \\$method=$method,
+        \\$geneseeds=$input_path/geneseeds
         " | tr -d [:space:]`
 
         AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/rankings/ranking_${kernel}_${annotation} -m 60gb -t 4-00:00:00 $3
@@ -325,9 +326,9 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
         \\$folder_kernel_path=$folder_kernel_path,
         \\$input_name='general_matrix',
         \\$control_gens=$control_gens,
-        \\$paralog_feature=$input_path/paralog_feature,
         \\$output_name='integrated_rank',
-        \\$method=$method
+        \\$method=$method,
+        \\$geneseeds=$input_path/geneseeds
         " | tr -d [:space:]`
 
         AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/integrated_rankings/ranking_${kernel}_${integration_type} -m 60gb -t 4-00:00:00 $3
@@ -344,20 +345,33 @@ elif [ "$exec_mode" == "report" ] ; then
   source ~soft_bio_267/initializes/init_ruby
   html_name=$2
   
-  #############################################
-
-  cat $output_folder/rankings/*/*/rank_list > $output_folder/non_integrated_rank_list
-  cat $output_folder/integrated_rankings/*/*/rank_list > $output_folder/integrated_rank_list
-  
-  cat $output_folder/rankings/*/*/rank_metrics > $output_folder/non_integrated_rank_metrics
-  cat $output_folder/integrated_rankings/*/*/rank_metrics > $output_folder/integrated_rank_metrics
-
-  echo -e "annot_kernel\tannot\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | cat - $output_folder/non_integrated_rank_list > $report_folder/metrics/non_integrated_rank_list
-  echo -e "integration_kernel\tintegration\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | cat - $output_folder/integrated_rank_list > $report_folder/metrics/integrated_rank_list
-
-  mkdir -p $report_folder/metrics
+  #####################
+  # Preparing report folders #
+  mkdir -p $report_folder/kernel_report
+  mkdir -p $report_folder/ranking_report
+  mkdir -p $report_folder/production_report
 
 
+  if [ -s $output_folder/rankings ] ; then
+    # Getting and Processing ranking list #
+    cat $output_folder/rankings/*/*/rank_list > $output_folder/non_integrated_rank_list
+    echo -e "annot_kernel\tannot\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | \
+     cat - $output_folder/non_integrated_rank_list > $report_folder/ranking_report/non_integrated_rank_list
+    # getting ranking metrics #
+    cat $output_folder/rankings/*/*/rank_metrics > $output_folder/non_integrated_rank_metrics
+  fi
+
+  if [ -s $output_folder/integrated_rankings ] ; then
+    # Getting and Processing ranking list #
+    cat $output_folder/integrated_rankings/*/*/rank_list > $output_folder/integrated_rank_list
+    echo -e "integration_kernel\tintegration\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | \
+     cat - $output_folder/integrated_rank_list > $report_folder/ranking_report/integrated_rank_list
+    # getting ranking metrics #
+    cat $output_folder/integrated_rankings/*/*/rank_metrics > $output_folder/integrated_rank_metrics
+  fi
+
+  ##########################
+  # Processing all metrics #
   declare -A references
   references[annotations_metrics]='Net'
   references[similarity_metrics]='Net'
@@ -368,17 +382,25 @@ elif [ "$exec_mode" == "report" ] ; then
   references[integrated_rank_metrics]='Sample,Integration,Kernel'
   references[annotation_grade_metrics]='Gene_seed'
 
-  for metric in annotations_metrics similarity_metrics uncomb_kernel_metrics comb_kernel_metrics non_integrated_rank_metrics integrated_rank_metrics filtered_similarity_metrics ; do
+  for metric in annotations_metrics similarity_metrics filtered_similarity_metrics uncomb_kernel_metrics comb_kernel_metrics ; do
     if [ -s $output_folder/$metric ] ; then
-      create_metric_table.rb $output_folder/$metric ${references[$metric]} $report_folder/metrics/parsed_${metric} 
+      create_metric_table.rb $output_folder/$metric ${references[$metric]} $report_folder/kernel_report/parsed_${metric} 
     fi
   done
 
-  report_html -t ./report/templates/kernel_report.erb -d $report_folder/metrics/parsed_annotations_metrics,$report_folder/metrics/parsed_uncomb_kernel_metrics,$report_folder/metrics/parsed_comb_kernel_metrics,$report_folder/metrics/parsed_similarity_metrics,$report_folder/metrics/parsed_filtered_similarity_metrics -o "report_kernel$html_name"
-  report_html -t ./report/templates/ranking_report.erb -d $report_folder/metrics/parsed_non_integrated_rank_metrics,$report_folder/metrics/parsed_integrated_rank_metrics,$report_folder/metrics/non_integrated_rank_list,$report_folder/metrics/integrated_rank_list -o "report_ranking$html_name"
-  
-  report_html -t ./report/templates/kernel_report.erb -d $report_folder/metrics/parsed_annotations_metrics,$report_folder/metrics/parsed_uncomb_kernel_metrics,$report_folder/metrics/parsed_similarity_metrics,$report_folder/metrics/parsed_filtered_similarity_metrics -o "report_kernel$html_name"
-  report_html -t ./report/templates/ranking_report.erb -d $report_folder/metrics/parsed_non_integrated_rank_metrics,$report_folder/metrics/non_integrated_rank_list -o "report_ranking$html_name"
+  for metric in non_integrated_rank_metrics integrated_rank_metrics ; do
+    if [ -s $output_folder/$metric ] ; then
+      create_metric_table.rb $output_folder/$metric ${references[$metric]} $report_folder/ranking_report/parsed_${metric} 
+    fi
+  done
+
+
+  ###################
+  # Obtaining HTMLS #
+  report_html -t ./report/templates/kernel_report.erb -d `ls $report_folder/kernel_report/* | tr -s [:space:] ","` -o "report_kernel$html_name"
+  report_html -t ./report/templates/ranking_report.erb -d `ls $report_folder/ranking_report/* | tr -s [:space:] ","` -o "report_ranking$html_name"
+  #report_html -t ./report/templates/production_report.erb -d $report_folder/production_report/* -o "report_ranking$html_name"
+
 
 #########################################################
 # STAGE TO CHECK AUTOFLOW IS RIGHT

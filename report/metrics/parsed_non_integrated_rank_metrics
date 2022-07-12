@@ -1,9 +1,0 @@
-Sample	Net	Kernel	Elements	Max	Min	Average	Standard_Deviation	Q1	Median	Q3
-molecular_function_rf	molecular_function	rf	24	0.994	0.0	0.273	0.336	0.001	0.067	0.535
-molecular_function_ka	molecular_function	ka	24	0.973	0.0	0.269	0.335	0.001	0.063	0.531
-molecular_function_el	molecular_function	el	24	0.987	0.014	0.448	0.272	0.229	0.424	0.666
-cellular_component_rf	cellular_component	rf	24	0.867	0.0	0.16	0.231	0.001	0.041	0.224
-cellular_component_ka	cellular_component	ka	24	0.881	0.0	0.166	0.236	0.001	0.041	0.237
-cellular_component_el	cellular_component	el	24	0.972	0.057	0.554	0.275	0.314	0.595	0.807
-molecular_function_ct	molecular_function	ct	24	0.994	0.0	0.276	0.335	0.001	0.091	0.535
-cellular_component_ct	cellular_component	ct	24	0.877	0.0	0.161	0.232	0.001	0.041	0.223

@@ -1,9 +1,0 @@
-Sample	Integration	Kernel	Elements	Max	Min	Average	Standard_Deviation	Q1	Median	Q3
-integration_mean_by_presence_el	integration_mean_by_presence	el	2	0.426	0.118	0.272	0.154	0.272	0.272	0.272
-mean_ka	mean	ka	2	0.314	0.047	0.18	0.133	0.18	0.18	0.18
-integration_mean_by_presence_ka	integration_mean_by_presence	ka	2	0.154	0.142	0.148	0.006	0.148	0.148	0.148
-mean_el	mean	el	2	0.343	0.053	0.198	0.145	0.198	0.198	0.198
-integration_mean_by_presence_ct	integration_mean_by_presence	ct	2	0.911	0.065	0.488	0.423	0.488	0.488	0.488
-mean_ct	mean	ct	2	0.923	0.065	0.494	0.429	0.494	0.494	0.494
-mean_rf	mean	rf	2	0.402	0.047	0.225	0.178	0.225	0.225	0.225
-integration_mean_by_presence_rf	integration_mean_by_presence	rf	2	0.515	0.059	0.287	0.228	0.287	0.287	0.287
