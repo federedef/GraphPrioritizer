@@ -14,10 +14,10 @@ output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction_unweighted pathway genetic_interaction_weighted" 
+annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction_weighted pathway genetic_interaction_weighted" 
 #disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction paper_coDep
 #disease phenotype molecular_function biological_process cellular_component protein_interaction_unweighted pathway
-kernels="ka rf node2vec" #ka ct el rf
+kernels="ka rf ct el node2vec" #ka ct el rf
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom' 
 control_gens=$input_path'/control_gens' # What are its backups?
@@ -228,12 +228,13 @@ elif [ "$exec_mode" == "kernels" ] ; then
 
       autoflow_vars=`echo " 
       \\$annotation=${annotation},
-      \\$input_path=$input_path,
+      \\$input_path=$input_path/input/,
       \\$net2custom=$net2custom,
       \\$kernels_varflow=$kernels_varflow
       " | tr -d [:space:]`
 
-      process_type=`grep -P "^$annotation" $net2custom | cut -f 6`
+      process_type=`grep -P "^$annotation" $net2custom | cut -f 8`
+      echo "$process_type"
       if [ "$process_type" == "kernel" ] ; then
         AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt 
       elif [ "$process_type" == "umap" ]; then
@@ -345,30 +346,31 @@ elif [ "$exec_mode" == "report" ] ; then
   source ~soft_bio_267/initializes/init_ruby
   html_name=$2
   
-  #####################
-  # Preparing report folders #
+  #################################
+  # Setting up the report section #
   mkdir -p $report_folder/kernel_report
   mkdir -p $report_folder/ranking_report
   mkdir -p $report_folder/production_report
 
+  declare -A original_folders
+  original_folders[annotations_metrics]='input_stats'
+  original_folders[similarity_metrics]='similarity_kernels'
+  original_folders[filtered_similarity_metrics]='similarity_kernels'
+  original_folders[uncomb_kernel_metrics]='similarity_kernels'
+  original_folders[comb_kernel_metrics]='integrations'
+  original_folders[non_integrated_rank_metrics]='rankings'
+  original_folders[non_integrated_rank_list]='rankings'
+  original_folders[integrated_rank_metrics]='integrated_rankings'
+  original_folders[integrated_rank_list]='integrated_rankings'
+  
+  # Here the data is collected from executed folders.
+  for file in "${!original_folders[@]}" ; do
+    original_folder=${original_folders[$file]}
+    if [ -s $output_folder/$original_folder ] ; then
+      cat $output_folder/$original_folder/*/*/$file > $output_folder/$file
+    fi
+  done 
 
-  if [ -s $output_folder/rankings ] ; then
-    # Getting and Processing ranking list #
-    cat $output_folder/rankings/*/*/rank_list > $output_folder/non_integrated_rank_list
-    echo -e "annot_kernel\tannot\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | \
-     cat - $output_folder/non_integrated_rank_list > $report_folder/ranking_report/non_integrated_rank_list
-    # getting ranking metrics #
-    cat $output_folder/rankings/*/*/rank_metrics > $output_folder/non_integrated_rank_metrics
-  fi
-
-  if [ -s $output_folder/integrated_rankings ] ; then
-    # Getting and Processing ranking list #
-    cat $output_folder/integrated_rankings/*/*/rank_list > $output_folder/integrated_rank_list
-    echo -e "integration_kernel\tintegration\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | \
-     cat - $output_folder/integrated_rank_list > $report_folder/ranking_report/integrated_rank_list
-    # getting ranking metrics #
-    cat $output_folder/integrated_rankings/*/*/rank_metrics > $output_folder/integrated_rank_metrics
-  fi
 
   ##########################
   # Processing all metrics #
@@ -394,6 +396,15 @@ elif [ "$exec_mode" == "report" ] ; then
     fi
   done
 
+  if [ -s $output_folder/non_integrated_rank_list ] ; then
+     echo -e "annot_kernel\tannot\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | \
+     cat - $output_folder/non_integrated_rank_list > $report_folder/ranking_report/non_integrated_rank_list
+  fi
+
+  if [ -s $output_folder/integrated_rank_list ] ; then
+    echo -e "integration_kernel\tintegration\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | \
+     cat - $output_folder/integrated_rank_list > $report_folder/ranking_report/integrated_rank_list
+  fi
 
   ###################
   # Obtaining HTMLS #

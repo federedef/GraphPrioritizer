@@ -18,7 +18,7 @@ integrate_kernel_[$kernels_varflow]){
 	if [ -s general_matrix_undo ] ; then
 		rm general_matrix_undo
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' \ 
-		  generalkernel_metrics >> ../../../comb_kernel_metrics 
+		  generalkernel_metrics > comb_kernel_metrics 
 		echo -e "$integration_type_(*)\t$integration_type\t(*)\t$integrate_path" > ugot_path
 	else 
   		exit 1

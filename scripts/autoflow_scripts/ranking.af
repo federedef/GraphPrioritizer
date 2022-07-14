@@ -19,9 +19,9 @@ rank_genes_classic){
 		rank_metrics.rb -r ranked_genes_all_candidates  -e "ranks" > prerank_list
 		if [ -a prerank_metrics ] ; then
 			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' \ 
-			  prerank_metrics > rank_metrics 
+			  prerank_metrics > $output_name_metrics 
 			# ../../../$output_name_metrics TODO: Try this.
-			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' prerank_list > rank_list 
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' prerank_list > $output_name_list 
             #../../../$output_name_list
 		else 
 		  	exit 1
@@ -50,8 +50,8 @@ rank_genes_with_leave_one_out){
 		rank_metrics.rb -r ranked_genes_all_candidates  -e "ranks" > prerank_list
 		if [ -a prerank_metrics ] ; then
 			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' \ 
-			  prerank_metrics > rank_metrics
-			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' prerank_list > rank_list 
+			  prerank_metrics > $output_name_metrics
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' prerank_list > $output_name_list 
 		else 
 		  	exit 1
 		fi

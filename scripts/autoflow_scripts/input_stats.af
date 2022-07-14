@@ -21,7 +21,8 @@ statistics_ontology_profiles){
     fi
 
 	if [ -s annotations_metrics ] ; then 
-		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' annotations_metrics >> ../../../annotations_metrics
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' annotations_metrics > tmp 
+		mv tmp annotations_metrics
 	else
 		exit 1
 	fi

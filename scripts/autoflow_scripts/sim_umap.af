@@ -22,33 +22,76 @@ list2matrix_similarity){
 	?
 	text2binary_matrix.rb -i calc_similarity)/similarity_matrix_bin -o similarity_matrix_bin -t bin -s > similarity_metrics
 	if [ -s similarity_metrics ] ; then 
-		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' similarity_metrics >> ../../../similarity_metrics 
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' similarity_metrics > tmp
+		mv tmp similarity_metrics 
 	else
 		exit 1
 	fi
 }
 
-filter_similarity){
+
+filter_cutoff){
+	resources: -m '60gb' -t '1-00:00:00'
+	#source ~soft_bio_267/initializes/init_netanalyzer
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
+	echo -e "$annotation_sim" > tracker
+	cutoff_filter=`grep -P '^$annotation' $net2custom | cut -f 5`
+	binarize_factor=`grep -P '^$annotation' $net2custom | cut -f 7`
+	cp list2matrix_similarity)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
+	if [ -s filtered_similarity_metrics ] ;then
+		rm filtered_similarity_metrics
+	fi
+
+	if [ ! $cutoff_filter == "-" ] ; then
+		if [ $binarize_factor == "B" ] ; then
+			?
+			text2binary_matrix.rb -i list2matrix_similarity)/similarity_matrix_bin -o similarity_matrix_bin -t bin -B $cutoff_filter -s > filtered_similarity_metrics
+		elif [ $binarize_factor == "NB" ] ; then
+			text2binary_matrix.rb -i list2matrix_similarity)/similarity_matrix_bin -o similarity_matrix_bin -t bin -c $cutoff_filter -s > filtered_similarity_metrics
+		fi
+	else 
+		cp filter_cutoff)/similarity_matrix_bin ./similarity_matrix_bin
+        cp filter_cutoff)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
+    fi
+	if [ -s filtered_similarity_metrics ] ; then 
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' filtered_similarity_metrics > tmp
+		mv tmp filtered_similarity_metrics
+	else
+		exit 1
+	fi
+}
+
+filter_disparity){
 	resources: -c 8 -m '60gb' -t '5-00:00:00'
 	source ~soft_bio_267/initializes/init_R
 	source ~soft_bio_267/initializes/init_netanalyzer
 	echo -e "$annotation_sim" > tracker
-	filter_factor=`grep -P '^$annotation' $net2custom | cut -f 5`
-	cp list2matrix_similarity)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
+	disparity_filter=`grep -P '^$annotation' $net2custom | cut -f 6`
+	binarize_factor=`grep -P '^$annotation' $net2custom | cut -f 7`
+	cp filter_cutoff)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
+	if [ -s filtered_similarity_metrics ] ;then
+		rm filtered_similarity_metrics
+	fi
 	export OMP_NUM_THREADS=[cpu]
-	if [ $filter_factor == "F" ] ; then
-	    ?
-		custom_disparity_filter.R -i list2matrix_similarity)/similarity_matrix_bin -o "./" -O similarity_matrix_bin -n list2matrix_similarity)/similarity_matrix_bin.lst -b
+
+	if [ $disparity_filter == "F" ] ; then
+		if [ $binarize_factor == "B" ] ; then
+		    ?
+			custom_disparity_filter.R -i filter_cutoff)/similarity_matrix_bin -o "./" -O similarity_matrix_bin -n filter_cutoff)/similarity_matrix_bin.lst -b
+		elif [ $binarize_factor == "NB" ] ; then
+			custom_disparity_filter.R -i filter_cutoff)/similarity_matrix_bin -o "./" -O similarity_matrix_bin -n filter_cutoff)/similarity_matrix_bin.lst
+		fi
 		text2binary_matrix.rb -i similarity_matrix_bin -t bin -o similarity_matrix_bin_undo -s > filtered_similarity_metrics
 		if [ -s similarity_matrix_bin_undo ] ; then
 			rm similarity_matrix_bin_undo
-			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' filtered_similarity_metrics >> ../../../filtered_similarity_metrics
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' filtered_similarity_metrics > tmp
+			mv tmp filtered_similarity_metrics
 		else
 			exit 1
 		fi
-	elif [ $filter_factor == "NF" ] ; then
-		cp list2matrix_similarity)/similarity_matrix_bin ./similarity_matrix_bin
-        cp list2matrix_similarity)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
+	elif [ $disparity_filter == "NF" ] ; then
+		cp filter_cutoff)/similarity_matrix_bin ./similarity_matrix_bin
+        cp filter_cutoff)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
     fi
 
     if [ ! -s similarity_matrix_bin ] ; then
@@ -63,7 +106,7 @@ calc_kernel_[$kernels_varflow]){
 	source ~soft_bio_267/initializes/init_netanalyzer
 	module load python/3.8.8
 	echo -e "$annotation_(*)\t$annotation\t(*)" > tracker
-	cp filter_similarity)/similarity_matrix_bin.lst kernel_matrix_bin.lst # To pass the list of node names.
+	cp filter_disparity)/similarity_matrix_bin.lst kernel_matrix_bin.lst # To pass the list of node names.
 	kern_net_path=`pwd`
 	export OMP_NUM_THREADS=[cpu]
 	if [ -s ugot_path ] ; then
@@ -71,13 +114,13 @@ calc_kernel_[$kernels_varflow]){
 	fi
 	?
 	if [ "(*)" == "node2vec" ] ; then
-		nod2vec.py -i filter_similarity)/similarity_matrix_bin -o kernel_matrix_bin
+		nod2vec.py -i filter_disparity)/similarity_matrix_bin -o kernel_matrix_bin
 		mv kernel_matrix_bin.npy kernel_matrix_bin
 	else
-		NetAnalyzer.rb -i filter_similarity)/similarity_matrix_bin -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
+		NetAnalyzer.rb -i filter_disparity)/similarity_matrix_bin -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
 	fi
 	if [ -s kernel_matrix_bin ] ; then
-		echo -e "$annotation_(*)\t$annotation\t(*)\t$kern_net_path" > ugot_path # ../../ugot_path
+		echo -e "$annotation_(*)\t$annotation\t(*)\t$kern_net_path" > ugot_path 
 	else 
   		exit 1
   	fi
@@ -91,7 +134,7 @@ stats_kernels_[$kernels_varflow]){
 	text2binary_matrix.rb -i !calc_kernel_*!/kernel_matrix_bin -o kernel_matrix_undo -t bin -s > kernel_metrics
 	if [ -s kernel_matrix_undo ] ; then
 		rm kernel_matrix_undo
-		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' kernel_metrics >> ../../../uncomb_kernel_metrics
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' kernel_metrics > uncomb_kernel_metrics
 	else 
   		exit 1
   	fi

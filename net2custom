@@ -1,12 +1,12 @@
-Net 	Ontology	Type	Code	Filter	Process
-phenotype	HPO	ontology	HP:0000001	NF	kernel
-disease	MONDO	ontology	-	NF	kernel
-molecular_function	GO	ontology	GO:0003674	NF	kernel
-biological_process	GO	ontology	GO:0008150	NF	kernel
-cellular_component	GO	ontology	GO:0005575	NF	kernel
-protein_interaction_unweighted	-	network	-	NF	kernel
-protein_interaction_weighted	-	network	-	NF	kernel
-pathway	-	network	-	NF	kernel
-genetic_interaction_unweighted	-	network	-	NF	kernel
-genetic_interaction_weighted	-	network	-	NF	umap
-paper_coDep	-	network	-	NF	kernel
+Net 	Ontology	Type	Code	cutoff_filter	disparity_filter	Binarize	Process
+phenotype	HPO	ontology	HP:0000001	-	F	B	kernel
+disease	MONDO	ontology	-	-	F	B	kernel
+molecular_function	GO	ontology	GO:0003674	-	F	B	kernel
+biological_process	GO	ontology	GO:0008150	-	F	B	kernel
+cellular_component	GO	ontology	GO:0005575	-	F	B	kernel
+protein_interaction_unweighted	-	network	-	-	F	B	kernel
+protein_interaction_weighted	-	network	-	700	F	B	kernel
+pathway	-	network	-	-	F	B	kernel
+genetic_interaction_unweighted	-	network	-	-	F	B	kernel
+genetic_interaction_weighted	-	network	-	-	F	B	umap
+paper_coDep	-	network	-	-	F	NB	kernel
