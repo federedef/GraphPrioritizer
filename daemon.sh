@@ -14,9 +14,9 @@ output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction_weighted pathway genetic_interaction_weighted" 
-#disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction paper_coDep
-#disease phenotype molecular_function biological_process cellular_component protein_interaction_unweighted pathway
+annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted" 
+# disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted
+# disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted
 kernels="ka rf ct el node2vec" #ka ct el rf
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom' 
@@ -97,8 +97,10 @@ elif [ "$exec_mode" == "process_download" ] ; then
   # PROCESS PROTEIN INTERACTIONS # | head -n 200 
   cat ./input/input_raw/string_data.v11.5.txt | tr -s " " "\t" > string_data.v11.5.txt
   idconverter.rb -d ./translators/Ensemble_HGNC -i string_data.v11.5.txt -c 0,1 > ./input/input_raw/interaction_scored && rm string_data.v11.5.txt
-  awk '{OFS="\t"}{if ( $3 > 700 ) {print $1,$2}}' ./input/input_raw/interaction_scored > ./input/input_processed/protein_interaction_unweighted # && rm ./input_raw/interaction_scored
-  awk '{OFS="\t"}{if ( $3 > 700 ) {print $1,$2,$3}}' ./input/input_raw/interaction_scored > .input/input_processed/protein_interaction_weighted
+  #awk '{OFS="\t"}{print $1,$2}' ./input/input_raw/interaction_scored > ./input/input_processed/protein_interaction_unweighted # && rm ./input_raw/interaction_scored
+  # if ( $3 > 700 )
+  #awk '{OFS="\t"}{print $1,$2,$3}' ./input/input_raw/interaction_scored > .input/input_processed/protein_interaction_weighted
+  awk '{OFS="\t"}{print $1,$2,$3}' ./input/input_raw/interaction_scored > ./input/input_processed/protein_interaction
 
   # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 100
   sed 's/([0-9]*)//1g' ./input/input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/input_raw/CRISPR_gene_effect_symbol
@@ -198,15 +200,16 @@ elif [ "$exec_mode" == "input_stats" ] ; then
 # OPTIONAL STAGE : STABLISH THE STATS FOR EACH LAYER
 ##################################################################
   
-  # TODO: Adapt this area.
-
+  if [ -s $output_folder/input_stats ] ; then
+    rm -r $output_folder/input_stats
+  fi
   mkdir -p $output_folder/input_stats
 
   for annotation in $annotations ; do 
 
       autoflow_vars=`echo " 
       \\$annotation=${annotation},
-      \\$input_path=$input_path,
+      \\$input_path=$input_path/input,
       \\$net2custom=$net2custom
       " | tr -d [:space:]`
 
@@ -234,7 +237,6 @@ elif [ "$exec_mode" == "kernels" ] ; then
       " | tr -d [:space:]`
 
       process_type=`grep -P "^$annotation" $net2custom | cut -f 8`
-      echo "$process_type"
       if [ "$process_type" == "kernel" ] ; then
         AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt 
       elif [ "$process_type" == "umap" ]; then
@@ -287,6 +289,9 @@ elif [ "$exec_mode" == "integrate" ] ; then
   # STAGE 2.3 INTEGRATE THE KERNELS
   mkdir -p $output_folder/integrations
   cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path # What I got?
+
+  #cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path1
+  #grep 'disease\|molecular_function' $output_folder/similarity_kernels/ugot_path1 > $output_folder/similarity_kernels/ugot_path
 
   for integration_type in ${integration_types} ; do 
 

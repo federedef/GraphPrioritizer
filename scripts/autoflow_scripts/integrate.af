@@ -5,7 +5,8 @@ integrate_kernel_[$kernels_varflow]){
 	source ~soft_bio_267/initializes/init_ruby
 	source ~soft_bio_267/initializes/init_netanalyzer
 	echo -e "$integration_type_(*)\t$integration_type\t(*)" > tracker
-	folder_kernel_paths=`awk '{ if ( $1 ~ /(*)/ ) {print $4}}' $ugot_path | tr "\n" " "`
+	folder_kernel_paths=`grep -w '\(*)' $ugot_path | awk '{ print $4 }' | tr "\n" " "`
+	echo -e "$folder_kernel_paths"
 	integrate_path=`pwd`
 	path_kernels=`echo "$folder_kernel_paths" | sed 's/ /\/kernel_matrix_bin /g'`
 	path_nodes=`echo "$folder_kernel_paths" | sed 's/ /\/kernel_matrix_bin.lst /g'`

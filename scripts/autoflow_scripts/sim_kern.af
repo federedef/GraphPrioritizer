@@ -1,8 +1,9 @@
-calc_similarity){
+%calc_similarity){
 	resources: -m '60gb' -t '4-00:00:00'
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
 	source ~soft_bio_267/initializes/init_netanalyzer
+	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	source ~soft_bio_267/initializes/init_R
 
 	echo -e "$annotation_sim" > tracker
@@ -49,10 +50,10 @@ calc_similarity){
 	fi
 }
 
-
 list2matrix_similarity){
 	resources: -m '60gb' -t '1-00:00:00'
-	source ~soft_bio_267/initializes/init_netanalyzer
+	#source ~soft_bio_267/initializes/init_netanalyzer
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	echo -e "$annotation_sim" > tracker
 	?
 	text2binary_matrix.rb -i calc_similarity)/similarity_list -o similarity_matrix_bin -t pair -s > similarity_metrics
@@ -63,6 +64,7 @@ list2matrix_similarity){
 		exit 1
 	fi
 }
+
 
 filter_cutoff){
 	resources: -m '60gb' -t '1-00:00:00'
@@ -83,22 +85,27 @@ filter_cutoff){
 		elif [ $binarize_factor == "NB" ] ; then
 			text2binary_matrix.rb -i list2matrix_similarity)/similarity_matrix_bin -o similarity_matrix_bin -t bin -c $cutoff_filter -s > filtered_similarity_metrics
 		fi
+		if [ -s filtered_similarity_metrics ] ; then 
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' filtered_similarity_metrics > tmp
+			mv tmp filtered_similarity_metrics
+		else
+			exit 1
+		fi
 	else 
-		cp filter_cutoff)/similarity_matrix_bin ./similarity_matrix_bin
-        cp filter_cutoff)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
+		cp list2matrix_similarity)/similarity_matrix_bin ./similarity_matrix_bin
+        cp list2matrix_similarity)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
     fi
-	if [ -s filtered_similarity_metrics ] ; then 
-		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' filtered_similarity_metrics > tmp
-		mv tmp filtered_similarity_metrics
-	else
-		exit 1
-	fi
+
+    if [ ! -s similarity_matrix_bin ] ; then
+    	exit 1
+    fi
 }
 
 filter_disparity){
 	resources: -c 8 -m '60gb' -t '5-00:00:00'
 	source ~soft_bio_267/initializes/init_R
-	source ~soft_bio_267/initializes/init_netanalyzer
+	#source ~soft_bio_267/initializes/init_netanalyzer
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	echo -e "$annotation_sim" > tracker
 	disparity_filter=`grep -P '^$annotation' $net2custom | cut -f 6`
 	binarize_factor=`grep -P '^$annotation' $net2custom | cut -f 7`
@@ -123,7 +130,7 @@ filter_disparity){
 		else
 			exit 1
 		fi
-	elif [ $disparity_filter == "NF" ] ; then
+	elif [ $disparity_filter == "-" ] ; then
 		cp filter_cutoff)/similarity_matrix_bin ./similarity_matrix_bin
         cp filter_cutoff)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
     fi
@@ -137,7 +144,8 @@ calc_kernel_[$kernels_varflow]){
 	resources: -c 16 -m '60gb' -t '2-00:00:00'
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
-	source ~soft_bio_267/initializes/init_netanalyzer
+	#source ~soft_bio_267/initializes/init_netanalyzer
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	module load python/3.8.8
 	echo -e "$annotation_(*)\t$annotation\t(*)" > tracker
 	cp filter_disparity)/similarity_matrix_bin.lst kernel_matrix_bin.lst # To pass the list of node names.
@@ -145,6 +153,9 @@ calc_kernel_[$kernels_varflow]){
 	export OMP_NUM_THREADS=[cpu]
 	if [ -s ugot_path ] ; then
 		rm ugot_path
+	fi
+	if [ -s kernel_matrix_bin ] ; then
+		rm kernel_matrix_bin
 	fi
 	?
 	if [ "(*)" == "node2vec" ] ; then
@@ -162,7 +173,8 @@ calc_kernel_[$kernels_varflow]){
 
 stats_kernels_[$kernels_varflow]){
 	resources: -m '60gb' -t '1-00:00:00'
-	source ~soft_bio_267/initializes/init_netanalyzer
+	#source ~soft_bio_267/initializes/init_netanalyzer
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	ln -s !calc_kernel_*!/tracker
 	?
 	text2binary_matrix.rb -i !calc_kernel_*!/kernel_matrix_bin -o kernel_matrix_undo -t bin -s > kernel_metrics
