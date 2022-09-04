@@ -58,7 +58,7 @@ files2befiltered = options[:files2befiltered]
 columns2befiltered = options[:columns2befiltered]
 files_columns2befiltered = files2befiltered.zip(columns2befiltered)
 
-puts options[:terms2befiltered]
+#puts options[:terms2befiltered]
 terms2befiltered = load_file(options[:terms2befiltered]).map{|term| term[0]}
 output_path = options[:output_path]
 

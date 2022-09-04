@@ -288,14 +288,15 @@ elif [ "$exec_mode" == "integrate" ] ; then
   #########################################################
   # STAGE 2.3 INTEGRATE THE KERNELS
   mkdir -p $output_folder/integrations
-  cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path # What I got?
-
-  #cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path1
-  #grep 'disease\|molecular_function' $output_folder/similarity_kernels/ugot_path1 > $output_folder/similarity_kernels/ugot_path
+  #cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path # What I got?
+  
+  echo -e "$annotations" | tr -s " " "\n" > uwant
+  cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path
+  filter_by_whitelist.rb -f $output_folder/similarity_kernels/ugot_path -c "1;" -t uwant -o $output_folder/similarity_kernels
 
   for integration_type in ${integration_types} ; do 
 
-      ugot_path="$output_folder/similarity_kernels/ugot_path"
+      ugot_path="$output_folder/similarity_kernels/filtered_ugot_path"
 
       autoflow_vars=`echo "
       \\$integration_type=${integration_type},
@@ -315,6 +316,11 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
   fi
   mkdir -p $output_folder/integrated_rankings
   cat  $output_folder/integrations/*/*/ugot_path > $output_folder/integrations/ugot_path # What I got?
+  
+  #echo -e "$annotations" | tr -s " " "\n" > uwant
+  #cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path
+  #filter_by_whitelist.rb -f $output_folder/similarity_kernels/ugot_path -c "1;" -t uwant -o $output_folder/similarity_kernels
+
   method=$2
 
   for integration_type in ${integration_types} ; do 
