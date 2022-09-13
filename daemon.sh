@@ -293,6 +293,7 @@ elif [ "$exec_mode" == "integrate" ] ; then
   echo -e "$annotations" | tr -s " " "\n" > uwant
   cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path
   filter_by_whitelist.rb -f $output_folder/similarity_kernels/ugot_path -c "1;" -t uwant -o $output_folder/similarity_kernels
+  rm uwant
 
   for integration_type in ${integration_types} ; do 
 

@@ -50,10 +50,10 @@
 	fi
 }
 
-list2matrix_similarity){
+%list2matrix_similarity){
 	resources: -m '60gb' -t '1-00:00:00'
-	#source ~soft_bio_267/initializes/init_netanalyzer
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
+	source ~soft_bio_267/initializes/init_netanalyzer
+	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	echo -e "$annotation_sim" > tracker
 	?
 	text2binary_matrix.rb -i calc_similarity)/similarity_list -o similarity_matrix_bin -t pair -s > similarity_metrics
@@ -68,8 +68,8 @@ list2matrix_similarity){
 
 filter_cutoff){
 	resources: -m '60gb' -t '1-00:00:00'
-	#source ~soft_bio_267/initializes/init_netanalyzer
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
+	source ~soft_bio_267/initializes/init_netanalyzer
+	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	echo -e "$annotation_sim" > tracker
 	cutoff_filter=`grep -P '^$annotation' $net2custom | cut -f 5`
 	binarize_factor=`grep -P '^$annotation' $net2custom | cut -f 7`
@@ -104,8 +104,8 @@ filter_cutoff){
 filter_disparity){
 	resources: -c 8 -m '60gb' -t '5-00:00:00'
 	source ~soft_bio_267/initializes/init_R
-	#source ~soft_bio_267/initializes/init_netanalyzer
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
+	source ~soft_bio_267/initializes/init_netanalyzer
+	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	echo -e "$annotation_sim" > tracker
 	disparity_filter=`grep -P '^$annotation' $net2custom | cut -f 6`
 	binarize_factor=`grep -P '^$annotation' $net2custom | cut -f 7`
@@ -144,8 +144,8 @@ calc_kernel_[$kernels_varflow]){
 	resources: -c 16 -m '60gb' -t '2-00:00:00'
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
-	#source ~soft_bio_267/initializes/init_netanalyzer
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
+	source ~soft_bio_267/initializes/init_netanalyzer
+	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	module load python/3.8.8
 	echo -e "$annotation_(*)\t$annotation\t(*)" > tracker
 	cp filter_disparity)/similarity_matrix_bin.lst kernel_matrix_bin.lst # To pass the list of node names.
@@ -173,8 +173,8 @@ calc_kernel_[$kernels_varflow]){
 
 stats_kernels_[$kernels_varflow]){
 	resources: -m '60gb' -t '1-00:00:00'
-	#source ~soft_bio_267/initializes/init_netanalyzer
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
+	source ~soft_bio_267/initializes/init_netanalyzer
+	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	ln -s !calc_kernel_*!/tracker
 	?
 	text2binary_matrix.rb -i !calc_kernel_*!/kernel_matrix_bin -o kernel_matrix_undo -t bin -s > kernel_metrics
