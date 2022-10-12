@@ -162,7 +162,7 @@ calc_kernel_[$kernels_varflow]){
 		nod2vec.py -i filter_disparity)/similarity_matrix_bin -o kernel_matrix_bin
 		mv kernel_matrix_bin.npy kernel_matrix_bin
 	else
-		NetAnalyzer.rb -i filter_disparity)/similarity_matrix_bin -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
+		NetAnalyzer.rb -i filter_disparity)/similarity_matrix_bin -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin -z
 	fi
 	if [ -s kernel_matrix_bin ] ; then
 		echo -e "$annotation_(*)\t$annotation\t(*)\t$kern_net_path" > ugot_path 
