@@ -16,7 +16,6 @@ report_folder=$output_folder/report
 # Custom variables.
 annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted" 
 # disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted
-# disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted
 kernels="ka rf ct el node2vec" #ka ct el rf
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom' 
@@ -133,65 +132,74 @@ elif [ "$exec_mode" == "white_list" ] ; then
   echo "Annotation files filtered"
   cd ../..
 
-elif [ "$exec_mode" == "backup_preparation" ] ; then 
+elif [ "$exec_mode" == "control_preparation" ] ; then 
   source ~soft_bio_267/initializes/init_R
-  
-  mkdir -p $control_genes_folder/backupgens/processed_backups 
+
+  # Backup Controls #
+  ###################
+  mkdir -p $control_genes_folder/backupgens/processed_data 
   
   # POSITIVE CONTROL #
   # AdHoc added backups
-  cp $control_genes_folder/backupgens/data/AdHoc_Backups $control_genes_folder/backupgens/processed_backups/AdHoc_Backups
+  cp $control_genes_folder/backupgens/data/AdHoc_Backups $control_genes_folder/backupgens/processed_data/AdHoc_Backups
   # Big Papi.
   grep -w 'All 6' $control_genes_folder/backupgens/data/Big_Papi | awk '{FS="\t";OFS="\t"}{if ( $6 <= 0.05) print $1,$2}' > $control_genes_folder/backupgens/data/filtered_Big_Papi
   # Digenic Paralog.
   awk '{FS="\t"}{if ( $2 <= 0.05 && $3 <= 0.05 && $4 <= 0.05 && $5 <= 0.05 && $6 <= 0.05 && $7 <= 0.05 && $8 <= 0.05 && $9 <= 0.05 && $10 <= 0.05 && $11 <= 0.05 && $12 <= 0.05) print $1}' $control_genes_folder/backupgens/data/Digenic_Paralog | \
    tr -s ";" "\t" | tr -d "\"" > $control_genes_folder/backupgens/data/filtered_Digenic_Paralog
-
   # Download the necessary tab to translation from symbol to HGNC.
   if [ ! -s ./translators/symbol_HGNC ] ; then 
+    echo "Obtaining dich"
     wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./translators/HGNC_symbol
     awk '{OFS="\t"}{print $2,$1}' ./translators/HGNC_symbol > ./translators/symbol_HGNC
+    rm HGNC_symbol
   fi
 
-  idconverter.rb -d ./translators/symbol_HGNC -i $control_genes_folder/backupgens/data/filtered_Big_Papi -c 0,1 > $control_genes_folder/backupgens/processed_backups/Big_Papi
-  idconverter.rb -d ./translators/symbol_HGNC -i $control_genes_folder/backupgens/data/filtered_Digenic_Paralog -c 0,1 > $control_genes_folder/backupgens/processed_backups/Digenic_Paralog
+  idconverter.rb -d ./translators/symbol_HGNC -i $control_genes_folder/backupgens/data/filtered_Big_Papi -c 0,1 > $control_genes_folder/backupgens/processed_data/Big_Papi
+  idconverter.rb -d ./translators/symbol_HGNC -i $control_genes_folder/backupgens/data/filtered_Digenic_Paralog -c 0,1 > $control_genes_folder/backupgens/processed_data/Digenic_Paralog
   
-  cat $control_genes_folder/backupgens/processed_backups/* | sort | uniq -u  > $control_genes_folder/backupgens/backup_gens
+  cat $control_genes_folder/backupgens/processed_data/* | sort | uniq -u  > $control_genes_folder/backupgens/backup_gens
 
   # NEGATIVE CONTROL #
   grep -w 'All 6' $control_genes_folder/backupgens/data/Big_Papi | awk '{FS="\t";OFS="\t"}{if ( $7 <= 0.05) print $1,$2}' > $control_genes_folder/backupgens/data/filtered_Big_Papi_negative_control
   idconverter.rb -d ./translators/symbol_HGNC -i $control_genes_folder/backupgens/data/filtered_Big_Papi_negative_control -c 0,1 | awk '{if (!( $1 == $2 )) print $0 }' > $control_genes_folder/backupgens/non_backup_gens
   
+  echo "Obtaining Paralogs genes"
   # Finally add new column indicating which pairs are paralogs in NEGATIVE AND POSITIVE CONTROLS.
   which_are_paralogs.R -i $control_genes_folder/backupgens/backup_gens -o "$control_genes_folder/backupgens" -O "backup_gens"
   which_are_paralogs.R -i $control_genes_folder/backupgens/non_backup_gens -o "$control_genes_folder/backupgens" -O "non_backup_gens"
+
+  # Diseases Control #
+  ####################
+  mkdir -p $control_genes_folder/diseasegens/processed_data 
+
+  process_diseasome.sh diseasome_from_paper.tsv $control_genes_folder/diseasegens
+  # Getting negatives
+  get_negatives_from_disease.rb -i $control_genes_folder/diseasegens/processed_data/diseasome_disgroup_genes -o "$control_genes_folder/diseasegens/non_disease_gens"
+  # Getting Positives
+  cut -f 1,3 $control_genes_folder/diseasegens/processed_data/diseasome_disgroup_genes > "$control_genes_folder/diseasegens/disease_gens"
+
 
 elif [ "$exec_mode" == "control_type" ] ; then 
 
 ##################################################################
 # OPTIONAL STAGE : SEE IF THE RELATION BACKUP-GENSEED IS SYMMETRIC
 ##################################################################
-  pos_or_neg=$3
-  filter_feature=$4 # Paralogs, Not_Paralogs, ".*"
+  filter_feature=$3 # Paralogs, Not_Paralogs, ".*"
 
   echo "$filter_feature"
 
   if [ $add_opt == "reverse" ] ; then 
-    if [ $pos_or_neg == "positive" ] ; then 
-      awk '{OFS="\t"}{print $2,$1,$3}' $control_genes_folder/backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
-    elif [ $pos_or_neg == "negative" ] ; then
-      awk '{OFS="\t"}{print $2,$1,$3}' $control_genes_folder/backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
-    fi    
+      awk '{OFS="\t"}{print $2,$1,$3}' $control_genes_folder/backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_pos
+      awk '{OFS="\t"}{print $2,$1,$3}' $control_genes_folder/backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_neg   
   elif [ $add_opt == "right" ] ; then 
-    if [ $pos_or_neg == "positive" ] ; then 
-      awk '{OFS="\t"}{print $1,$2,$3}' $control_genes_folder/backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
-    elif [ $pos_or_neg == "negative" ] ; then
-      awk '{OFS="\t"}{print $1,$2,$3}' $control_genes_folder/backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_gens 
-    fi        
+      awk '{OFS="\t"}{print $1,$2,$3}' $control_genes_folder/backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_pos
+      awk '{OFS="\t"}{print $1,$2,$3}' $control_genes_folder/backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_neg
   fi
 
   if [ $add_opt == "disease" ] ; then
-    cp $control_genes_folder/diseasegens/processed_diseasome ./control_gens
+    cp $control_genes_folder/diseasegens/disease_gens ./control_pos
+    cp $control_genes_folder/diseasegens/non_disease_gens ./control_neg
   fi
 
 elif [ "$exec_mode" == "input_stats" ] ; then 
@@ -272,6 +280,8 @@ elif [ "$exec_mode" == "ranking" ] ; then
         \\$folder_kernel_path=$folder_kernel_path,
         \\$input_name='kernel_matrix_bin',
         \\$control_gens=$control_gens,
+        \\$control_pos=$control_pos,
+        \\$control_neg=$control_neg,
         \\$output_name='non_integrated_rank',
         \\$method=$method,
         \\$geneseeds=$input_path/geneseeds

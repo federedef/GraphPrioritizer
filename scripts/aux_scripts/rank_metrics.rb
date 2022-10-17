@@ -24,7 +24,7 @@ def report_stats(data)
   report_stats << ['Max', data.max.round(3)]
   report_stats << ['Min', data.min.round(3)]
   report_stats << ['Average', data.mean.round(3)]
-  report_stats << ['Standard Deviation', data.standard_deviation.round(3)]
+  report_stats << ['Standard_Deviation', data.standard_deviation.round(3)]
   report_stats << ['Q1', data.get_quantiles(0.25).round(3)]
   report_stats << ['Median', data.get_quantiles(0.5).round(3)]
   report_stats << ['Q3', data.get_quantiles(0.75).round(3)]

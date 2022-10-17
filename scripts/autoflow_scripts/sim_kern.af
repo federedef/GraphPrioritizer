@@ -162,7 +162,7 @@ calc_kernel_[$kernels_varflow]){
 		nod2vec.py -i filter_disparity)/similarity_matrix_bin -o kernel_matrix_bin
 		mv kernel_matrix_bin.npy kernel_matrix_bin
 	else
-		NetAnalyzer.rb -i filter_disparity)/similarity_matrix_bin -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin -z
+		NetAnalyzer.rb -i filter_disparity)/similarity_matrix_bin -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
 	fi
 	if [ -s kernel_matrix_bin ] ; then
 		echo -e "$annotation_(*)\t$annotation\t(*)\t$kern_net_path" > ugot_path 
@@ -175,6 +175,10 @@ stats_kernels_[$kernels_varflow]){
 	resources: -m '60gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_netanalyzer
 	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
+	if [ -s tracker ] ; then
+		rm tracker
+		# TODO: Remove this part and check
+	fi
 	ln -s !calc_kernel_*!/tracker
 	?
 	text2binary_matrix.rb -i !calc_kernel_*!/kernel_matrix_bin -o kernel_matrix_undo -t bin -s > kernel_metrics
