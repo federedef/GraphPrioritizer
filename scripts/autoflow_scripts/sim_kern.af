@@ -141,7 +141,7 @@ filter_disparity){
 }
 
 calc_kernel_[$kernels_varflow]){
-	resources: -c 16 -m '60gb' -t '2-00:00:00'
+	resources: -c 16 -m '120gb' -t '2-00:00:00'
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
 	source ~soft_bio_267/initializes/init_netanalyzer
@@ -172,7 +172,7 @@ calc_kernel_[$kernels_varflow]){
 }
 
 stats_kernels_[$kernels_varflow]){
-	resources: -m '60gb' -t '1-00:00:00'
+	resources: -m '120gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_netanalyzer
 	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	if [ -s tracker ] ; then

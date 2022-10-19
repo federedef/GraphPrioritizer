@@ -15,8 +15,9 @@ end
 def add_tags(file2tag, tags, group_column=0, cases_column=1)
   tagged_file=[]
   file2tag.map do |row|
-    group = row[group_column]
+    group = row[group_column].to_s
     case_for_group = row[cases_column]
+    print case_for_group
     if !tags[group].nil?
       row << tags[group][case_for_group] if !tags[group][case_for_group].nil?
       tagged_file << row
@@ -84,7 +85,13 @@ end.parse!
 #############################################################
 
 file2tag = load_file(options[:input_file])
+
 tags_file = load_file(options[:tag_file])
+
 tags = tagfile2hash(tags_file)
+print tags
 file_with_tags = add_tags(file2tag, tags, options[:group_column], options[:cases_column])
+puts "ey4"
+print file_with_tags
 write_file(options[:output_name],file_with_tags) if !file_with_tags.nil?
+puts "ey5"

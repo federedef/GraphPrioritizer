@@ -15,11 +15,13 @@ report_folder=$output_folder/report
 
 # Custom variables.
 annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted" 
+annotations="phenotype"
 # disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted
 kernels="ka rf ct el node2vec" #ka ct el rf
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom' 
-control_gens=$input_path'/control_gens' # What are its backups?
+control_pos=$input_path'/control_pos'
+control_neg=$input_path'/control_neg'
 
 kernels_varflow=`echo $kernels | tr " " ";"`
 

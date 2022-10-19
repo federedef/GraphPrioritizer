@@ -3,66 +3,49 @@ rank_genes_classic){
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_netanalyzer
 	. ~soft_bio_267/initializes/init_ruby
-	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
+	. ~soft_bio_267/initializes/init_R
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	if [ $method != "classic" ] ; then
 		exit 0
 	fi
 	echo -e "$param1_$kernel\t$param1\t$kernel" > tracker
 	ranking_path=`pwd`
-	##
+	## Defining seed genes
     awk 'BEGIN{OFS="\t";}{print $1,$1}' $control_pos > seed_by_group
-	##
+	## Obtaining genes of interest
 	cat $control_pos $control_neg | aggregate_column_data.rb -i - -x 0 -a 1 > filter
-	##
+	## Obtaining tags for group-case
 	desaggregate_column_data.rb -i $control_pos -x 1 |& awk '{OFS="\t"}{print $1,$2,1}' > tags
 	desaggregate_column_data.rb -i $control_neg -x 1 |& awk '{OFS="\t"}{print $1,$2,0}' >> tags
-	##
 	?
 	ranker_gene.rb -k $folder_kernel_path/$input_name -n $folder_kernel_path/$input_name.lst -s seed_by_group -f filter
-	# ranked_genes_all_candidates
-	# Now we get the ranked files and we add the tags
+	# Add tags to ranked_genes_all_candidates.
 	add_tags2ranks.rb -i ranked_genes_all_candidates -g 5 -c 0 -t tags -o tagged_ranks.txt
+	number_of_genes=`wc -l tagged_ranks.txt | cut -f1 -d " "`
 
-	# Add ROCR 
-	# Add metrics for positive and negatives in RANK.
+	# Obtaining Metrics And statistical summary
+    if [ $number_of_genes -ge 1 ] ; then 
+		ROCanalysis.R -i tagged_ranks.txt -s 3 -t 7 -b 10000 -S backupgenes -m ROC -o "preobserved_all_genes" -e -z -R
+		sed '1d' preobserved_all_genes_summary | cut -f 3,4 > all_genes_summary
+		sed '1d' preobserved_all_genes_measures |  cut -f 2- > all_genes_measures
 
-	number_of_positive_genes=`wc -l positive_genes_all_candidates | cut -f1 -d " "`
-	number_of_negative_genes=`wc -l negative_genes_all_candidates | cut -f1 -d " "`
-
-
-	# Obtaining Positives Metrics and CDF.
-    if [ $number_of_positive_genes -ge 1 ] ; then 
-		rank_metrics.rb -r positive_genes_all_candidates -e "stats" > prerank_metrics_from_positive
-		rank_metrics.rb -r positive_genes_all_candidates  -e "ranks" > prerank_list
-		if [ -a prerank_metrics_from_positive ] ; then
+		if [ -s all_genes_summary ] ; then
 			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' \ 
-			  prerank_metrics_from_positive > $output_name_positive_metrics 
-			# ../../../$output_name_metrics TODO: Try this.
-			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' prerank_list > $output_name_cdf 
-            #../../../$output_name_list
+			  all_genes_summary > $output_name_ranked_metrics 
 		else 
 		  	exit 0
 		fi
+
+		if [ -s all_genes_measures ] ; then
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' all_genes_measures > $output_name_ranked_measures
+		else 
+		  	exit 0
+		fi
+
 	else 
 		exit 0
 	fi
 
-
-	# Obtaining ROCR metrics from positives and negatives genes.
-	awk 'BEGIN{OFS="\t";}{print $0,1}' positive_genes_all_candidates > positives_with_tags
-	awk 'BEGIN{OFS="\t";}{print $0,0}' negative_genes_all_candidates > negatives_with_tags
-	cat positives_with_tags negatives_with_tags > all_genes_with_tags.txt
-
-	ROCanalysis.R -i all_genes_with_tags.txt -s 3 -t 7 -S backupgenes -o "preobserved_all_genes" -e
-	sed -i '1d' preobserved_all_genes_measures
-	cut -f 2,3,4,5,6,7 preobserved_all_genes_measures > observed_all_genes_measures
-
-	if [ -a observed_all_genes_measures ] ; then
-		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$0}' \ 
-		  observed_all_genes_measures > $output_name_observed_all_genes_measures
-	else 
-	  	exit 0
-	fi
 
 }
 
@@ -71,31 +54,49 @@ rank_genes_with_leave_one_out){
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_netanalyzer
 	. ~soft_bio_267/initializes/init_ruby
-	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
+	. ~soft_bio_267/initializes/init_R
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	if [ $method != "leave_one_out" ] ; then
 		exit 0
 	fi
 	echo -e "$param1_$kernel\t$param1\t$kernel" > tracker
 	ranking_path=`pwd`
+	## Defining seed genes
+    cat $control_pos > seed_by_group
+	## Obtaining genes of interest
+	cat $control_neg > filter
+	## Obtaining tags for group-case
+	desaggregate_column_data.rb -i $control_pos -x 1 |& awk '{OFS="\t"}{print $1,$2,1}' > tags
+	desaggregate_column_data.rb -i $control_neg -x 1 |& awk '{OFS="\t"}{print $1,$2,0}' >> tags
 	?
-	ranker_gene.rb -k $folder_kernel_path/$input_name -n $folder_kernel_path/$input_name.lst -s $control_pos -l -f $control_neg
-	# Realizar un etiquetado pos_neg
-	# Seleccionar los pos para realizar los cálculos de cdf, etc.  
-	number_of_all_candidates=`wc -l ranked_genes_all_candidates | cut -f1 -d " "`
-    if [ $number_of_all_candidates -ge 1 ] ; then 
-		rank_metrics.rb -r ranked_genes_all_candidates -e "stats" > prerank_metrics
-		rank_metrics.rb -r ranked_genes_all_candidates  -e "ranks" > prerank_list
-		if [ -a prerank_metrics ] ; then
+	ranker_gene.rb -k $folder_kernel_path/$input_name -n $folder_kernel_path/$input_name.lst -s seed_by_group -l -f filter
+	awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/_[0-9]/,"",$6); print $0}' ranked_genes_all_candidates > processed_ranked_genes
+	# Add tags to ranked_genes_all_candidates.
+	add_tags2ranks.rb -i processed_ranked_genes -g 5 -c 0 -t tags -o tagged_ranks.txt
+	number_of_genes=`wc -l tagged_ranks.txt | cut -f1 -d " "`
+
+	# Obtaining Metrics And statistical summary
+    if [ $number_of_genes -ge 1 ] ; then 
+		ROCanalysis.R -i tagged_ranks.txt -s 3 -t 7 -b 1000 -S backupgenes -m ROC -o "preobserved_all_genes" -e -z -R
+		sed '1d' preobserved_all_genes_summary | cut -f 3,4 > all_genes_summary
+		sed '1d' preobserved_all_genes_measures |  cut -f 2- > all_genes_measures
+
+		if [ -s all_genes_summary ] ; then
 			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' \ 
-			  prerank_metrics > $output_name_metrics
-			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' prerank_list > $output_name_list 
+			  all_genes_summary > $output_name_ranked_metrics 
 		else 
-		  	exit 1
+		  	exit 0
 		fi
+
+		if [ -s all_genes_measures ] ; then
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' all_genes_measures > $output_name_ranked_measures
+		else 
+		  	exit 0
+		fi
+
 	else 
 		exit 0
 	fi
-	# Seleccionar todo para llevar a cabo las métricas con ROCR.
 }
 
 rank_genes_production){
@@ -116,6 +117,3 @@ rank_genes_production){
 		exit 0
 	fi
 }
-
-
-
