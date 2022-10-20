@@ -25,19 +25,21 @@ rank_genes_classic){
 
 	# Obtaining Metrics And statistical summary
     if [ $number_of_genes -ge 1 ] ; then 
-		ROCanalysis.R -i tagged_ranks.txt -s 3 -t 7 -b 10000 -S backupgenes -m ROC -o "preobserved_all_genes" -e -z -R
-		sed '1d' preobserved_all_genes_summary | cut -f 3,4 > all_genes_summary
+		ROCanalysis.R -i tagged_ranks.txt -s 3 -t 7 -S backupgenes -o "preobserved_all_genes" -m "ROC" -M "acc:tpr:fpr:prec:rec" -e -R
 		sed '1d' preobserved_all_genes_measures |  cut -f 2- > all_genes_measures
-
-		if [ -s all_genes_summary ] ; then
-			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' \ 
-			  all_genes_summary > $output_name_ranked_metrics 
+		if [ -s all_genes_measures ] ; then
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' all_genes_measures > $output_name_measures
 		else 
 		  	exit 0
 		fi
-
-		if [ -s all_genes_measures ] ; then
-			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' all_genes_measures > $output_name_ranked_measures
+		
+		ROCanalysis.R -i tagged_ranks.txt -s 3 -t 7 -b 1000 -S backupgenes -o "preobserved_all_genes" -z -m "ROC" -M "acc:tpr:fpr:auc:f" -R
+		sed '1d' preobserved_all_genes_summary | cut -f 3,4 > all_genes_summary
+		if [ -s all_genes_summary ] ; then
+			number_of_positives=`awk '{if($7 == 1) print $0}' tagged_ranks.txt | wc -l`
+			echo -e "positive_coverage\t${number_of_positives}" >> all_genes_summary
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' \ 
+			  all_genes_summary > $output_name_summary
 		else 
 		  	exit 0
 		fi
@@ -77,19 +79,21 @@ rank_genes_with_leave_one_out){
 
 	# Obtaining Metrics And statistical summary
     if [ $number_of_genes -ge 1 ] ; then 
-		ROCanalysis.R -i tagged_ranks.txt -s 3 -t 7 -b 1000 -S backupgenes -m ROC -o "preobserved_all_genes" -e -z -R
-		sed '1d' preobserved_all_genes_summary | cut -f 3,4 > all_genes_summary
+		ROCanalysis.R -i tagged_ranks.txt -s 3 -t 7 -S backupgenes -o "preobserved_all_genes" -m "ROC" -M "acc:tpr:fpr:prec:rec" -e -R
 		sed '1d' preobserved_all_genes_measures |  cut -f 2- > all_genes_measures
-
-		if [ -s all_genes_summary ] ; then
-			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' \ 
-			  all_genes_summary > $output_name_ranked_metrics 
+		if [ -s all_genes_measures ] ; then
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' all_genes_measures > $output_name_measures
 		else 
 		  	exit 0
 		fi
-
-		if [ -s all_genes_measures ] ; then
-			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' all_genes_measures > $output_name_ranked_measures
+		
+		ROCanalysis.R -i tagged_ranks.txt -s 3 -t 7 -b 1000 -S backupgenes -o "preobserved_all_genes" -z -m "ROC" -M "acc:tpr:fpr:auc:f" -R
+		sed '1d' preobserved_all_genes_summary | cut -f 3,4 > all_genes_summary
+		if [ -s all_genes_summary ] ; then
+			number_of_positives=`awk '{if($7 == 1) print $0}' tagged_ranks.txt | wc -l`
+			echo -e "positive_coverage\t${number_of_positives}" >> all_genes_summary
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' \ 
+			  all_genes_summary > $output_name_summary
 		else 
 		  	exit 0
 		fi

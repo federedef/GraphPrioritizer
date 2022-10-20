@@ -64,6 +64,8 @@ OptionParser.new do  |opts|
     options[:group_column] = item.to_i 
   end
 
+  
+
   options[:cases_column] = 1
   opts.on("-c","-case_column CASE", "The index to the column of cases") do |item|
     options[:cases_column]=item.to_i
@@ -89,9 +91,5 @@ file2tag = load_file(options[:input_file])
 tags_file = load_file(options[:tag_file])
 
 tags = tagfile2hash(tags_file)
-print tags
 file_with_tags = add_tags(file2tag, tags, options[:group_column], options[:cases_column])
-puts "ey4"
-print file_with_tags
 write_file(options[:output_name],file_with_tags) if !file_with_tags.nil?
-puts "ey5"

@@ -5,12 +5,12 @@
                 @hash_vars[name].unshift(tab_header)
         end
 
-        if !@hash_vars['parsed_non_integrated_rank_metrics'].nil?
-                order_columns('parsed_non_integrated_rank_metrics',0)
+        if !@hash_vars['parsed_non_integrated_rank_summary'].nil?
+                order_columns('parsed_non_integrated_rank_summary',0)
         end
 
-        if !@hash_vars['parsed_integrated_rank_metrics'].nil?
-                order_columns('parsed_integrated_rank_metrics',0)
+        if !@hash_vars['parsed_integrated_rank_summary'].nil?
+                order_columns('parsed_integrated_rank_summary',0)
         end
 
         if !@hash_vars['parsed_annotation_grade_metrics'].nil?
@@ -29,11 +29,11 @@
 Once this was done, the position for every known backup gene was obtained and the statistical descriptor of all the values calculated.</p>
 
         <div style="overflow: hidden";>
-                <p style="text-align:center;"><b>Table 1.</b> Backup position values for every kernel and net before integration.</p> 
+                <p style="text-align:center;"><b>Table 1.</b> Performance summary for every kernel and net before integration.</p> 
                 <%= 
-                if !@hash_vars['parsed_non_integrated_rank_metrics'].nil?
-                        table(id: "parsed_non_integrated_rank_metrics", text: true, header: true, 
-                                fields: [1,2,3,5,4,6,7],
+                if !@hash_vars['parsed_non_integrated_rank_summary'].nil?
+                        table(id: "parsed_non_integrated_rank_summary", text: true, header: true, 
+                                fields: [1,2,3,4,5,6,12],
                                 cell_align: ['left', 'center', 'center', 'center','center','center','center'],
                                 border: 2,
                                 attrib: {
@@ -47,11 +47,11 @@ Once this was done, the position for every known backup gene was obtained and th
         </div>
 
         <div style="overflow: hidden";>
-                <p style="text-align:center;"><b>Table 2.</b> Backup position values for every kernel after integration</p> 
+                <p style="text-align:center;"><b>Table 2.</b> Performance summary for every kernel after integration</p> 
                 <%=
-                if !@hash_vars['parsed_integrated_rank_metrics'].nil? 
-                        table(id: "parsed_integrated_rank_metrics", text: true, header: true, 
-                                fields: [1,2,3,5,4,6,7],
+                if !@hash_vars['parsed_integrated_rank_summary'].nil? 
+                        table(id: "parsed_integrated_rank_summary", text: true, header: true, 
+                                fields: [1,2,3,4,5,6,12],
                                 cell_align: ['left', 'center', 'center', 'center','center','center','center'],
                                 border: 2,
                                 attrib: {
@@ -67,8 +67,8 @@ Once this was done, the position for every known backup gene was obtained and th
         <div style="overflow: hidden";>
                 <p style="text-align:center;"><b>Backup Pairs Coverage By Layer</b></p> 
                 <%=
-                if !@hash_vars['parsed_non_integrated_rank_metrics'].nil? 
-                        barplot(id: "parsed_non_integrated_rank_metrics", fields: [1,3] , header: true, responsive: false,
+                if !@hash_vars['parsed_non_integrated_rank_summary'].nil? 
+                        barplot(id: "parsed_non_integrated_rank_summary", fields: [1,14] , header: true, responsive: false,
                                 height: '400px', width: '400px', x_label: 'Number of Backup pairs present', smp_attr: [1,2],
                                 title: "Backup Pairs Coverage By Layer",
                                 config: {
@@ -85,11 +85,11 @@ Once this was done, the position for every known backup gene was obtained and th
         <div style="overflow: hidden">
 
                 <%= 
-                if !@hash_vars['parsed_non_integrated_rank_metrics'].nil? 
-                        line(id: "parsed_non_integrated_rank_metrics", fields: [0, 8, 9, 10], header: true, row_names: true,
+                if !@hash_vars['parsed_non_integrated_rank_summary'].nil? 
+                        line(id: "parsed_non_integrated_rank_summary", fields: [0, 7, 13, 8], header: true, row_names: true,
                                 responsive: false,
                                 height: '400px', width: '400px', x_label: 'Percentile',
-                                title: "Distribution of the Backup genes percentiles",
+                                title: "Distribution of AUC in bootstrap",
                                 config: {
                                         'showLegend' => true,
                                         'graphOrientation' => 'vertical',
@@ -98,11 +98,11 @@ Once this was done, the position for every known backup gene was obtained and th
                 %>
 
                 <%=
-                if !@hash_vars['parsed_integrated_rank_metrics'].nil?
-                        line(id: "parsed_integrated_rank_metrics", fields: [0, 8, 9, 10], header: true, row_names: true,
+                if !@hash_vars['parsed_integrated_rank_summary'].nil?
+                        line(id: "parsed_integrated_rank_summary", fields:  [0, 7, 13, 8], header: true, row_names: true,
                                 responsive: false,
                                 height: '400px', width: '400px', x_label: 'Percentile',
-                                title: "Distribution of the Backup genes percentiles",
+                                title: "Distribution of AUC in bootstrap",
                                 config: {
                                         'showLegend' => true,
                                         'graphOrientation' => 'vertical',
@@ -115,8 +115,8 @@ Once this was done, the position for every known backup gene was obtained and th
         <div style="overflow: hidden";>
                 <p style="text-align:center;"> CDF plots of non integrated kernels </p> 
                 <%= 
-                if !@hash_vars['non_integrated_rank_list'].nil?
-                       scatter2D(id: "non_integrated_rank_list", fields: [4,5] , header: true, row_names: false, responsive: false,
+                if !@hash_vars['non_integrated_rank_measures'].nil?
+                       scatter2D(id: "non_integrated_rank_measures", fields: [3,5] , header: true, row_names: false, responsive: false,
                                 height: '400px', width: '400px', x_label: 'percentiles', smp_attr: [0,1,2],
                                 title: "cummulative distribution function plot",
                                 config: {
@@ -130,10 +130,44 @@ Once this was done, the position for every known backup gene was obtained and th
         </div>
 
         <div style="overflow: hidden";>
+                <p style="text-align:center;"> ROC plots of non integrated kernels </p> 
+                <%= 
+                if !@hash_vars['non_integrated_rank_measures'].nil?
+                       scatter2D(id: "non_integrated_rank_measures", fields: [6,5] , header: true, row_names: false, responsive: false,
+                                height: '400px', width: '400px', x_label: 'percentiles', smp_attr: [0,1,2],
+                                title: "ROC plot",
+                                config: {
+                                        'showLegend' => true,
+                                        'lineBy' => 'kernel',
+                                        'colorBy' => 'kernel',
+                                        'segregateVariablesBy' => 'annot'
+                                        })
+                end
+                %>
+        </div>
+
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"> ROC plots of integrated kernels </p> 
+                <%= 
+                if !@hash_vars['integrated_rank_measures'].nil?
+                       scatter2D(id: "integrated_rank_measures", fields: [6,5] , header: true, row_names: false, responsive: false,
+                                height: '400px', width: '400px', x_label: 'percentiles', smp_attr: [0,1,2],
+                                title: "ROC plot",
+                                config: {
+                                        'showLegend' => true,
+                                        'lineBy' => 'kernel',
+                                        'colorBy' => 'kernel',
+                                        'segregateVariablesBy' => 'integration'
+                                        })
+                end
+                %>
+        </div>
+
+        <div style="overflow: hidden";>
                 <p style="text-align:center;"> CDF plots of integrated kernels </p> 
                 <%= 
-                if !@hash_vars['integrated_rank_list'].nil?
-                       scatter2D(id: "integrated_rank_list", fields: [4,5] , header: true, row_names: false, responsive: false,
+                if !@hash_vars['integrated_rank_measures'].nil?
+                       scatter2D(id: "integrated_rank_measures", fields: [3,5] , header: true, row_names: false, responsive: false,
                                 height: '400px', width: '400px', x_label: 'percentiles', smp_attr: [0,1,2],
                                 title: "cummulative distribution function plot",
                                 config: {

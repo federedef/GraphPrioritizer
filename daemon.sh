@@ -14,8 +14,7 @@ output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted" 
-annotations="phenotype"
+annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted"
 # disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted
 kernels="ka rf ct el node2vec" #ka ct el rf
 integration_types="mean integration_mean_by_presence"
@@ -351,6 +350,8 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
         \\$folder_kernel_path=$folder_kernel_path,
         \\$input_name='general_matrix',
         \\$control_gens=$control_gens,
+        \\$control_pos=$control_pos,
+        \\$control_neg=$control_neg,
         \\$output_name='integrated_rank',
         \\$method=$method,
         \\$geneseeds=$input_path/geneseeds
@@ -382,10 +383,10 @@ elif [ "$exec_mode" == "report" ] ; then
   original_folders[filtered_similarity_metrics]='similarity_kernels'
   original_folders[uncomb_kernel_metrics]='similarity_kernels'
   original_folders[comb_kernel_metrics]='integrations'
-  original_folders[non_integrated_rank_metrics]='rankings'
-  original_folders[non_integrated_rank_list]='rankings'
-  original_folders[integrated_rank_metrics]='integrated_rankings'
-  original_folders[integrated_rank_list]='integrated_rankings'
+  original_folders[non_integrated_rank_summary]='rankings'
+  original_folders[non_integrated_rank_measures]='rankings'
+  original_folders[integrated_rank_summary]='integrated_rankings'
+  original_folders[integrated_rank_measures]='integrated_rankings'
   
   # Here the data is collected from executed folders.
   for file in "${!original_folders[@]}" ; do
@@ -404,8 +405,8 @@ elif [ "$exec_mode" == "report" ] ; then
   references[filtered_similarity_metrics]='Net'
   references[uncomb_kernel_metrics]='Sample,Net,Kernel'
   references[comb_kernel_metrics]='Sample,Integration,Kernel'
-  references[non_integrated_rank_metrics]='Sample,Net,Kernel'
-  references[integrated_rank_metrics]='Sample,Integration,Kernel'
+  references[non_integrated_rank_summary]='Sample,Net,Kernel'
+  references[integrated_rank_summary]='Sample,Integration,Kernel'
   references[annotation_grade_metrics]='Gene_seed'
 
   for metric in annotations_metrics similarity_metrics filtered_similarity_metrics uncomb_kernel_metrics comb_kernel_metrics ; do
@@ -414,20 +415,20 @@ elif [ "$exec_mode" == "report" ] ; then
     fi
   done
 
-  for metric in non_integrated_rank_metrics integrated_rank_metrics ; do
+  for metric in non_integrated_rank_summary integrated_rank_summary ; do
     if [ -s $output_folder/$metric ] ; then
       create_metric_table.rb $output_folder/$metric ${references[$metric]} $report_folder/ranking_report/parsed_${metric} 
     fi
   done
 
-  if [ -s $output_folder/non_integrated_rank_list ] ; then
-     echo -e "annot_kernel\tannot\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | \
-     cat - $output_folder/non_integrated_rank_list > $report_folder/ranking_report/non_integrated_rank_list
+  if [ -s $output_folder/non_integrated_rank_measures ] ; then
+     echo -e "annot_kernel\tannot\tkernel\trank\tacc\ttpr\tfpr\tprec\trec\tpos_cov" | \
+     cat - $output_folder/non_integrated_rank_measures > $report_folder/ranking_report/non_integrated_rank_measures
   fi
 
-  if [ -s $output_folder/integrated_rank_list ] ; then
-    echo -e "integration_kernel\tintegration\tkernel\tseed_gen\tbackup_gen\trank\tcummulative_density\tabsolute_position" | \
-     cat - $output_folder/integrated_rank_list > $report_folder/ranking_report/integrated_rank_list
+  if [ -s $output_folder/integrated_rank_measures ] ; then
+    echo -e "integration_kernel\tintegration\tkernel\trank\tacc\ttpr\tfpr\tprec\trec\tpos_cov" | \
+     cat - $output_folder/integrated_rank_measures > $report_folder/ranking_report/integrated_rank_measures
   fi
 
   ###################

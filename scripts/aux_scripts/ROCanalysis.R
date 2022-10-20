@@ -21,7 +21,6 @@ full.fpath <- tryCatch(normalizePath(parent.frame(2)$ofile),  # works when using
                          normalizePath(unlist(strsplit(commandArgs()[grep('^--file=', commandArgs())], '='))[2]))
 bname <- dirname(full.fpath)
 
-print("probando problema1")
 
 # Import functions
 if(is.null(bname)){
@@ -33,22 +32,23 @@ invisible(lapply(source_files, source))
 to_remove <- c("to_remove","bname","source_files","script.name","script.path","initial.options")
 rm(list = ls()[which(ls() %in% to_remove)])
 
-print("probando problema 2")
 
 # Prepare INPUT parser
 option_list <- list(
-	make_option(c("-i", "--input"), type="character",
-		dest="input_file",help="Input file with table format.Several files can be specified ussing colons (:)"),
-	make_option(c("-s", "--series"), type="character",
-		dest="column_series",help="Prediction series stored as columns. Several series can be specified using colons (:). Indexes can be numbers or Column names"),
+    make_option(c("-i", "--input"), type="character",
+        dest="input_file",help="Input file with table format.Several files can be specified ussing colons (:)"),
+    make_option(c("-s", "--series"), type="character",
+        dest="column_series",help="Prediction series stored as columns. Several series can be specified using colons (:). Indexes can be numbers or Column names"),
   make_option(c("-S", "--series_names"), type="character", default = NULL,
     dest="names_series",help="[OPTIONAL]Prediction series names to be plotted. Several series can be specified using colons (:)"),
     make_option(c("-t", "--column_tags"), type="character",
         dest="column_tags",help="Prediction succes value stored as columns. Several series can be specified using colons (:). Indexes can be numbers or Column names"),
     make_option(c("-o", "--output_file"), type="character", default="ROC",
         help="Output path. Extension will be added automatically. [Default output = '%default.pdf']"),
-  	make_option(c("-m", "--method"), type="character", default=NULL,
-  		help="[OPTIONAL] Graph method to be plotted. Available methods are: ROC (ROC), Precission Recall (prec_rec) and cuttoff curver (cut). [Default = '%default']"),
+    make_option(c("-m", "--method"), type="character", default=NULL,
+        help="[OPTIONAL] Graph method to be plotted. Available methods are: ROC (ROC), Precission Recall (prec_rec) and cuttoff curver (cut). [Default = '%default']"),
+     make_option(c("-M", "--measures"), type="character", default=NULL,
+        help="[OPTIONAL] All measures you want to get or summarize"),
     make_option(c("-f", "--format"), type="character", default="pdf",
         help="[OPTIONAL] Output format. Available formats are: PDF (pdf) or PNG (png) [Default = '%default']"),
     make_option(c("-r", "--rate"), type="character", default="acc",
@@ -98,6 +98,11 @@ if(is.null(opt$names_series)){
 }else{
   s_names <- unlist(strsplit(opt$names_series,units_sep))
 }
+
+if(!is.null(opt$measures)){
+    measures <- unlist(strsplit(opt$measures,units_sep))
+    print(measures)
+}
 tags   <- lapply(unlist(strsplit(opt$column_tags,units_sep)), 
     function(col_index){ifelse(suppressWarnings(!is.na(as.numeric(col_index))),as.numeric(col_index),col_index)}) 
 tags <- unlist(tags)
@@ -120,8 +125,7 @@ if(is.null(opt$bootstrap)){
 # List of dataframes with two columns: (tag-serie)
 collected_data <- collect_data(files, tags, series, s_names)
 s_names <- names(collected_data)
-# Put tags ordered as label_order.
-# TODO: Maybe simplify this with just write P or N, that's all
+
 for(i in 1:length(s_names)){
 
     decrease <- switch(label_order[i],
@@ -131,8 +135,8 @@ for(i in 1:length(s_names)){
     logic_tags <- as.logical(factor(labels,levels=unique(sort(labels,decreasing=decrease)),labels=c("F","T")))
     collected_data[[s_names[i]]][,1] <- logic_tags
 }
-# Put correct order for score
-# TODO: INCORPORATE THIS OPTION.
+
+
 if (opt$reverse_score_order){
     for(i in 1:length(s_names)){
         score <- collected_data[[s_names[i]]][,2]
@@ -161,22 +165,23 @@ if(opt$method %in% c('ROC', 'prec_rec', 'cut')){
     stop(paste("Method not allowed: ", opt$method, sep = ""))
 }
 
-if(opt$export_summarize){
+if(opt$export_summarize & !is.null(opt$measures)){
+    #c("acc","tpr","tnr","fpr","fnr","auc","f")
     summarize_df <- data.frame(Serie = character(), Measure = character(), Value = numeric(), stringsAsFactors = FALSE)  
     for (i in 1:length(collected_data)){
-        res <- summarize_performance(collected_data[[i]], serie_name=s_names[i], measures=c("acc","tpr","tnr","fpr","fnr","auc","f"),
-         method=opt$method,n_bootstrap=n_bootstrap,stratified=stratified, conf_level=0.95, pauc_range=NULL)
+        res <- summarize_performance(collected_data[[i]], serie_name=s_names[i], measures=measures,
+            n_bootstrap=n_bootstrap,stratified=stratified, conf_level=0.95, pauc_range=NULL)
         summarize_df <- rbind(summarize_df,res)
     }
     # Export target measures
     write.table(summarize_df,file = paste(opt$output_file,"_summary", sep = ""), col.names = TRUE, row.names = FALSE, sep = "\t", quote = FALSE)
 }
 
-if(opt$export_measures){
-    # TODO: ADD FOR THE REVERSED SCORE.
+if(opt$export_measures & !is.null(opt$measures)){
+    #c("acc","tpr","tnr","fpr","fnr","f")
     measures_df <- data.frame()
     for (i in 1:length(collected_data)){
-        res <- export_observed_measures(collected_data[[i]], serie_name=s_names[i], measures=c("acc","tpr","tnr","fpr","fnr","f"))
+        res <- export_observed_measures(collected_data[[i]], serie_name=s_names[i], measures=measures)
         measures_df <- rbind(measures_df,res)
     }
     if (opt$reverse_score_order){
