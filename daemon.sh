@@ -16,6 +16,7 @@ report_folder=$output_folder/report
 # Custom variables.
 annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted"
 # disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted
+#annotations="phenotype biological_process"
 kernels="ka rf ct el node2vec" #ka ct el rf
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom' 
@@ -369,13 +370,14 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
 
 elif [ "$exec_mode" == "report" ] ; then 
   source ~soft_bio_267/initializes/init_ruby
+  source ~soft_bio_267/initializes/init_R
   html_name=$2
   
   #################################
   # Setting up the report section #
   mkdir -p $report_folder/kernel_report
   mkdir -p $report_folder/ranking_report
-  mkdir -p $report_folder/production_report
+  mkdir -p $report_folder/img
 
   declare -A original_folders
   original_folders[annotations_metrics]='input_stats'
@@ -385,8 +387,10 @@ elif [ "$exec_mode" == "report" ] ; then
   original_folders[comb_kernel_metrics]='integrations'
   original_folders[non_integrated_rank_summary]='rankings'
   original_folders[non_integrated_rank_measures]='rankings'
+  original_folders[non_integrated_rank_cdf]='rankings'
   original_folders[integrated_rank_summary]='integrated_rankings'
   original_folders[integrated_rank_measures]='integrated_rankings'
+  original_folders[integrated_rank_cdf]='integrated_rankings'
   
   # Here the data is collected from executed folders.
   for file in "${!original_folders[@]}" ; do
@@ -422,14 +426,29 @@ elif [ "$exec_mode" == "report" ] ; then
   done
 
   if [ -s $output_folder/non_integrated_rank_measures ] ; then
-     echo -e "annot_kernel\tannot\tkernel\trank\tacc\ttpr\tfpr\tprec\trec\tpos_cov" | \
+     echo -e "annot_kernel\tannot\tkernel\trank\tacc\ttpr\tfpr\tprec\trec"| \
      cat - $output_folder/non_integrated_rank_measures > $report_folder/ranking_report/non_integrated_rank_measures
   fi
 
+  if [ -s $output_folder/non_integrated_rank_cdf ] ; then
+     echo -e "annot_kernel\tannot\tkernel\tcandidate\trank\tcummulative_frec\tgroup_seed"| \
+     cat - $output_folder/non_integrated_rank_cdf > $report_folder/ranking_report/non_integrated_rank_cdf
+  fi
+
+  #get_graph.R -d $report_folder/ranking_report/non_integrated_rank_measures -x "fpr" -y "tpr" -g "kernel" -w "annot" -O "non_integrated_ROC" -o "$report_folder/img"
+
   if [ -s $output_folder/integrated_rank_measures ] ; then
-    echo -e "integration_kernel\tintegration\tkernel\trank\tacc\ttpr\tfpr\tprec\trec\tpos_cov" | \
+    echo -e "integration_kernel\tintegration\tkernel\trank\tacc\ttpr\tfpr\tprec\trec" | \
      cat - $output_folder/integrated_rank_measures > $report_folder/ranking_report/integrated_rank_measures
   fi
+
+  if [ -s $output_folder/non_integrated_rank_cdf ] ; then
+     echo -e "integration_kernel\tintegration\tkernel\tcandidate\trank\tcummulative_frec\tgroup_seed"| \
+     cat - $output_folder/integrated_rank_cdf > $report_folder/ranking_report/integrated_rank_cdf
+  fi
+
+  #get_graph.R -d $report_folder/ranking_report/integrated_rank_measures -x "fpr" -y "tpr" -g "kernel" -w "integration" -O "integrated_ROC" -o "$report_folder/img"
+
 
   ###################
   # Obtaining HTMLS #

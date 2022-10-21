@@ -44,9 +44,24 @@ rank_genes_classic){
 		  	exit 0
 		fi
 
+		awk '{if($7==1) print $0}' tagged_ranks.txt | cut -f 1-6 > positive_genes
+		number_of_positive_genes=`wc -l positive_genes | cut -f1 -d " "`
+	    if [ $number_of_positive_genes -ge 1 ] ; then 
+			rank_metrics.rb -r positive_genes -e "ranks" > prerank_list
+			if [ -a prerank_list ] ; then
+				awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' prerank_list > $output_name_cdf
+			else 
+			  	exit 0
+			fi
+		else 
+			exit 0
+		fi
+
 	else 
 		exit 0
 	fi
+
+	# Obtaining Positives Metrics and CDF.
 
 
 }
@@ -96,6 +111,19 @@ rank_genes_with_leave_one_out){
 			  all_genes_summary > $output_name_summary
 		else 
 		  	exit 0
+		fi
+
+		awk '{if($7==1) print $0}' tagged_ranks.txt | cut -f 1-6 > positive_genes
+		number_of_positive_genes=`wc -l positive_genes | cut -f1 -d " "`
+	    if [ $number_of_positive_genes -ge 1 ] ; then 
+			rank_metrics.rb -r positive_genes -e "ranks" > prerank_list
+			if [ -a prerank_list ] ; then
+				awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' prerank_list > $output_name_cdf
+			else 
+			  	exit 0
+			fi
+		else 
+			exit 0
 		fi
 
 	else 

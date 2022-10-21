@@ -16,6 +16,7 @@
         if !@hash_vars['parsed_annotation_grade_metrics'].nil?
                 order_columns('parsed_annotation_grade_metrics',0)
         end
+         img_path="/mnt/scratch/users/bio_267_uma/federogc/executions/backupgenes/report/img/"
         
 %>
 
@@ -80,6 +81,92 @@ Once this was done, the position for every known backup gene was obtained and th
                 %>
         </div>
 
+         <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Backup Pairs Coverage By Layer</b></p> 
+                <%=boxplot(id: 'non_integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [2], group: ["kernel"],
+                                config: {"xAxis" => "rank",
+                                        "graphOrientation": "vertical",
+                                        "colorBy" => "kernel",
+                                        "groupingFactors" =>
+                                        ["kernel"]}
+
+                        )
+                        %>
+        </div>
+
+
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Backup Pairs Coverage By Layer</b></p> 
+                <%=boxplot(id: 'integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [2], group: ["kernel"],
+                                config: {"xAxis" => "rank",
+                                        "graphOrientation": "vertical",
+                                        "colorBy" => "kernel",
+                                        "groupingFactors" =>
+                                        ["kernel"]}
+
+                        )
+                        %>
+        </div>
+        
+<!--
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Backup Pairs Coverage By Layer</b></p> 
+                <%=boxplot(id: 'non_integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [0,1,2], group: ["kernel"],
+                                config: {"xAxis" => "rank",
+                                        "graphOrientation": "vertical",
+                                        "colorBy" => "kernel",
+                                        "groupingFactors" =>
+                                        ["annot","kernel"]}
+
+                        )
+                        %>
+        </div>
+
+
+         <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Backup Pairs Coverage By Layer</b></p> 
+                <%=boxplot(id: 'non_integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [6], group: ["group_seed"],
+                                config: {"xAxis" => "rank",
+                                        "graphOrientation": "vertical",
+                                        "colorBy" => "group_seed",
+                                        "groupingFactors" =>
+                                        ["group_seed"]}
+
+                        )
+                        %>
+        </div>
+
+
+         <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Backup Pairs Coverage By Layer</b></p> 
+                <%=boxplot(id: 'integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [6], group: ["group_seed"],
+                                config: {"xAxis" => "rank",
+                                        "graphOrientation": "vertical",
+                                        "colorBy" => "group_seed",
+                                        "groupingFactors" =>
+                                        "group_seed"}
+
+                        )
+                        %>
+        </div>
+
+        
+
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Backup Pairs Coverage By Layer</b></p> 
+                <%=boxplot(id: 'integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [0,1,2], group: ["kernel"],
+                                config: {"xAxis" => "rank",
+                                        "graphOrientation": "vertical",
+                                        "colorBy" => "kernel",
+                                        "groupingFactors" =>
+                                        ["integration","kernel"]}
+
+                        )
+                        %>
+        </div>
+
+-->
+
         <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;">  </h3>
 
         <div style="overflow: hidden">
@@ -115,8 +202,8 @@ Once this was done, the position for every known backup gene was obtained and th
         <div style="overflow: hidden";>
                 <p style="text-align:center;"> CDF plots of non integrated kernels </p> 
                 <%= 
-                if !@hash_vars['non_integrated_rank_measures'].nil?
-                       scatter2D(id: "non_integrated_rank_measures", fields: [3,5] , header: true, row_names: false, responsive: false,
+                if !@hash_vars['non_integrated_rank_cdf'].nil?
+                       scatter2D(id: "non_integrated_rank_cdf", fields: [4,5] , header: true, row_names: false, responsive: false,
                                 height: '400px', width: '400px', x_label: 'percentiles', smp_attr: [0,1,2],
                                 title: "cummulative distribution function plot",
                                 config: {
@@ -129,45 +216,26 @@ Once this was done, the position for every known backup gene was obtained and th
                 %>
         </div>
 
-        <div style="overflow: hidden";>
-                <p style="text-align:center;"> ROC plots of non integrated kernels </p> 
+       <div style="overflow: hidden; text-align:center">
+                <p style="text-align:center;"> ROC plots of integrated kernels </p> 
                 <%= 
-                if !@hash_vars['non_integrated_rank_measures'].nil?
-                       scatter2D(id: "non_integrated_rank_measures", fields: [6,5] , header: true, row_names: false, responsive: false,
-                                height: '400px', width: '400px', x_label: 'percentiles', smp_attr: [0,1,2],
-                                title: "ROC plot",
-                                config: {
-                                        'showLegend' => true,
-                                        'lineBy' => 'kernel',
-                                        'colorBy' => 'kernel',
-                                        'segregateVariablesBy' => 'annot'
-                                        })
-                end
+                        embed_img(img_path+"non_integrated_ROC.png","width='700' height='700'")
                 %>
         </div>
 
-        <div style="overflow: hidden";>
+
+        <div style="overflow: hidden; text-align:center">
                 <p style="text-align:center;"> ROC plots of integrated kernels </p> 
                 <%= 
-                if !@hash_vars['integrated_rank_measures'].nil?
-                       scatter2D(id: "integrated_rank_measures", fields: [6,5] , header: true, row_names: false, responsive: false,
-                                height: '400px', width: '400px', x_label: 'percentiles', smp_attr: [0,1,2],
-                                title: "ROC plot",
-                                config: {
-                                        'showLegend' => true,
-                                        'lineBy' => 'kernel',
-                                        'colorBy' => 'kernel',
-                                        'segregateVariablesBy' => 'integration'
-                                        })
-                end
+                        embed_img(img_path+"integrated_ROC.png","width='700' height='700'")
                 %>
         </div>
 
         <div style="overflow: hidden";>
                 <p style="text-align:center;"> CDF plots of integrated kernels </p> 
                 <%= 
-                if !@hash_vars['integrated_rank_measures'].nil?
-                       scatter2D(id: "integrated_rank_measures", fields: [3,5] , header: true, row_names: false, responsive: false,
+                if !@hash_vars['integrated_rank_cdf'].nil?
+                       scatter2D(id: "integrated_rank_cdf", fields: [4,5] , header: true, row_names: false, responsive: false,
                                 height: '400px', width: '400px', x_label: 'percentiles', smp_attr: [0,1,2],
                                 title: "cummulative distribution function plot",
                                 config: {
