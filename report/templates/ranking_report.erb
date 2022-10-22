@@ -26,9 +26,6 @@
 
         <h2 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Ranking section </h2>
 
-        <p> For each of the affected genes present in the list, a ranking with the score and percentile of every possible gene was obtained. 
-Once this was done, the position for every known backup gene was obtained and the statistical descriptor of all the values calculated.</p>
-
         <div style="overflow: hidden";>
                 <p style="text-align:center;"><b>Table 1.</b> Performance summary for every kernel and net before integration.</p> 
                 <%= 
@@ -82,8 +79,10 @@ Once this was done, the position for every known backup gene was obtained and th
         </div>
 
          <div style="overflow: hidden";>
-                <p style="text-align:center;"><b>Backup Pairs Coverage By Layer</b></p> 
+                <p style="text-align:center;"><b>Distribution of ranks in dataset by non integrated kernels</b></p> 
                 <%=boxplot(id: 'non_integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [2], group: ["kernel"],
+                           title: "Distribution of ranks in dataset by Non Integrated kernels",
+                                xlabel: "Ranks",
                                 config: {"xAxis" => "rank",
                                         "graphOrientation": "vertical",
                                         "colorBy" => "kernel",
@@ -96,8 +95,10 @@ Once this was done, the position for every known backup gene was obtained and th
 
 
         <div style="overflow: hidden";>
-                <p style="text-align:center;"><b>Backup Pairs Coverage By Layer</b></p> 
-                <%=boxplot(id: 'integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [2], group: ["kernel"],
+                <p style="text-align:center;"><b>Distribution of ranks in dataset by Integrated kernels</b></p> 
+                <%=boxplot(id: 'integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [2], group: ["kernel"], 
+                                title: "Distribution of ranks in dataset by Integrated kernels",
+                                xlabel: "Ranks",
                                 config: {"xAxis" => "rank",
                                         "graphOrientation": "vertical",
                                         "colorBy" => "kernel",
@@ -107,96 +108,43 @@ Once this was done, the position for every known backup gene was obtained and th
                         )
                         %>
         </div>
-        
-<!--
-        <div style="overflow: hidden";>
-                <p style="text-align:center;"><b>Backup Pairs Coverage By Layer</b></p> 
-                <%=boxplot(id: 'non_integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [0,1,2], group: ["kernel"],
-                                config: {"xAxis" => "rank",
-                                        "graphOrientation": "vertical",
-                                        "colorBy" => "kernel",
-                                        "groupingFactors" =>
-                                        ["annot","kernel"]}
-
-                        )
-                        %>
-        </div>
-
-
-         <div style="overflow: hidden";>
-                <p style="text-align:center;"><b>Backup Pairs Coverage By Layer</b></p> 
-                <%=boxplot(id: 'non_integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [6], group: ["group_seed"],
-                                config: {"xAxis" => "rank",
-                                        "graphOrientation": "vertical",
-                                        "colorBy" => "group_seed",
-                                        "groupingFactors" =>
-                                        ["group_seed"]}
-
-                        )
-                        %>
-        </div>
-
-
-         <div style="overflow: hidden";>
-                <p style="text-align:center;"><b>Backup Pairs Coverage By Layer</b></p> 
-                <%=boxplot(id: 'integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [6], group: ["group_seed"],
-                                config: {"xAxis" => "rank",
-                                        "graphOrientation": "vertical",
-                                        "colorBy" => "group_seed",
-                                        "groupingFactors" =>
-                                        "group_seed"}
-
-                        )
-                        %>
-        </div>
-
-        
-
-        <div style="overflow: hidden";>
-                <p style="text-align:center;"><b>Backup Pairs Coverage By Layer</b></p> 
-                <%=boxplot(id: 'integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [0,1,2], group: ["kernel"],
-                                config: {"xAxis" => "rank",
-                                        "graphOrientation": "vertical",
-                                        "colorBy" => "kernel",
-                                        "groupingFactors" =>
-                                        ["integration","kernel"]}
-
-                        )
-                        %>
-        </div>
-
--->
 
         <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;">  </h3>
 
         <div style="overflow: hidden">
+                <p style="text-align:center;"> ROC-AUCs for Non-integrated kernel and layer </p> 
 
                 <%= 
                 if !@hash_vars['parsed_non_integrated_rank_summary'].nil? 
                         line(id: "parsed_non_integrated_rank_summary", fields: [0, 7, 13, 8], header: true, row_names: true,
                                 responsive: false,
                                 height: '400px', width: '400px', x_label: 'Percentile',
-                                title: "Distribution of AUC in bootstrap",
+                                title: "Distribution of AUC in bootstrap for non integrated kernels",
                                 config: {
                                         'showLegend' => true,
                                         'graphOrientation' => 'vertical',
                                         })
                 end
                 %>
+
+        </div>
+
+
+        <div style="overflow: hidden">
+                <p style="text-align:center;"> ROC-AUCS for integrated kernels </p> 
 
                 <%=
                 if !@hash_vars['parsed_integrated_rank_summary'].nil?
                         line(id: "parsed_integrated_rank_summary", fields:  [0, 7, 13, 8], header: true, row_names: true,
                                 responsive: false,
                                 height: '400px', width: '400px', x_label: 'Percentile',
-                                title: "Distribution of AUC in bootstrap",
+                                title: "Distribution of AUC in bootstrap for integrated kernels",
                                 config: {
                                         'showLegend' => true,
                                         'graphOrientation' => 'vertical',
                                         })
                 end
                 %>
-
         </div>
 
         <div style="overflow: hidden";>
@@ -217,7 +165,7 @@ Once this was done, the position for every known backup gene was obtained and th
         </div>
 
        <div style="overflow: hidden; text-align:center">
-                <p style="text-align:center;"> ROC plots of integrated kernels </p> 
+                <p style="text-align:center;"> ROC plots of non integrated kernels </p> 
                 <%= 
                         embed_img(img_path+"non_integrated_ROC.png","width='700' height='700'")
                 %>

@@ -15,13 +15,16 @@ report_folder=$output_folder/report
 
 # Custom variables.
 annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted"
+annotations="biological_process protein_interaction"
 # disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted
 #annotations="phenotype biological_process"
 kernels="ka rf ct el node2vec" #ka ct el rf
+kernels="ka" #ka ct el rf
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom' 
 control_pos=$input_path'/control_pos'
 control_neg=$input_path'/control_neg'
+production_seedgens=$input_path'/production_seedgens'
 
 kernels_varflow=`echo $kernels | tr " " ";"`
 
@@ -204,6 +207,24 @@ elif [ "$exec_mode" == "control_type" ] ; then
     cp $control_genes_folder/diseasegens/non_disease_gens ./control_neg
   fi
 
+elif [ "$exec_mode" == "get_production_seedgenes" ] ; then 
+
+##################################################################
+# OPTIONAL STAGE : SEE IF THE RELATION BACKUP-GENSEED IS SYMMETRIC
+##################################################################
+  translate_from=$add_opt
+  cat ./production_seedgenes/* > production_seedgens
+
+  if [ $translate_from == "symbol" ] ; then
+    desaggregate_column_data.rb -i production_seedgens -x 1 > disaggregated_production_seedgens
+    idconverter.rb -d ./translators/symbol_HGNC -i disaggregated_production_seedgens -c 1 | aggregate_column_data.rb -i - -x 0 -a 1 > production_seedgens
+    rm disaggregated_production_seedgens
+  elif [ $translate_from == "ensemble" ] ; then
+    desaggregate_column_data.rb -i production_seedgens -x 1 > disaggregated_production_seedgens
+    idconverter.rb -d ./translators/Ensemble_HGNC -i disaggregated_production_seedgens -c 1 | aggregate_column_data.rb -i - -x 0 -a 1 > production_seedgens
+    rm disaggregated_production_seedgens
+  fi
+
 elif [ "$exec_mode" == "input_stats" ] ; then 
 
 ##################################################################
@@ -281,7 +302,7 @@ elif [ "$exec_mode" == "ranking" ] ; then
         \\$input_path=$input_path,
         \\$folder_kernel_path=$folder_kernel_path,
         \\$input_name='kernel_matrix_bin',
-        \\$control_gens=$control_gens,
+        \\$production_seedgens=$production_seedgens,
         \\$control_pos=$control_pos,
         \\$control_neg=$control_neg,
         \\$output_name='non_integrated_rank',
@@ -299,6 +320,7 @@ elif [ "$exec_mode" == "ranking" ] ; then
 elif [ "$exec_mode" == "integrate" ] ; then 
   #########################################################
   # STAGE 2.3 INTEGRATE THE KERNELS
+  rm -r $output_folder/integrations
   mkdir -p $output_folder/integrations
   #cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path # What I got?
   
@@ -350,7 +372,7 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
         \\$input_path=$input_path,
         \\$folder_kernel_path=$folder_kernel_path,
         \\$input_name='general_matrix',
-        \\$control_gens=$control_gens,
+        \\$production_seedgens=$production_seedgens,
         \\$control_pos=$control_pos,
         \\$control_neg=$control_neg,
         \\$output_name='integrated_rank',
@@ -364,6 +386,12 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
     done
   done
 
+elif [ "$exec_mode" == "get_production_candidates" ] ; then
+
+  mkdir -p ./production_seedgenes/output
+  cat  $output_folder/rankings/*/*/non_integrated_ranked_production_candidates > ./production_seedgenes/output
+  cat $output_folder/integrated_rankings/*/*/integrated_ranked_production_candidates > ./production_seedgenes/output
+
 #########################################################
 # STAGE 3 OBTAIN REPORT FROM RESULTS
 #########################################################
@@ -375,6 +403,9 @@ elif [ "$exec_mode" == "report" ] ; then
   
   #################################
   # Setting up the report section #
+  find $report_folder/ -t d -delete 
+  rm $output_folder/*
+
   mkdir -p $report_folder/kernel_report
   mkdir -p $report_folder/ranking_report
   mkdir -p $report_folder/img
@@ -426,8 +457,7 @@ elif [ "$exec_mode" == "report" ] ; then
   done
 
   if [ -s $output_folder/non_integrated_rank_measures ] ; then
-     echo -e "annot_kernel\tannot\tkernel\trank\tacc\ttpr\tfpr\tprec\trec"| \
-     cat - $output_folder/non_integrated_rank_measures > $report_folder/ranking_report/non_integrated_rank_measures
+    get_graph.R -d $report_folder/ranking_report/non_integrated_rank_measures -x "fpr" -y "tpr" -g "kernel" -w "annot" -O "non_integrated_ROC" -o "$report_folder/img"
   fi
 
   if [ -s $output_folder/non_integrated_rank_cdf ] ; then
@@ -435,11 +465,8 @@ elif [ "$exec_mode" == "report" ] ; then
      cat - $output_folder/non_integrated_rank_cdf > $report_folder/ranking_report/non_integrated_rank_cdf
   fi
 
-  #get_graph.R -d $report_folder/ranking_report/non_integrated_rank_measures -x "fpr" -y "tpr" -g "kernel" -w "annot" -O "non_integrated_ROC" -o "$report_folder/img"
-
   if [ -s $output_folder/integrated_rank_measures ] ; then
-    echo -e "integration_kernel\tintegration\tkernel\trank\tacc\ttpr\tfpr\tprec\trec" | \
-     cat - $output_folder/integrated_rank_measures > $report_folder/ranking_report/integrated_rank_measures
+    get_graph.R -d $report_folder/ranking_report/integrated_rank_measures -x "fpr" -y "tpr" -g "kernel" -w "integration" -O "integrated_ROC" -o "$report_folder/img"
   fi
 
   if [ -s $output_folder/non_integrated_rank_cdf ] ; then
@@ -447,14 +474,15 @@ elif [ "$exec_mode" == "report" ] ; then
      cat - $output_folder/integrated_rank_cdf > $report_folder/ranking_report/integrated_rank_cdf
   fi
 
-  #get_graph.R -d $report_folder/ranking_report/integrated_rank_measures -x "fpr" -y "tpr" -g "kernel" -w "integration" -O "integrated_ROC" -o "$report_folder/img"
 
 
   ###################
   # Obtaining HTMLS #
+  
   report_html -t ./report/templates/kernel_report.erb -d `ls $report_folder/kernel_report/* | tr -s [:space:] ","` -o "report_kernel$html_name"
-  report_html -t ./report/templates/ranking_report.erb -d `ls $report_folder/ranking_report/* | tr -s [:space:] ","` -o "report_ranking$html_name"
-  #report_html -t ./report/templates/production_report.erb -d $report_folder/production_report/* -o "report_ranking$html_name"
+  report_html -t ./report/templates/dataQuality_report.erb -d `ls $report_folder/ranking_report/* | tr -s [:space:] ","` -o "report_dataQuality$html_name"
+  #report_html -t ./report/templates/ranking_report.erb -d `ls $report_folder/ranking_report/* | tr -s [:space:] ","` -o "report_ranking$html_name"
+
 
 
 #########################################################

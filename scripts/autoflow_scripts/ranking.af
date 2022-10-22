@@ -87,7 +87,7 @@ rank_genes_with_leave_one_out){
 	desaggregate_column_data.rb -i $control_neg -x 1 |& awk '{OFS="\t"}{print $1,$2,0}' >> tags
 	?
 	ranker_gene.rb -k $folder_kernel_path/$input_name -n $folder_kernel_path/$input_name.lst -s seed_by_group -l -f filter
-	awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/_[0-9]/,"",$6); print $0}' ranked_genes_all_candidates > processed_ranked_genes
+	awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/_iteration_[0-9]+$/,"",$6); print $0}' ranked_genes_all_candidates > processed_ranked_genes
 	# Add tags to ranked_genes_all_candidates.
 	add_tags2ranks.rb -i processed_ranked_genes -g 5 -c 0 -t tags -o tagged_ranks.txt
 	number_of_genes=`wc -l tagged_ranks.txt | cut -f1 -d " "`
@@ -131,6 +131,38 @@ rank_genes_with_leave_one_out){
 	fi
 }
 
+
+rank_genes_with_leave_one_out_data_quality){
+	# Input: seed_gens + kernel.
+	# Output: rank genes for every gen.
+	source ~soft_bio_267/initializes/init_netanalyzer
+	. ~soft_bio_267/initializes/init_ruby
+	. ~soft_bio_267/initializes/init_R
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
+	if [ $method != "data_quality" ] ; then
+		exit 0
+	fi
+	echo -e "$param1_$kernel\t$param1\t$kernel" > tracker
+	ranking_path=`pwd`
+	## Defining seed genes
+    cat $production_seedgens > seed_by_group
+	?
+	ranker_gene.rb -k $folder_kernel_path/$input_name -n $folder_kernel_path/$input_name.lst -s seed_by_group -l
+	awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/_iteration_[0-9]+$/,"",$6); print $0}' ranked_genes_all_candidates > positive_genes
+
+	# Obtaining Metrics And statistical summary
+    if [ -s positive_genes ] ; then 
+		rank_metrics.rb -r positive_genes -e "ranks" > prerank_list
+		if [ -a prerank_list ] ; then
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' prerank_list > $output_name_cdf
+		else 
+		  	exit 0
+		fi
+	else 
+		exit 0
+	fi
+}
+
 rank_genes_production){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for seed
@@ -144,7 +176,7 @@ rank_genes_production){
 	ranker_gene.rb -k $folder_kernel_path/$input_name -n $folder_kernel_path/$input_name.lst -s $geneseeds
 	number_of_all_candidates=`wc -l ranked_genes_all_candidates | cut -f1 -d " "`
     if [ $number_of_all_candidates -ge 1 ] ; then 
-    	mv ranked_genes_all_candidates ranked_production_candidates
+    	awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' ranked_genes_all_candidates > $output_ranked_production_candidates
 	else 
 		exit 0
 	fi
