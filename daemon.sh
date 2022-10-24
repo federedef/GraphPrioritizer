@@ -15,9 +15,7 @@ report_folder=$output_folder/report
 
 # Custom variables.
 annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted"
-annotations="biological_process protein_interaction"
 # disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted
-#annotations="phenotype biological_process"
 kernels="ka rf ct el node2vec" #ka ct el rf
 kernels="ka" #ka ct el rf
 integration_types="mean integration_mean_by_presence"
@@ -388,9 +386,10 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
 
 elif [ "$exec_mode" == "get_production_candidates" ] ; then
 
+  name=$2
   mkdir -p ./production_seedgenes/output
-  cat  $output_folder/rankings/*/*/non_integrated_ranked_production_candidates > ./production_seedgenes/output
-  cat $output_folder/integrated_rankings/*/*/integrated_ranked_production_candidates > ./production_seedgenes/output
+  cat  $output_folder/rankings/*/*/non_integrated_rank_ranked_production_candidates> ./production_seedgenes/output/"$name"_non_integrated
+  cat $output_folder/integrated_rankings/*/*/integrated_rank_ranked_production_candidates > ./production_seedgenes/output/"$name"_integrated
 
 #########################################################
 # STAGE 3 OBTAIN REPORT FROM RESULTS

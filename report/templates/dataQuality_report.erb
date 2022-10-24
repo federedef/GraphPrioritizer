@@ -16,6 +16,15 @@
         if !@hash_vars['parsed_annotation_grade_metrics'].nil?
                 order_columns('parsed_annotation_grade_metrics',0)
         end
+
+        if !@hash_vars['parsed_annotation_grade_metrics'].nil?
+                order_columns('parsed_annotation_grade_metrics',0)
+        end
+
+        if !@hash_vars['non_integrated_rank_cdf'].nil?
+                order_columns('non_integrated_rank_cdf',6)
+        end
+
          img_path="/mnt/scratch/users/bio_267_uma/federogc/executions/backupgenes/report/img/"
         
 %>
@@ -29,14 +38,16 @@
 
          <div style="overflow: hidden";>
                 <p style="text-align:center;"><b>Ranks distribution by seed Not integrated</b></p> 
-                <%=boxplot(id: 'non_integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [6], group: ["group_seed"],
+                <%=
+                order_columns('non_integrated_rank_cdf',6)
+                boxplot(id: 'non_integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [6,1], group: ["group_seed"],
                                 x_label: "Ranks",
                                 title: "Boxplot of ranks distribution",
                                 config: {"xAxis" => "rank",
                                         "graphOrientation": "vertical",
                                         "colorBy" => "group_seed",
                                         "groupingFactors" =>
-                                        ["group_seed"]}
+                                        ["group_seed","annot"]}
 
                         )
                         %>
@@ -64,6 +75,8 @@
                 <p style="text-align:center;"> CDF plots of non integrated kernels </p> 
                 <%= 
                 if !@hash_vars['non_integrated_rank_cdf'].nil?
+
+                        order_columns('non_integrated_rank_cdf',4)
                        scatter2D(id: "non_integrated_rank_cdf", fields: [4,5] , header: true, row_names: false, responsive: false,
                                 height: '400px', width: '400px', x_label: 'percentiles', smp_attr: [0,1,2],
                                 title: "cummulative distribution function plot",

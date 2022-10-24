@@ -172,11 +172,11 @@ rank_genes_production){
 		exit 0
 	fi
 	echo -e "$param1_$kernel\t$param1\t$kernel" > tracker
+	cat $production_seedgens > seed_by_group
 	?
-	ranker_gene.rb -k $folder_kernel_path/$input_name -n $folder_kernel_path/$input_name.lst -s $geneseeds
-	number_of_all_candidates=`wc -l ranked_genes_all_candidates | cut -f1 -d " "`
-    if [ $number_of_all_candidates -ge 1 ] ; then 
-    	awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' ranked_genes_all_candidates > $output_ranked_production_candidates
+	ranker_gene.rb -k $folder_kernel_path/$input_name -n $folder_kernel_path/$input_name.lst -s seed_by_group
+    if [ -s ranked_genes_all_candidates ] ; then 
+    	awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' ranked_genes_all_candidates > $output_name_ranked_production_candidates
 	else 
 		exit 0
 	fi
