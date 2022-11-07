@@ -148,7 +148,9 @@ rank_genes_with_leave_one_out_data_quality){
     cat $production_seedgens > seed_by_group
 	?
 	ranker_gene.rb -k $folder_kernel_path/$input_name -n $folder_kernel_path/$input_name.lst -s seed_by_group -l
-	awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/_iteration_[0-9]+$/,"",$6); print $0}' ranked_genes_all_candidates > positive_genes
+	awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/_iteration_[0-9]+$/,"",$6); print $0}' ranked_genes_all_candidates > all_positive_genes
+
+	awk '{if($2!=0) print $0}' all_positive_genes > positive_genes
 
 	# Obtaining Metrics And statistical summary
     if [ -s positive_genes ] ; then 

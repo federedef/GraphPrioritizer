@@ -12,8 +12,9 @@ def open_rank_file(rank_file)
 		line = line.split("\t")
 		group_name = line.last
 		candidate_gene = line[0]
+		score = line[1]
 		percentage_score = line[2]
-		known_ranks.append([candidate_gene, percentage_score, group_name])
+		known_ranks.append([candidate_gene, score, percentage_score, group_name])
 	end
 	return known_ranks
 end
@@ -40,10 +41,10 @@ def report_ranks(gene_pos_ranks)
 end
 
 def get_cdf_values(known_ranks)
-	known_ranks.sort_by!{|known_rank| known_rank[1].to_f}
+	known_ranks.sort_by!{|known_rank| known_rank[2].to_f}
 	number_known_ranks = known_ranks.length
 	known_ranks.each_with_index do |known_rank , i|
-			known_rank = known_rank.insert(2,(i+1).fdiv(number_known_ranks))
+			known_rank = known_rank.insert(3,(i+1).fdiv(number_known_ranks))
 	end
 	return known_ranks
 end
@@ -77,7 +78,7 @@ known_ranks = get_cdf_values(known_ranks)
 
 if !known_ranks.empty?
 	if options[:execution_mode] == "stats"
-		all_ranks = known_ranks.map{|rank_row| rank_row[1].to_f}
+		all_ranks = known_ranks.map{|rank_row| rank_row[2].to_f}
 		report_stats(all_ranks).each do |stat|
 	    puts stat.join("\t")
 	  end

@@ -16,6 +16,7 @@ report_folder=$output_folder/report
 # Custom variables.
 annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted"
 # disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted
+annotations="pathway protein_interaction biological_process"
 kernels="ka rf ct el node2vec" #ka ct el rf
 kernels="ka" #ka ct el rf
 integration_types="mean integration_mean_by_presence"
@@ -223,6 +224,37 @@ elif [ "$exec_mode" == "get_production_seedgenes" ] ; then
     rm disaggregated_production_seedgens
   fi
 
+elif [ "$exec_mode" == "clusterize_seeds" ] ; then
+
+  if [ -s $output_folder/clusters_seeds ] ; then
+    rm -r $output_folder/clusters_seeds
+  fi
+  mkdir -p $output_folder/clusters_seeds
+
+  seed_group_names=`cat $production_seedgens | cut -f 1 | tr -s "\n" ";"`
+
+  for integration_type in ${integration_types} ; do 
+    for kernel in $kernels ; do 
+
+      ugot_path="$output_folder/integrations/ugot_path"
+      folder_kernel_path=`awk '{print $0,NR}' $ugot_path | sort -k 5 -r -u | grep "${integration_type}_$kernel" | awk '{print $4}'`
+      echo ${folder_kernel_path}
+      if [ ! -z ${folder_kernel_path} ] ; then # This kernel for this integration_type is done? 
+        
+        autoflow_vars=`echo "
+        \\$input_path=$input_path,
+        \\$folder_kernel_path=$folder_kernel_path,
+        \\$input_name='general_matrix',
+        \\$production_seedgens=$production_seedgens,
+        \\$seed_group_names=$seed_group_names
+        " | tr -d [:space:]`
+
+        AutoFlow -w $autoflow_scripts/extract_clusters.af -V $autoflow_vars -o $output_folder/clusters_seeds/clusters_${kernel}_${integration_type} $add_opt 
+      fi
+
+    done
+  done
+
 elif [ "$exec_mode" == "input_stats" ] ; then 
 
 ##################################################################
@@ -385,10 +417,9 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
   done
 
 elif [ "$exec_mode" == "get_production_candidates" ] ; then
-
   name=$2
   mkdir -p ./production_seedgenes/output
-  cat  $output_folder/rankings/*/*/non_integrated_rank_ranked_production_candidates> ./production_seedgenes/output/"$name"_non_integrated
+  cat  $output_folder/rankings/*/*/non_integrated_rank_ranked_production_candidates > ./production_seedgenes/output/"$name"_non_integrated
   cat $output_folder/integrated_rankings/*/*/integrated_rank_ranked_production_candidates > ./production_seedgenes/output/"$name"_integrated
 
 #########################################################
@@ -398,12 +429,13 @@ elif [ "$exec_mode" == "get_production_candidates" ] ; then
 elif [ "$exec_mode" == "report" ] ; then 
   source ~soft_bio_267/initializes/init_ruby
   source ~soft_bio_267/initializes/init_R
-  html_name=$2
+  report_type=$2
+  html_name=$3
   
   #################################
   # Setting up the report section #
-  find $report_folder/ -t d -delete 
-  rm $output_folder/*
+  find $report_folder/ -mindepth 2 -delete
+  find $output_folder/ -maxdepth 1 -type f -delete
 
   mkdir -p $report_folder/kernel_report
   mkdir -p $report_folder/ranking_report
@@ -425,7 +457,8 @@ elif [ "$exec_mode" == "report" ] ; then
   # Here the data is collected from executed folders.
   for file in "${!original_folders[@]}" ; do
     original_folder=${original_folders[$file]}
-    if [ -s $output_folder/$original_folder ] ; then
+    count=`find $output_folder/$original_folder -maxdepth 3 -mindepth 3 -name $file | wc -l`
+    if [ "$count" -gt "0" ] ; then
       cat $output_folder/$original_folder/*/*/$file > $output_folder/$file
     fi
   done 
@@ -455,32 +488,37 @@ elif [ "$exec_mode" == "report" ] ; then
     fi
   done
 
-  if [ -s $output_folder/non_integrated_rank_measures ] ; then
-    get_graph.R -d $report_folder/ranking_report/non_integrated_rank_measures -x "fpr" -y "tpr" -g "kernel" -w "annot" -O "non_integrated_ROC" -o "$report_folder/img"
-  fi
-
   if [ -s $output_folder/non_integrated_rank_cdf ] ; then
-     echo -e "annot_kernel\tannot\tkernel\tcandidate\trank\tcummulative_frec\tgroup_seed"| \
+     echo -e "annot_kernel\tannot\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"| \
      cat - $output_folder/non_integrated_rank_cdf > $report_folder/ranking_report/non_integrated_rank_cdf
   fi
 
-  if [ -s $output_folder/integrated_rank_measures ] ; then
-    get_graph.R -d $report_folder/ranking_report/integrated_rank_measures -x "fpr" -y "tpr" -g "kernel" -w "integration" -O "integrated_ROC" -o "$report_folder/img"
-  fi
-
   if [ -s $output_folder/non_integrated_rank_cdf ] ; then
-     echo -e "integration_kernel\tintegration\tkernel\tcandidate\trank\tcummulative_frec\tgroup_seed"| \
+     echo -e "integration_kernel\tintegration\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"| \
      cat - $output_folder/integrated_rank_cdf > $report_folder/ranking_report/integrated_rank_cdf
   fi
-
-
 
   ###################
   # Obtaining HTMLS #
   
   report_html -t ./report/templates/kernel_report.erb -d `ls $report_folder/kernel_report/* | tr -s [:space:] ","` -o "report_kernel$html_name"
-  report_html -t ./report/templates/dataQuality_report.erb -d `ls $report_folder/ranking_report/* | tr -s [:space:] ","` -o "report_dataQuality$html_name"
-  #report_html -t ./report/templates/ranking_report.erb -d `ls $report_folder/ranking_report/* | tr -s [:space:] ","` -o "report_ranking$html_name"
+
+  if [ "$report_type" == "data_quality" ] ; then
+
+    report_html -t ./report/templates/dataQuality_report.erb -d `ls $report_folder/ranking_report/* | tr -s [:space:] ","` -o "report_dataQuality$html_name"
+
+  elif [ "$report_type" == "alg_quality" ] ; then
+
+    if [ -s $output_folder/non_integrated_rank_measures ] ; then
+      get_graph.R -d $report_folder/ranking_report/non_integrated_rank_measures -x "fpr" -y "tpr" -g "kernel" -w "annot" -O "non_integrated_ROC" -o "$report_folder/img"
+    fi
+
+    if [ -s $output_folder/integrated_rank_measures ] ; then
+      get_graph.R -d $report_folder/ranking_report/integrated_rank_measures -x "fpr" -y "tpr" -g "kernel" -w "integration" -O "integrated_ROC" -o "$report_folder/img"
+    fi
+
+    report_html -t ./report/templates/ranking_report.erb -d `ls $report_folder/ranking_report/* | tr -s [:space:] ","` -o "report_algQuality$html_name"
+  fi
 
 
 
