@@ -1,9 +1,7 @@
-extract_subgraphs_[$seed_group_names]){
+%extract_subgraphs_[$seed_group_names]){
 	resources: -m '120gb' 
 	source ~soft_bio_267/initializes/init_python
 	grep -w "(*)" $production_seedgens > seed_by_group
-	#echo -e "G1\tHGNC:21106,HGNC:21107,HGNC:21108,HGNC:21100" > seed_by_group
-	#extract_subgraph.py -i "/mnt/home/users/bio_267_uma/federogc/projects/backupgenes/tests/manualtest/cluster_with_cdlib/subset_matrix" -n "/mnt/home/users/bio_267_uma/federogc/projects/backupgenes/tests/manualtest/cluster_with_cdlib/subset_matrix.lst" -s seed_by_group 
 	?
 	extract_subgraph.py -i $folder_kernel_path/$input_name  -n $folder_kernel_path/$input_name.lst -s seed_by_group 
 	if ! [ -s "(*)_subgraph" ] ; then
@@ -11,15 +9,13 @@ extract_subgraphs_[$seed_group_names]){
 	fi
 }
 
-get_clusters_[$seed_group_names]){
+%get_clusters_[$seed_group_names]){
 	resources: -m '120gb' 
 	source ~soft_bio_267/initializes/init_python
 	grep -w "(*)" $production_seedgens | cut -f2 | tr -s "," "\n" | awk 'BEGIN{OFS="\t"}{print "All",$1}' > seed
 	echo "!extract_subgraphs_*!/G1_subgraph" > ey
-	#cdlib_clusterize.py -i !extract_subgraphs_*!/(*)_subgraph -m cpm -o clusters
 	?
 	cdlib_clusterize.py -i !extract_subgraphs_*!/(*)_subgraph -m rber_pots -o clusters
-	# And then i obtain the differente _subgraphs
 	cat seed clusters > all_groups
 	sed -i -e 's/^/(*)_/' all_groups
 	if [ -s all_groups ] ; then
@@ -30,9 +26,8 @@ get_clusters_[$seed_group_names]){
 }
 
 get_metrics){
-	resources: -m '120gb' 
+	resources: -m '200gb' 
 	source ~soft_bio_267/initializes/init_python
-	cat $production_seedgens > seed_by_group
 	cat !get_clusters_!/all_groups > all_groups
 	cat !get_clusters_!/all_groups_aggregated > all_groups_aggregated
 	?

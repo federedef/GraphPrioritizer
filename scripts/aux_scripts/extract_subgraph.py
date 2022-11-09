@@ -44,11 +44,7 @@ if __name__=="__main__":
                 help="Output file")
         options = parser.parse_args()
 
-        # now we got options.input and options.output
-
 A=np.load(options.input)
-print(str(A.nbytes))
-print("de momento funciono")
 
 if options.nodes is not None:
         nodes = get_node_labels(options.nodes)

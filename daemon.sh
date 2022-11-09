@@ -17,6 +17,7 @@ report_folder=$output_folder/report
 annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted"
 # disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted
 annotations="pathway protein_interaction biological_process"
+annotations="protein_interaction"
 kernels="ka rf ct el node2vec" #ka ct el rf
 kernels="ka" #ka ct el rf
 integration_types="mean integration_mean_by_presence"
@@ -226,9 +227,6 @@ elif [ "$exec_mode" == "get_production_seedgenes" ] ; then
 
 elif [ "$exec_mode" == "clusterize_seeds" ] ; then
 
-  if [ -s $output_folder/clusters_seeds ] ; then
-    rm -r $output_folder/clusters_seeds
-  fi
   mkdir -p $output_folder/clusters_seeds
 
   seed_group_names=`cat $production_seedgens | cut -f 1 | tr -s "\n" ";"`
