@@ -146,27 +146,27 @@ if (opt$reverse_score_order){
 }
 
 
-
-if(opt$method %in% c('ROC', 'prec_rec', 'cut')){
-    drawing_ROC_curves(data = collected_data,
-                   graphname      = opt$output_file, 
-                   method         = opt$method, 
-                   xlimit         = xlimit, 
-                   ylimit         = ylimit, 
-                   format         = opt$format,
-                   compact_graph  = opt$no_compact,
-                   legend         = !opt$no_legend,
-                   cutOff         = opt$method == 'cut',
-                   rate           = opt$rate,
-                   legendPos      = opt$legendposition,
-                   n_bootstrap    = n_bootstrap,
-                   stratified     = stratified)
-}else if (opt$method != NULL){
-    stop(paste("Method not allowed: ", opt$method, sep = ""))
+if (is.null(opt$measures)){
+    if((opt$method %in% c('ROC', 'prec_rec', 'cut'))){
+        drawing_ROC_curves(data = collected_data,
+                       graphname      = opt$output_file, 
+                       method         = opt$method, 
+                       xlimit         = xlimit, 
+                       ylimit         = ylimit, 
+                       format         = opt$format,
+                       compact_graph  = opt$no_compact,
+                       legend         = !opt$no_legend,
+                       cutOff         = opt$method == 'cut',
+                       rate           = opt$rate,
+                       legendPos      = opt$legendposition,
+                       n_bootstrap    = n_bootstrap,
+                       stratified     = stratified)
+    }else if (!is.null(opt$method)){
+        stop(paste("Method not allowed: ", opt$method, sep = ""))
+    }
 }
 
 if(opt$export_summarize & !is.null(opt$measures)){
-    #c("acc","tpr","tnr","fpr","fnr","auc","f")
     summarize_df <- data.frame(Serie = character(), Measure = character(), Value = numeric(), stringsAsFactors = FALSE)  
     for (i in 1:length(collected_data)){
         res <- summarize_performance(collected_data[[i]], serie_name=s_names[i], measures=measures,
@@ -178,7 +178,6 @@ if(opt$export_summarize & !is.null(opt$measures)){
 }
 
 if(opt$export_measures & !is.null(opt$measures)){
-    #c("acc","tpr","tnr","fpr","fnr","f")
     measures_df <- data.frame()
     for (i in 1:length(collected_data)){
         res <- export_observed_measures(collected_data[[i]], serie_name=s_names[i], measures=measures)

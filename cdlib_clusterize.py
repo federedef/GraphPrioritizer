@@ -18,15 +18,27 @@ except ModuleNotFoundError:
 ## METHODS
 ###################################################################################
 def get_external_coms(file, g, overlaping):
-		coms_to_node = defaultdict(list)
-		f = open(file, 'r')
-		for line in f:
-			fields = line.strip("\n").split("\t")
-			coms_to_node[fields[0]].append(fields[1])
-		coms = [list(c) for c in coms_to_node.values()]
-		communities = NodeClustering(coms, g, "external", method_parameters={}, overlap=overlaping)
-		return communities
+	coms_to_node = read_external_coms(file)
+	coms = [list(c) for c in coms_to_node.values()]
+	communities = NodeClustering(coms, g, "external", method_parameters={}, overlap=overlaping)
+	return communities
 
+def read_external_coms(file):
+	coms_to_node = defaultdict(list)
+	f = open(file, 'r')
+	for line in f:
+		fields = line.strip("\n").split("\t")
+		coms_to_node[fields[0]].append(fields[1])
+	return coms_to_node
+
+def Adjmatrix2Net(Matrix, rowIds, colIds):
+        relations = []
+        G = Graph()
+        for rowPos, rowId in enumerate(rowIds):
+                for colPos, colId in enumerate(rowIds):
+                        associationValue = Matrix[rowPos, colPos]
+                        if associationValue > 0: G.add_edge(rowId, colId, weight=associationValue)
+        return G
 
 def get_stats(graph, communities):
 	#Fitness functions: summarize the characteristics of a computed set of communities.
@@ -116,13 +128,15 @@ if __name__=="__main__":
 				g.add_node(fields[1], bipartite=1)
 			g.add_edge(fields[0], fields[1], weight= float(fields[2]))
 	elif(options.input_type == "matrix"):
-		# TODO: Prepare this for bipartite Nets
+		# TODO: Prepare this for bipartite Nets And directed Nets
 		Adj_M=np.load(options.input)
-		g = from_numpy_matrix(Adj_M)
+	
 		if options.nodes is not None:
-		        node_labels = get_node_labels(options.nodes)
-		        original2new_nodes = dict(zip(g.nodes, node_labels))
-		        g = relabel_nodes(g, original2new_nodes)
+		        nodes = get_node_labels(options.nodes)
+		else:
+		        nodes = list(range(0, A.shape[0] + 1))
+		
+		g = Adjmatrix2Net(Adj_M, nodes, nodes)
 
 	print(g.number_of_nodes(), file=sys.stderr)
 	print(g.number_of_edges(), file=sys.stderr)
@@ -192,7 +206,8 @@ if __name__=="__main__":
 				warnings.filterwarnings("ignore")
 				communities = algorithms.aslpaw(g)
 		elif(options.method == 'external'):
-			communities = get_external_coms(options.external, g, True)
+			coms_to_node = read_external_coms(options.external)
+			communities  = get_external_coms(options.external, g, True)
 		else:
 			print('Not defined method')
 			sys.exit(0)
@@ -234,6 +249,7 @@ if __name__=="__main__":
 		f.write("\t".join(metrics) + "\n")
 		for cluster_id in range(len(cdlib_coms)):
 			if("coms_to_node" in locals()): # Clustering is external and contains custom labels
+				print("Aqui efectivamente tenemos las labels custom")
 				members = cdlib_coms[cluster_id]
 				clust_label = ''
 				for key, value in coms_to_node.items():
@@ -241,6 +257,7 @@ if __name__=="__main__":
 						clust_label = key
 						break
 			else:
+				print("Aqui no tenemos las labels customs")
 				clust_label = str(cluster_id)
 			cl_metrics = []
 			for metric in results_by_cluster:

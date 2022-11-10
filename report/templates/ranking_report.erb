@@ -81,7 +81,7 @@
          <div style="overflow: hidden";>
                 <p style="text-align:center;"><b>Distribution of ranks in dataset by non integrated kernels</b></p> 
                 <%=boxplot(id: 'non_integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [2], group: ["kernel"],
-                           title: "Distribution of ranks in dataset by Non Integrated kernels",
+                           title: "Distribution of non zero ranks in dataset by Non Integrated kernels",
                                 xlabel: "Ranks",
                                 config: {"xAxis" => "rank",
                                         "graphOrientation": "vertical",
@@ -97,7 +97,7 @@
         <div style="overflow: hidden";>
                 <p style="text-align:center;"><b>Distribution of ranks in dataset by Integrated kernels</b></p> 
                 <%=boxplot(id: 'integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [2], group: ["kernel"], 
-                                title: "Distribution of ranks in dataset by Integrated kernels",
+                                title: "Distribution of non zero ranks in dataset by Integrated kernels",
                                 xlabel: "Ranks",
                                 config: {"xAxis" => "rank",
                                         "graphOrientation": "vertical",
@@ -151,9 +151,9 @@
                 <p style="text-align:center;"> CDF plots of non integrated kernels </p> 
                 <%= 
                 if !@hash_vars['non_integrated_rank_cdf'].nil?
-                       scatter2D(id: "non_integrated_rank_cdf", fields: [4,5] , header: true, row_names: false, responsive: false,
+                       scatter2D(id: "non_integrated_rank_cdf", fields: [5,6] , header: true, row_names: false, responsive: false,
                                 height: '400px', width: '400px', x_label: 'percentiles', smp_attr: [0,1,2],
-                                title: "cummulative distribution function plot",
+                                title: "cummulative distribution of non zero scores function plot",
                                 config: {
                                         'showLegend' => true,
                                         'lineBy' => 'kernel',
@@ -183,9 +183,9 @@
                 <p style="text-align:center;"> CDF plots of integrated kernels </p> 
                 <%= 
                 if !@hash_vars['integrated_rank_cdf'].nil?
-                       scatter2D(id: "integrated_rank_cdf", fields: [4,5] , header: true, row_names: false, responsive: false,
+                       scatter2D(id: "integrated_rank_cdf", fields: [5,6] , header: true, row_names: false, responsive: false,
                                 height: '400px', width: '400px', x_label: 'percentiles', smp_attr: [0,1,2],
-                                title: "cummulative distribution function plot",
+                                title: "cummulative distribution of non zero scores function plot",
                                 config: {
                                         'showLegend' => true,
                                         'lineBy' => 'kernel',

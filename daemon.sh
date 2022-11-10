@@ -16,7 +16,7 @@ report_folder=$output_folder/report
 # Custom variables.
 annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted"
 # disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted
-annotations="pathway protein_interaction biological_process"
+#annotations="pathway protein_interaction biological_process"
 annotations="protein_interaction"
 kernels="ka rf ct el node2vec" #ka ct el rf
 kernels="ka" #ka ct el rf
@@ -486,12 +486,22 @@ elif [ "$exec_mode" == "report" ] ; then
     fi
   done
 
+  if [ -s $output_folder/non_integrated_rank_measures ] ; then
+     echo -e "annot_kernel\tannot\tkernel\trank\tacc\ttpr\tfpr\tprec\trec" | \
+     cat - $output_folder/non_integrated_rank_measures > $report_folder/ranking_report/non_integrated_rank_measures
+  fi
+
+    if [ -s $output_folder/integrated_rank_measures ] ; then
+    echo -e "integration_kernel\tintegration\tkernel\trank\tacc\ttpr\tfpr\tprec\trec" | \
+     cat - $output_folder/integrated_rank_measures > $report_folder/ranking_report/integrated_rank_measures
+  fi
+
   if [ -s $output_folder/non_integrated_rank_cdf ] ; then
      echo -e "annot_kernel\tannot\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"| \
      cat - $output_folder/non_integrated_rank_cdf > $report_folder/ranking_report/non_integrated_rank_cdf
   fi
 
-  if [ -s $output_folder/non_integrated_rank_cdf ] ; then
+  if [ -s $output_folder/integrated_rank_cdf ] ; then
      echo -e "integration_kernel\tintegration\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"| \
      cat - $output_folder/integrated_rank_cdf > $report_folder/ranking_report/integrated_rank_cdf
   fi

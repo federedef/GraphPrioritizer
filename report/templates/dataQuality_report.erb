@@ -40,9 +40,9 @@
                 <p style="text-align:center;"><b>Ranks distribution by seed Not integrated</b></p> 
                 <%=
                 order_columns('non_integrated_rank_cdf',1)
-                boxplot(id: 'non_integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [6,1], group: ["group_seed"],
+                boxplot(id: 'non_integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [7,1], group: ["group_seed"],
                                 x_label: "Ranks",
-                                title: "Boxplot of ranks distribution",
+                                title: "Boxplot of ranks (with no zero score) distribution",
                                 config: {"xAxis" => "rank",
                                         "graphOrientation": "vertical",
                                         "colorBy" => "group_seed",
@@ -56,9 +56,9 @@
 
          <div style="overflow: hidden";>
                 <p style="text-align:center;"><b>Ranks distribution by seed integratedr</b></p> 
-                <%=boxplot(id: 'integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [6], group: ["group_seed"],
+                <%=boxplot(id: 'integrated_rank_cdf', header: true, row_names: false, default: false, smp_attr: [7,1], group: ["group_seed"],
                                 x_label: "Ranks",
-                                title: "Boxplot of ranks distribution",
+                                title: "Boxplot of ranks (with no zero score) distribution",
                                 config: {"xAxis" => "rank",
                                         "graphOrientation": "vertical",
                                         "colorBy" => "group_seed",
@@ -77,7 +77,7 @@
                 if !@hash_vars['non_integrated_rank_cdf'].nil?
 
                         order_columns('non_integrated_rank_cdf',4)
-                       scatter2D(id: "non_integrated_rank_cdf", fields: [4,5] , header: true, row_names: false, responsive: false,
+                       scatter2D(id: "non_integrated_rank_cdf", fields: [5,6] , header: true, row_names: false, responsive: false,
                                 height: '400px', width: '400px', x_label: 'percentiles', smp_attr: [0,1,2],
                                 title: "cummulative distribution function plot",
                                 config: {
@@ -94,7 +94,7 @@
                 <p style="text-align:center;"> CDF plots of integrated kernels </p> 
                 <%= 
                 if !@hash_vars['integrated_rank_cdf'].nil?
-                       scatter2D(id: "integrated_rank_cdf", fields: [4,5] , header: true, row_names: false, responsive: false,
+                       scatter2D(id: "integrated_rank_cdf", fields: [5,6] , header: true, row_names: false, responsive: false,
                                 height: '400px', width: '400px', x_label: 'percentiles', smp_attr: [0,1,2],
                                 title: "cummulative distribution function plot",
                                 config: {
