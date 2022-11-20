@@ -175,7 +175,9 @@
         <div style="overflow: hidden; text-align:center">
                 <p style="text-align:center;"> ROC plots of integrated kernels </p> 
                 <%= 
+                if File.exist?(img_path+"integrated_ROC.png")
                         embed_img(img_path+"integrated_ROC.png","width='700' height='700'")
+                end
                 %>
         </div>
 

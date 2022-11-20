@@ -6,20 +6,23 @@ exec_mode=$1
 add_opt=$2 
 
 # Used Paths.
-input_path=`pwd`
+export input_path=`pwd`
 export PATH=$input_path/scripts/aux_scripts:~soft_bio_267/programs/x86_64/scripts:$PATH
-autoflow_scripts=$input_path/scripts/autoflow_scripts
-control_genes_folder=$input_path/control_genes
-output_folder=$SCRATCH/executions/backupgenes
+export autoflow_scripts=$input_path/scripts/autoflow_scripts
+daemon_scripts=$input_path/scripts/daemon_scripts
+export control_genes_folder=$input_path/control_genes
+export output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
 # Custom variables.
 annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted"
 # disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted
 #annotations="pathway protein_interaction biological_process"
-annotations="protein_interaction"
+# NEW -> genetic_interaction_exprs
+#annotations="genetic_interaction_weighted"
+annotations="gene_TF gene_hgncGroup"
 kernels="ka rf ct el node2vec" #ka ct el rf
-kernels="ka" #ka ct el rf
+#kernels="ka" #ka ct el rf
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom' 
 control_pos=$input_path'/control_pos'
@@ -28,7 +31,7 @@ production_seedgens=$input_path'/production_seedgens'
 
 kernels_varflow=`echo $kernels | tr " " ";"`
 
-if [ "$exec_mode" == "download" ] ; then
+if [ "$exec_mode" == "download_layers" ] ; then
   #########################################################
   # STAGE 1 DOWNLOAD DATA
   #########################################################
@@ -51,9 +54,19 @@ if [ "$exec_mode" == "download" ] ; then
   gzip -d ./input/input_raw/string_data.v11.5.txt.gz
 
   # Downloading GENETIC INTERACTIONS from DEPMAP.
-  wget https://ndownloader.figshare.com/files/34989919 -O ./input/input_raw/CRISPR_gene_effect 
+  wget https://ndownloader.figshare.com/files/34990033 -O ./input/input_raw/CRISPR_gene_effect 
+  wget https://ndownloader.figshare.com/files/34989919 -O ./input/input_raw/CRISPR_gene_exprs 
   # Gene Expression: https://ndownloader.figshare.com/files/34989919
   # Cell Surpervivence score: https://ndownloader.figshare.com/files/34008491
+
+  # Downloading Gen-Transcriptional Factor relation.
+  get_gen_TF_data.R -O ./input/input_raw/gene_TF
+  rm -r omnipathr-log
+
+  # Downloading HGNC_group
+  wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./input/input_raw/gene_hgncGroup
+
+elif [ "$exec_mode" == "download_translators" ] ; then
 
   ############################
   ## Obtain TRANSLATOR TABLES.
@@ -68,7 +81,9 @@ if [ "$exec_mode" == "download" ] ; then
   # Downloading HGNC_symbol
   wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./translators/HGNC_symbol
   awk '{OFS="\t"}{print $2,$1}' ./translators/HGNC_symbol > ./translators/symbol_HGNC
-  rm ./translators/HGNC_symbol
+
+  # The other direction symbol_HGNC
+  awk '{OFS="\t"}{print $2,$1}' ./translators/HGNC_symbol > ./translators/symbol_HGNC
 
 elif [ "$exec_mode" == "process_download" ] ; then
 
@@ -112,6 +127,20 @@ elif [ "$exec_mode" == "process_download" ] ; then
   cp ./input/input_processed/genetic_interaction_unweighted ./input/input_processed/genetic_interaction_weighted
   rm ./input/input_raw/CRISPR_gene_effect_symbol
 
+  # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 100
+  sed 's/([0-9]*)//1g' ./input/input_raw/CRISPR_gene_exprs | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/input_raw/CRISPR_gene_exprs_symbol
+  idconverter.rb -d ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_exprs_symbol -r 0 > ./input/input_processed/genetic_interaction_unweighted
+  cp ./input/input_processed/genetic_interaction_unweighted ./input/input_processed/genetic_interaction_exprs
+  rm ./input/input_raw/CRISPR_gene_exprs_symbol
+
+  # Translating to GENE-TF interaction.
+  idconverter.rb -d ./translators/symbol_HGNC -i ./input/input_raw/gene_TF -c 0,1 | sed 's/HGNC:/TF:/2g' > ./input/input_processed/gene_TF
+
+  # Formatting data_columns
+  cut -f 1,14 ./input/input_raw/gene_hgncGroup | sed "s/\"//g" | tr -s "|" "," | awk '{if( $2 != "") print $0}' \
+  | desaggregate_column_data.rb -i "-" -x 1 | sed 's/\t/\tGROUP:/1g' > ./input/input_processed/gene_hgncGroup
+
+
 elif [ "$exec_mode" == "white_list" ] ; then
 
 #########################################################
@@ -138,52 +167,8 @@ elif [ "$exec_mode" == "white_list" ] ; then
   cd ../..
 
 elif [ "$exec_mode" == "control_preparation" ] ; then 
-  source ~soft_bio_267/initializes/init_R
 
-  # Backup Controls #
-  ###################
-  mkdir -p $control_genes_folder/backupgens/processed_data 
-  
-  # POSITIVE CONTROL #
-  # AdHoc added backups
-  cp $control_genes_folder/backupgens/data/AdHoc_Backups $control_genes_folder/backupgens/processed_data/AdHoc_Backups
-  # Big Papi.
-  grep -w 'All 6' $control_genes_folder/backupgens/data/Big_Papi | awk '{FS="\t";OFS="\t"}{if ( $6 <= 0.05) print $1,$2}' > $control_genes_folder/backupgens/data/filtered_Big_Papi
-  # Digenic Paralog.
-  awk '{FS="\t"}{if ( $2 <= 0.05 && $3 <= 0.05 && $4 <= 0.05 && $5 <= 0.05 && $6 <= 0.05 && $7 <= 0.05 && $8 <= 0.05 && $9 <= 0.05 && $10 <= 0.05 && $11 <= 0.05 && $12 <= 0.05) print $1}' $control_genes_folder/backupgens/data/Digenic_Paralog | \
-   tr -s ";" "\t" | tr -d "\"" > $control_genes_folder/backupgens/data/filtered_Digenic_Paralog
-  # Download the necessary tab to translation from symbol to HGNC.
-  if [ ! -s ./translators/symbol_HGNC ] ; then 
-    echo "Obtaining dich"
-    wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./translators/HGNC_symbol
-    awk '{OFS="\t"}{print $2,$1}' ./translators/HGNC_symbol > ./translators/symbol_HGNC
-    rm HGNC_symbol
-  fi
-
-  idconverter.rb -d ./translators/symbol_HGNC -i $control_genes_folder/backupgens/data/filtered_Big_Papi -c 0,1 > $control_genes_folder/backupgens/processed_data/Big_Papi
-  idconverter.rb -d ./translators/symbol_HGNC -i $control_genes_folder/backupgens/data/filtered_Digenic_Paralog -c 0,1 > $control_genes_folder/backupgens/processed_data/Digenic_Paralog
-  
-  cat $control_genes_folder/backupgens/processed_data/* | sort | uniq -u  > $control_genes_folder/backupgens/backup_gens
-
-  # NEGATIVE CONTROL #
-  grep -w 'All 6' $control_genes_folder/backupgens/data/Big_Papi | awk '{FS="\t";OFS="\t"}{if ( $7 <= 0.05) print $1,$2}' > $control_genes_folder/backupgens/data/filtered_Big_Papi_negative_control
-  idconverter.rb -d ./translators/symbol_HGNC -i $control_genes_folder/backupgens/data/filtered_Big_Papi_negative_control -c 0,1 | awk '{if (!( $1 == $2 )) print $0 }' > $control_genes_folder/backupgens/non_backup_gens
-  
-  echo "Obtaining Paralogs genes"
-  # Finally add new column indicating which pairs are paralogs in NEGATIVE AND POSITIVE CONTROLS.
-  which_are_paralogs.R -i $control_genes_folder/backupgens/backup_gens -o "$control_genes_folder/backupgens" -O "backup_gens"
-  which_are_paralogs.R -i $control_genes_folder/backupgens/non_backup_gens -o "$control_genes_folder/backupgens" -O "non_backup_gens"
-
-  # Diseases Control #
-  ####################
-  mkdir -p $control_genes_folder/diseasegens/processed_data 
-
-  process_diseasome.sh diseasome_from_paper.tsv $control_genes_folder/diseasegens
-  # Getting negatives
-  get_negatives_from_disease.rb -i $control_genes_folder/diseasegens/processed_data/diseasome_disgroup_genes -o "$control_genes_folder/diseasegens/non_disease_gens"
-  # Getting Positives
-  cut -f 1,3 $control_genes_folder/diseasegens/processed_data/diseasome_disgroup_genes > "$control_genes_folder/diseasegens/disease_gens"
-
+  $daemon_scripts/control_preparation.sh
 
 elif [ "$exec_mode" == "control_type" ] ; then 
 

@@ -7,5 +7,8 @@ cellular_component	GO	ontology	GO:0005575	-	F	B	kernel
 protein_interaction	-	network	-	-	F	B	kernel
 pathway	-	network	-	-	F	B	kernel
 genetic_interaction_unweighted	-	network	-	-	F	B	kernel
-genetic_interaction_weighted	-	network	-	-	F	B	umap
+genetic_interaction_weighted	-	network	-	-	-	NB	kernel
+genetic_interaction_exprs	-	network	-	-	-	NB	kernel
+gene_TF	-	network	-	-	F	B	kernel
+gene_hgncGroup	-	network	-	-	F	B	kernel
 paper_coDep	-	network	-	-	F	NB	kernel

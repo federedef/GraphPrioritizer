@@ -1,4 +1,4 @@
-%calc_similarity){
+calc_similarity){
 	resources: -m '60gb' -t '4-00:00:00'
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
@@ -30,11 +30,17 @@
     		# Select just the interactions of jaccard filtering by the counts values.
     		paste $annotation_similarity_list <(cut -f 3 counts_similarity_list) | awk 'BEGIN{FS="\t";OFS="\t"}{if( $4 >= 3 ) print $1,$2,$3}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list
     		#awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $annotation_similarity_list > similarity_list # Set diagonal to 0.
+    	elif [ "$annotation" == "gene_TF" ] ; then
+    		# Perform a projection layer with jaccard
+    		NetAnalyzer.rb -i $input_path/input_processed/$annotation -a "similarity_list" -t pair -l 'gen,HGNC:;tf,TF:' -m "jaccard" -u 'gen,gen;tf'
+    		# Perform a projection layer with counts
+    	elif [ "$annotation" == "gen_hgncGroup" ] ; then
+    		NetAnalyzer.rb -i $input_path/input_processed/$annotation -a "similarity_list" -t pair -l 'gen,HGNC:;group,GROUP:' -m "jaccard" -u 'gen,gen;tf'
     	elif [ "$annotation" == "genetic_interaction_unweighted" ] ; then
-    		build_corNetwork.R -i $input_path/input_processed/$annotation -s "\t" -O $annotation_similarity_list -t "upper" -f -b
+    		build_corNetwork.R -i $input_path/input_processed/$annotation -s "\t" -O $annotation_similarity_list -m "bicor" -t "greater" -f -b
     		cat $annotation_similarity_list | awk '{if ( $3 != "NA" ) {print $0}}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list # sed 's/HGNC./HGNC:/g'|
     	elif [ "$annotation" == "genetic_interaction_weighted" ] ; then
-    		build_corNetwork.R -i $input_path/input_processed/$annotation -s "\t" -O $annotation_similarity_list -t "upper" -f
+    		build_corNetwork.R -i $input_path/input_processed/$annotation -s "\t" -O $annotation_similarity_list -m "bicor" -t "greater" -f
     		#sim_umap.R -i $input_path/input_processed/$annotation -O $annotation_similarity_list -t
     		cat $annotation_similarity_list | awk '{if ( $3 != "NA" ) {print $0}}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list # sed 's/HGNC./HGNC:/g'|
     	else
@@ -50,7 +56,7 @@
 	fi
 }
 
-%list2matrix_similarity){
+list2matrix_similarity){
 	resources: -m '60gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_netanalyzer
 	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
@@ -66,7 +72,7 @@
 }
 
 
-%filter_cutoff){
+filter_cutoff){
 	resources: -m '60gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_netanalyzer
 	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
@@ -101,7 +107,7 @@
     fi
 }
 
-%filter_disparity){
+filter_disparity){
 	resources: -c 8 -m '60gb' -t '5-00:00:00'
 	source ~soft_bio_267/initializes/init_R
 	source ~soft_bio_267/initializes/init_netanalyzer
@@ -145,8 +151,8 @@ calc_kernel_[$kernels_varflow]){
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
 	source ~soft_bio_267/initializes/init_netanalyzer
+	source ~soft_bio_267/initializes/init_python
 	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
-	module load python/3.8.8
 	echo -e "$annotation_(*)\t$annotation\t(*)" > tracker
 	cp filter_disparity)/similarity_matrix_bin.lst kernel_matrix_bin.lst # To pass the list of node names.
 	kern_net_path=`pwd`
