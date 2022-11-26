@@ -1,0 +1,63 @@
+Phenotypic Series  - PS601457
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Severe combined immunodeficiency (Select Examples) - PS601457 - 23 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+1p35.1	Reticular dysgenesis	AR	3	267500	AK2	103020
+1q21.3	Bare lymphocyte syndrome, type II, complementation group E	AR	3	209920	RFX5	601863
+1q21.3	Bare lymphocyte syndrome, type II, complementation group C	AR	3	209920	RFX5	601863
+1q31.3-q32.1	Immunodeficiency 105, severe combined	AR	3	619924	PTPRC, CD45, LCA, IMD105	151460
+2q35	Severe combined immunodeficiency with microcephaly, growth retardation, and sensitivity to ionizing radiation		3	611291	NHEJ1, XLF	611290
+5p13.2	Immunodeficiency 104, severe combined	AR	3	608971	IL7R, IL7RA, CD127, IMD104	146661
+10p13	Severe combined immunodeficiency, Athabascan type	AR	3	602450	DCLRE1C, ARTEMIS, SCIDA	605988
+10p13	Omenn syndrome	AR	3	603554	DCLRE1C, ARTEMIS, SCIDA	605988
+11p12	Severe combined immunodeficiency, B cell-negative	AR	3	601457	RAG1	179615
+11p12	Omenn syndrome	AR	3	603554	RAG1	179615
+11p12	Severe combined immunodeficiency, B cell-negative	AR	3	601457	RAG2	179616
+11p12	Omenn syndrome	AR	3	603554	RAG2	179616
+11q23.3	Immunodeficiency 18, SCID variant	AR	3	615615	CD3E, IMD18	186830
+11q23.3	Immunodeficiency 18	AR	3	615615	CD3E, IMD18	186830
+11q23.3	Immunodeficiency 19, severe combined	AR	3	615617	CD3D, T3D, IMD19	186790
+13q13.3	Bare lymphocyte syndrome, type II, complementation group D	AR	3	209920	RFXAP	601861
+14q32.2	Immunodeficiency 49, severe combined	AD	3	617237	BCL11B, CTIP2, IMD49, IDDFSTA	606558
+16p13.13	Bare lymphocyte syndrome, type II, complementation group A	AR	3	209920	CIITA, MHC2TA, C2TA	600005
+19p13.11	SCID, autosomal recessive, T-negative/B-positive type	AR	3	600802	JAK3, JAKL	600173
+19p13.11	Bare lymphocyte syndrome, type II, complementation group B	AR	3	209920	RFXANK	603200
+20q13.12	Severe combined immunodeficiency due to ADA deficiency	AR, SMo	3	102700	ADA	608958
+20q13.12	Adenosine deaminase deficiency, partial	AR, SMo	3	102700	ADA	608958
+Xq13.1	Severe combined immunodeficiency, X-linked	XLR	3	300400	IL2RG, SCIDX1, SCIDX, IMD4	308380
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

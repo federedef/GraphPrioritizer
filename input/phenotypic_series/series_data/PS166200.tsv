@@ -1,0 +1,65 @@
+Phenotypic Series  - PS166200
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Osteogenesis imperfecta - PS166200 - 25 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+1p34.2	Osteogenesis imperfecta, type VIII	AR	3	610915	P3H1, LEPRE1, GROS1, OI8	610339
+3p22.3	Osteogenesis imperfecta, type VII	AR	3	610682	CRTAP, CASP, OI7	605497
+5q33.1	Osteogenesis imperfecta, type XVII	AR	3	616507	SPARC, ON, OI17	182120
+6q14.1	Osteogenesis imperfecta, type XVIII	AR	3	617952	TENT5A, FAM46A, C6orf37, OI18	611357
+7p22.1	Osteogenesis imperfecta, type XXI	AR	3	619131	KDELR2, ELP1, OI21	609024
+7q21.3	Osteogenesis imperfecta, type II	AD	3	166210	COL1A2, EDSCV, EDSARTH2	120160
+7q21.3	Osteogenesis imperfecta, type III	AD	3	259420	COL1A2, EDSCV, EDSARTH2	120160
+7q21.3	Osteogenesis imperfecta, type IV	AD	3	166220	COL1A2, EDSCV, EDSARTH2	120160
+8p21.3	Osteogenesis imperfecta, type XIII	AR	3	614856	BMP1, OI13	112264
+9q31.2	Osteogenesis imperfecta, type XIV	AR	3	615066	TMEM38B, TRICB, OI14	611236
+11p15.5	Osteogenesis imperfecta, type V	AD	3	610967	IFITM5, OI5	614757
+11p11.2	Osteogenesis imperfecta, type XVI	AR	3	616229	CREB3L1, OASIS, OI16	616215
+11q13.5	Osteogenesis imperfecta, type X	AR	3	613848	SERPINH1, SERPINH2, PPROM, CBP2, CBP1, OI10	600943
+12q13.12	Osteogenesis imperfecta, type XV	AR	3	615220	WNT1, INT1, OI15, BMND16	164820
+12q13.13	Osteogenesis imperfecta, type XII	AR	3	613849	SP7, OSX, OI12	606633
+15q22.31	Osteogenesis imperfecta, type IX	AR	3	259440	PPIB, CYPB, OI9	123841
+15q25.1	Osteogenesis imperfecta, type XX	AR	3	618644	MESD, MESDC2, BOCA, KIAA0081, OI20	607783
+17p13.3	Osteogenesis imperfecta, type VI	AR	3	613982	SERPINF1, PEDF, OI6	172860
+17q21.2	Osteogenesis imperfecta, type XI	AR	3	610968	FKBP10, FKBP65, OI11, BRKS1	607063
+17q21.33	Osteogenesis imperfecta, type II	AD	3	166210	COL1A1, OI1, OI2, OI3, OI4, EDSARTH1, CAFYD	120150
+17q21.33	Osteogenesis imperfecta, type IV	AD	3	166220	COL1A1, OI1, OI2, OI3, OI4, EDSARTH1, CAFYD	120150
+17q21.33	Osteogenesis imperfecta, type I	AD	3	166200	COL1A1, OI1, OI2, OI3, OI4, EDSARTH1, CAFYD	120150
+17q21.33	Osteogenesis imperfecta, type III	AD	3	259420	COL1A1, OI1, OI2, OI3, OI4, EDSARTH1, CAFYD	120150
+22q13.2	Osteogenesis imperfecta, type XXII	AR	3	619795	CCDC134, OI22	618788
+Xp22.12	Osteogenesis imperfecta, type XIX	XLR	3	301014	MBTPS2, S2P, IFAP, KFSDX, OLMSX, OI19	300294
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

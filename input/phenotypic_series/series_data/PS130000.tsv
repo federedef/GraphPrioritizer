@@ -1,0 +1,62 @@
+Phenotypic Series  - PS130000
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Ehlers-Danlos syndrome - PS130000 - 22 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+1p36.33	Ehlers-Danlos syndrome, spondylodysplastic type, 2	AR	3	615349	B3GALT6, SEMDJL1, EDSSPD2, ALGAZ	615291
+1p36.22	Ehlers-Danlos syndrome, kyphoscoliotic type, 1	AR	3	225400	PLOD1, LH1, LLH, EDSKCL1	153454
+2q32.2	Ehlers-Danlos syndrome, vascular type	AD	3	130050	COL3A1, EDSVASC, PMGEDSV	120180
+2q32.2	Ehlers-Danlos syndrome, classic type, 2	AD	3	130010	COL5A2, EDSCL2	120190
+4q27	Brittle cornea syndrome 2	AR	3	614170	PRDM5, BCS2	614161
+5q35.3	Ehlers-Danlos syndrome, spondylodysplastic type, 1	AR	3	130070	B4GALT7, XGALT1, XGPT1, EDSSPD1	604327
+5q35.3	Ehlers-Danlos syndrome, dermatosparaxis type	AR	3	225410	ADAMTS2, NPI, EDSDERMS	604539
+6p21.33-p21.32	Ehlers-Danlos syndrome, classic-like, 1	AR	3	606408	TNXB, TNX, TNXB1, TNXBS, TNXB2, EDSCLL1, VUR8	600985
+6q13-q14.1	Bethlem myopathy 2	AD	3	616471	COL12A1, UCMD2, BTHLM2, EDSMYP	120320
+6q22.1	Ehlers-Danlos syndrome, musculocontractural type 2	AR	3	615539	DSE, SART2, EDSMC2	605942
+7p14.3	Ehlers-Danlos syndrome, kyphoscoliotic type, 2	AR	3	614557	FKBP14, EDSKSCL2	614505
+7p13	Ehlers-Danlos syndrome, classic-like, 2	AR	3	618000	AEBP1, ACLP	602981
+7q21.3	Ehlers-Danlos syndrome, cardiac valvular type	AR	3	225320	COL1A2, EDSCV, EDSARTH2	120160
+7q21.3	Ehlers-Danlos syndrome, arthrochalasia type, 2	AD	3	617821	COL1A2, EDSCV, EDSARTH2	120160
+9q34.3	Ehlers-Danlos syndrome, classic type, 1	AD	3	130000	COL5A1, EDSCL1, FMDMF	120215
+11p11.2	Ehlers-Danlos syndrome, spondylodysplastic type, 3	AR	3	612350	SLC39A13, ZIP13, EDSSPD3	608735
+12p13.31	Ehlers-Danlos syndrome, periodontal type, 2	AD	3	617174	C1S, EDSPD2	120580
+12p13.31	Ehlers-Danlos syndrome, periodontal type, 1	AD	3	130080	C1R, EDSPD1	613785
+15q15.1	Ehlers-Danlos syndrome, musculocontractural type 1	AR	3	601776	CHST14, D4ST1, ATCS, EDSMC1	608429
+16q24.2	Brittle cornea syndrome 1	AR	3	229200	ZNF469, KIAA1858, BCS1	612078
+17q21.33	Ehlers-Danlos syndrome, arthrochalasia type, 1	AD	3	130060	COL1A1, OI1, OI2, OI3, OI4, EDSARTH1, CAFYD	120150
+Not Mapped	Ehlers-Danlos syndrome, hypermobility type	AD		130020	EDSHMB	130020
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

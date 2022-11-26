@@ -1,14 +1,19 @@
-Net 	Ontology	Type	Code	cutoff_filter	disparity_filter	Binarize	Process
-phenotype	HPO	ontology	HP:0000001	-	F	B	kernel
-disease	MONDO	ontology	-	-	F	B	kernel
-molecular_function	GO	ontology	GO:0003674	-	F	B	kernel
-biological_process	GO	ontology	GO:0008150	-	F	B	kernel
-cellular_component	GO	ontology	GO:0005575	-	F	B	kernel
-protein_interaction	-	network	-	-	F	B	kernel
-pathway	-	network	-	-	F	B	kernel
-genetic_interaction_unweighted	-	network	-	-	F	B	kernel
-genetic_interaction_weighted	-	network	-	-	-	NB	kernel
-genetic_interaction_exprs	-	network	-	-	-	NB	kernel
-gene_TF	-	network	-	-	F	B	kernel
-gene_hgncGroup	-	network	-	-	F	B	kernel
-paper_coDep	-	network	-	-	F	NB	kernel
+Net	Source 	Ontology	Type	Code	cutoff_filter	disparity_filter	Binarize	Process	Custom
+phenotype	phenotype	HPO	ontology	HP:0000001	-	-	NB	kernel	-
+disease	disease	MONDO	ontology	-	-	-	NB	kernel	-
+molecular_function	molecular_function	GO	ontology	GO:0003674	-	-	NB	kernel	-
+biological_process	biological_process	GO	ontology	GO:0008150	-	-	NB	kernel	-
+cellular_component	cellular_component	GO	ontology	GO:0005575	-	-	NB	kernel	-
+protein_interaction	protein_interaction	-	network	-	-	F	B	kernel	-
+pathway	pathway	-	network	-	-	-	NB	kernel	-
+genetic_interaction_effect_bicor	genetic_interaction_effect	-	network	-	-	-	NB	kernel	bicor
+genetic_interaction_exprs_bicor	genetic_interaction_exprs	-	network	-	-	-	NB	kernel	bicor
+genetic_interaction_effect	genetic_interaction_effect	-	network	-	-	-	NB	kernel	pearson
+genetic_interaction_exprs	genetic_interaction_exprs	-	network	-	-	-	NB	kernel	pearson
+genetic_interaction_effect_spearman	genetic_interaction_effect	-	network	-	-	-	NB	kernel	spearman
+genetic_interaction_exprs_spearman	genetic_interaction_exprs	-	network	-	-	-	NB	kernel	spearman
+genetic_interaction_effect_umap	genetic_interaction_effect	-	network	-	-	-	NB	umap	-
+genetic_interaction_exprs_umap	genetic_interaction_exprs	-	network	-	-	-	NB	umap	-
+genetic_interaction_paper	paper_coDep	-	network	-	-	F	NB	kernel
+gene_TF	gene_TF	-	network	-	-	-	NB	kernel
+gene_hgncGroup	gene_hgncGroup	-	network	-	-	-	NB	kernel

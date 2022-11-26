@@ -5,9 +5,10 @@
 	source ~soft_bio_267/initializes/init_netanalyzer
 	source ~soft_bio_267/initializes/init_R
 	echo -e "$annotation_sim" > tracker
+	source=`grep -P -w '^$annotation' $net2custom | cut -f 2`
 	similarity_path=`pwd`
 	?
-	sim_umap.R -i $input_path/input_processed/$annotation -O similarity_matrix_bin -t
+	sim_umap.R -i $input_path/input_processed/$source -O similarity_matrix_bin -t
 	if [ ! -s similarity_matrix_bin ] ; then 
 		exit 1
 	fi
@@ -35,8 +36,8 @@ filter_cutoff){
 	#source ~soft_bio_267/initializes/init_netanalyzer
 	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	echo -e "$annotation_sim" > tracker
-	cutoff_filter=`grep -P '^$annotation' $net2custom | cut -f 5`
-	binarize_factor=`grep -P '^$annotation' $net2custom | cut -f 7`
+	cutoff_filter=`grep -P -w '^$annotation' $net2custom | cut -f 6`
+	binarize_factor=`grep -P -w '^$annotation' $net2custom | cut -f 8`
 	cp list2matrix_similarity)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
 	if [ -s filtered_similarity_metrics ] ;then
 		rm filtered_similarity_metrics
@@ -71,8 +72,8 @@ filter_disparity){
 	#source ~soft_bio_267/initializes/init_netanalyzer
 	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	echo -e "$annotation_sim" > tracker
-	disparity_filter=`grep -P '^$annotation' $net2custom | cut -f 6`
-	binarize_factor=`grep -P '^$annotation' $net2custom | cut -f 7`
+	disparity_filter=`grep -P -w '^$annotation' $net2custom | cut -f 7`
+	binarize_factor=`grep -P -w '^$annotation' $net2custom | cut -f 8`
 	cp filter_cutoff)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
 	if [ -s filtered_similarity_metrics ] ;then
 		rm filtered_similarity_metrics
@@ -105,7 +106,7 @@ filter_disparity){
 }
 
 calc_kernel_[$kernels_varflow]){
-	resources: -c 16 -m '60gb' -t '2-00:00:00'
+	resources: -c 16 -m '240gb' -t '2-00:00:00'
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
 	#source ~soft_bio_267/initializes/init_netanalyzer

@@ -1,0 +1,60 @@
+Phenotypic Series  - PS608583
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Atrial fibrillation, familial - PS608583 - 20 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+1p36.22	Atrial fibrillation, familial, 6	AD	3	612201	NPPA, PND, ANP, ATFB6, ATRST2	108780
+1q21.2	Atrial fibrillation, familial, 11	AD	3	614049	GJA5, CX40, ATFB11	121013
+3p22.2	Atrial fibrillation, familial, 10	AD	3	614022	SCN5A, LQT3, VF1, HB1, SSS1, CMD1E, CDCD2	600163
+4q25	{Atrial fibrillation, familial, 5}		2	611494	ATFB5	611494
+5p13.2	?Atrial fibrillation 15	AR	3	615770	NUP155, KIAA0791, ATFB15	606694
+6q14-q16	Atrial fibrillation, familial, 2		2	608988	ATFB2	608988
+10q22-q24	Atrial fibrillation, familial, 1	AD	2	608583	ATFB1	608583
+11p15.5-p15.4	Atrial fibrillation, familial, 3	AD	3	607554	KCNQ1, KCNA9, LQT1, KVLQT1, ATFB3, SQT2	607542
+11q23.3	Atrial fibrillation, familial, 17	AD	3	611819	SCN4B, LQT10, ATFB17	608256
+11q23.3	Long QT syndrome 10	AD	3	611819	SCN4B, LQT10, ATFB17	608256
+11q23.3	Atrial fibrillation, familial, 14	AD	3	615378	SCN2B, ATFB14	601327
+11q24.1	Brugada syndrome 7	AD	3	613120	SCN3B, SCNB3, BRGDA7, ATFB16	608214
+11q24.1	Atrial fibrillation, familial, 16	AD	3	613120	SCN3B, SCNB3, BRGDA7, ATFB16	608214
+12p13.32	Atrial fibrillation, familial, 7	AD	3	612240	KCNA5, ATFB7	176267
+12p12.1	?Atrial fibrillation, familial, 12	AD	3	614050	ABCC9, SUR2, CMD1O, ATFB12, CANTU, IDMYS	601439
+16q22	Atrial fibrillation, familial, 8		2	613055	ATFB8	613055
+17q21.32	?Atrial fibrillation, familial, 18	AD	3	617280	MYL4	160770
+17q24.3	Atrial fibrillation, familial, 9	AD	3	613980	KCNJ2, HHIRK1, KIR2.1, IRK1, LQT7, SQT3, ATFB9	600681
+19q13.11	Atrial fibrillation, familial, 13	AD	3	615377	SCN1B, GEFSP1, BRGDA5, ATFB13, DEE52	600235
+21q22.11	Atrial fibrillation, familial, 4		3	611493	KCNE2, MIRP1, LQT6, ATFB4	603796
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

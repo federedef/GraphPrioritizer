@@ -15,14 +15,15 @@ export output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted"
-# disease phenotype molecular_function biological_process cellular_component protein_interaction pathway genetic_interaction_weighted
-#annotations="pathway protein_interaction biological_process"
-# NEW -> genetic_interaction_exprs
-#annotations="genetic_interaction_weighted"
-annotations="gene_TF gene_hgncGroup"
-kernels="ka rf ct el node2vec" #ka ct el rf
-#kernels="ka" #ka ct el rf
+annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway gene_TF gene_hgncGroup"
+annotations="disease phenotype molecular_function biological_process cellular_component"
+annotations+="protein_interaction pathway gene_TF gene_hgncGroup"
+annotations+="genetic_interaction_effect genetic_interaction_exprs genetic_interaction_effect_bicor genetic_interaction_exprs_bicor"
+annotations+="genetic_interaction_effect_spearman genetic_interaction_exprs_spearman genetic_interaction_effect_umap"
+annotations+="genetic_interaction_exprs_umap"
+annotations="protein_interaction"
+kernels="ka rf ct el node2vec"
+kernels="ka"
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom' 
 control_pos=$input_path'/control_pos'
@@ -86,8 +87,9 @@ elif [ "$exec_mode" == "download_translators" ] ; then
   awk '{OFS="\t"}{print $2,$1}' ./translators/HGNC_symbol > ./translators/symbol_HGNC
 
 elif [ "$exec_mode" == "process_download" ] ; then
+  source ~soft_bio_267/initializes/init_python
 
-  mkdir -p ./input/input_processed
+   mkdir -p ./input/input_processed
 
   declare -A tag_filter 
   tag_filter[phenotype]='HP:'
@@ -123,14 +125,12 @@ elif [ "$exec_mode" == "process_download" ] ; then
 
   # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 100
   sed 's/([0-9]*)//1g' ./input/input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/input_raw/CRISPR_gene_effect_symbol
-  idconverter.rb -d ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_effect_symbol -r 0 > ./input/input_processed/genetic_interaction_unweighted
-  cp ./input/input_processed/genetic_interaction_unweighted ./input/input_processed/genetic_interaction_weighted
+  idconverter.rb -d ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_effect_symbol -r 0 > ./input/input_processed/genetic_interaction_effect
   rm ./input/input_raw/CRISPR_gene_effect_symbol
 
   # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 100
   sed 's/([0-9]*)//1g' ./input/input_raw/CRISPR_gene_exprs | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/input_raw/CRISPR_gene_exprs_symbol
-  idconverter.rb -d ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_exprs_symbol -r 0 > ./input/input_processed/genetic_interaction_unweighted
-  cp ./input/input_processed/genetic_interaction_unweighted ./input/input_processed/genetic_interaction_exprs
+  idconverter.rb -d ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_exprs_symbol -r 0 > ./input/input_processed/genetic_interaction_exprs
   rm ./input/input_raw/CRISPR_gene_exprs_symbol
 
   # Translating to GENE-TF interaction.
@@ -139,6 +139,13 @@ elif [ "$exec_mode" == "process_download" ] ; then
   # Formatting data_columns
   cut -f 1,14 ./input/input_raw/gene_hgncGroup | sed "s/\"//g" | tr -s "|" "," | awk '{if( $2 != "") print $0}' \
   | desaggregate_column_data.rb -i "-" -x 1 | sed 's/\t/\tGROUP:/1g' > ./input/input_processed/gene_hgncGroup
+
+  # Formatting PS-Genes
+
+  get_PS_gene_relation.py -i "/mnt/home/users/bio_267_uma/federogc/projects/backupgenes/input/phenotypic_series/series_data" -o "./input/input_processed/PS_genes"
+  desaggregate_column_data.rb -i ./input/input_processed/PS_genes -x 1 > ./input/input_processed/tmp 
+  idconverter.rb -d ./translators/symbol_HGNC -i ./input/input_processed/tmp -c 1 | awk '{print $2,$1}' > ./input/input_processed/gene_PS
+  rm ./input/input_processed/PS_genes ./input/input_processed/tmp 
 
 
 elif [ "$exec_mode" == "white_list" ] ; then
@@ -280,7 +287,7 @@ elif [ "$exec_mode" == "kernels" ] ; then
       \\$kernels_varflow=$kernels_varflow
       " | tr -d [:space:]`
 
-      process_type=`grep -P "^$annotation" $net2custom | cut -f 8`
+      process_type=`grep -P -w "^$annotation" $net2custom | cut -f 9`
       if [ "$process_type" == "kernel" ] ; then
         AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt 
       elif [ "$process_type" == "umap" ]; then
@@ -430,18 +437,25 @@ elif [ "$exec_mode" == "report" ] ; then
   original_folders[filtered_similarity_metrics]='similarity_kernels'
   original_folders[uncomb_kernel_metrics]='similarity_kernels'
   original_folders[comb_kernel_metrics]='integrations'
+
   original_folders[non_integrated_rank_summary]='rankings'
   original_folders[non_integrated_rank_measures]='rankings'
   original_folders[non_integrated_rank_cdf]='rankings'
+  original_folders[non_integrated_rank_pos_cov]='rankings'
+  original_folders[non_integrated_rank_positive_stats]='rankings'
+
   original_folders[integrated_rank_summary]='integrated_rankings'
   original_folders[integrated_rank_measures]='integrated_rankings'
   original_folders[integrated_rank_cdf]='integrated_rankings'
+  original_folders[integrated_rank_pos_cov]='integrated_rankings'
+  original_folders[integrated_rank_positive_stats]='integrated_rankings'
   
   # Here the data is collected from executed folders.
   for file in "${!original_folders[@]}" ; do
     original_folder=${original_folders[$file]}
     count=`find $output_folder/$original_folder -maxdepth 3 -mindepth 3 -name $file | wc -l`
     if [ "$count" -gt "0" ] ; then
+      echo "$file"
       cat $output_folder/$original_folder/*/*/$file > $output_folder/$file
     fi
   done 
@@ -455,8 +469,15 @@ elif [ "$exec_mode" == "report" ] ; then
   references[filtered_similarity_metrics]='Net'
   references[uncomb_kernel_metrics]='Sample,Net,Kernel'
   references[comb_kernel_metrics]='Sample,Integration,Kernel'
+
   references[non_integrated_rank_summary]='Sample,Net,Kernel'
+  references[non_integrated_rank_pos_cov]='Sample,Net,Kernel'
+  references[non_integrated_rank_positive_stats]='Sample,Net,Kernel,group_seed'
+
   references[integrated_rank_summary]='Sample,Integration,Kernel'
+  references[integrated_rank_pos_cov]='Sample,Integration,Kernel'
+  references[integrated_rank_positive_stats]='Sample,Integration,Kernel,group_seed'
+
   references[annotation_grade_metrics]='Gene_seed'
 
   for metric in annotations_metrics similarity_metrics filtered_similarity_metrics uncomb_kernel_metrics comb_kernel_metrics ; do
@@ -465,7 +486,7 @@ elif [ "$exec_mode" == "report" ] ; then
     fi
   done
 
-  for metric in non_integrated_rank_summary integrated_rank_summary ; do
+  for metric in non_integrated_rank_summary integrated_rank_summary non_integrated_rank_pos_cov integrated_rank_pos_cov non_integrated_rank_positive_stats integrated_rank_positive_stats ; do
     if [ -s $output_folder/$metric ] ; then
       create_metric_table.rb $output_folder/$metric ${references[$metric]} $report_folder/ranking_report/parsed_${metric} 
     fi

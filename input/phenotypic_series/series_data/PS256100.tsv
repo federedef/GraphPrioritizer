@@ -1,0 +1,57 @@
+Phenotypic Series  - PS256100
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Nephronophthisis - PS256100 - 17 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+1p36.31	Nephronophthisis 4	AR	3	606966	NPHP4, SLSN4	607215
+2q13	Nephronophthisis 1, juvenile	AR	3	256100	NPHP1, NPH1, SLSN1, JBTS4	607100
+2q24.3	Nephronophthisis 12	AD, AR	3	613820	TTC21B, THM1, NPHP12, SRTD4, ATD4	612014
+3q22.1	Nephronophthisis 3	AR	3	604387	NPHP3, NPH3, RHPD1, MKS7	608002
+4p14	Nephronophthisis 13	AR	3	614377	WDR19, SRTD5, ATD5, NPHP13, CED4, SPGF72	608151
+6p22.3	Nephronophthisis 19	AR	3	616217	DCDC2, RU2, KIAA1154, NPHP19, DFNB66, NSC	605755
+8q22.1	Nephronophthisis 11	AR	3	613550	TMEM67, MKS3, JBTS6, NPHP11	609884
+9q22.33	Nephronophthisis 16	AR	3	615382	ANKS6, PKDR1, NPHP16	615370
+9q31.1	Nephronophthisis 2, infantile	AR	3	602088	INVS, INV, NPHP2, NPH2	243305
+11q23.3	Nephronophthisis 15	AR	3	614845	CEP164, KIAA1052	614848
+12q22	Nephronophthisis 18	AR	3	615862	CEP83, CCDC41, NPHP18	615847
+15q15.1	Nephronophthisis 20	AR	3	617271	MAPKBP1, JNKBP1, NPHP20	616786
+16p13.3	Nephronophthisis 7		3	611498	GLIS2, NPHP7	608539
+16q12.1	Joubert syndrome 19	AD, AR	3	614844	ZNF423, ZFP423, OAZ, KIAA0760, NPHP14, JBTS19	604557
+16q12.1	Nephronophthisis 14	AD, AR	3	614844	ZNF423, ZFP423, OAZ, KIAA0760, NPHP14, JBTS19	604557
+17q11.2	?Nephronophthisis 9		3	613824	NEK8, JCK, NPHP9, RHPD2	609799
+22q13.2	Nephronophthisis-like nephropathy 1	AR	3	613159	XPNPEP3, APP3, NPHPL1	613553
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

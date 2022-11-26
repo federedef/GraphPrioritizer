@@ -1,0 +1,69 @@
+Phenotypic Series  - PS600669
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Epilepsy, idiopathic generalized - PS600669 - 29 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+1p36.33	{Generalized epilepsy with febrile seizures plus, type 5, susceptibility to}	AD	3	613060	GABRD, GEFSP5, EIG10, EJM7	137163
+1p36.33	{Epilepsy, juvenile myoclonic, susceptibility to}	AD	3	613060	GABRD, GEFSP5, EIG10, EJM7	137163
+1p36.33	{Epilepsy, idiopathic generalized, 10}	AD	3	613060	GABRD, GEFSP5, EIG10, EJM7	137163
+1p34.2	{Epilepsy, idiopathic generalized, susceptibility to, 12}	AD	3	614847	SLC2A1, GLUT1, HTLVR, DYT18, PED, GLUT1DS, EIG12, DYT9, SDCHCN	138140
+2q23.3	{Epilepsy, idiopathic generalized, susceptibility to, 9}	AD	3	607682	CACNB4, EJM6, EA5, EIG9	601949
+2q23.3	{Epilepsy, juvenile myoclonic, susceptibility to, 6}	AD	3	607682	CACNB4, EJM6, EA5, EIG9	601949
+3q13.33-q21.1	{Epilepsy idiopathic generalized, susceptibility to, 8}		3	612899	CASR, HHC1, PCAR1, FIH, EIG8, HYPOC1	601199
+3q27.1	{Epilepsy, juvenile absence, susceptibility to, 2}	AD	3	607628	CLCN2, EGMA, ECA2, EGI11, EJM8, LKPAT, HALD2	600570
+3q27.1	{Epilepsy, juvenile myoclonic, susceptibility to, 8}	AD	3	607628	CLCN2, EGMA, ECA2, EGI11, EJM8, LKPAT, HALD2	600570
+3q27.1	{Epilepsy, idiopathic generalized, susceptibility to, 11}	AD	3	607628	CLCN2, EGMA, ECA2, EGI11, EJM8, LKPAT, HALD2	600570
+5q34	{Epilepsy, childhood absence, susceptibility to, 4}		3	611136	GABRA1, EJM5, ECA4, DEE19	137160
+5q34	{Epilepsy, juvenile myoclonic, susceptibility to, 5}		3	611136	GABRA1, EJM5, ECA4, DEE19	137160
+8q24	{Epilepsy, idiopathic generalized, susceptibility to, 1}	AD	2	600669	EIG1	600669
+9q21.13	{Epilepsy, idiopathic generalized, susceptibility to, 15}	AD	3	618357	RORB, RZRB, EIG15	601972
+9q32-q33	{Epilepsy, idiopathic generalized, susceptibility to, 3}	AR	2	608762	EIG3	608762
+10p11.22	{Epilepsy, idiopathic generalized, susceptibility to, 5}		2	611934	EIG5	611934
+10q22.3	{Epilepsy, idiopathic generalized, susceptibility to, 16}	AD	3	618596	KCNMA1, SLO, PNKD3, CADEDS, IEG16, LIWAS	600150
+10q25-q26	{Epilepsy, idiopathic generalized, susceptibility to 4}		2	609750	EIG4	609750
+14q23	{Epilepsy, idiopathic generalized, susceptibility to, 2}		2	606972	EIG2	606972
+15q14	Epilepsy, juvenile myoclonic	AR	2	604827	EIG7, EJM2	604827
+15q14	{Epilepsy, idiopathic generalized, susceptibility to, 7}	AR	2	604827	EIG7, EJM2	604827
+15q24.1	{Epilepsy, idiopathic generalized, susceptibility to, 18}	AD	3	619521	HCN4, SSS2, BRGDA8, EIG18	605206
+16p13.3	{Epilepsy, idiopathic generalized, susceptibility to, 6}		3	611942	CACNA1H, EIG6, ECA6, HALD4	607904
+16p13.3	{Epilepsy, childhood absence, susceptibility to, 6}		3	611942	CACNA1H, EIG6, ECA6, HALD4	607904
+19p13.3	Febrile seizures, familial, 2	AD	2	602477	FEB2	602477
+19p13.3	Febrile seizures, familial, 2	AD	3	602477	HCN2, BCNG2, GEFSP11, FEB2, EIG17	602781
+19p13.3	Generalized epilepsy with febrile seizures plus, type 11	AD	3	602477	HCN2, BCNG2, GEFSP11, FEB2, EIG17	602781
+19p13.3	{Epilepsy, idiopathic generalized, susceptibility to, 17}	AD	3	602477	HCN2, BCNG2, GEFSP11, FEB2, EIG17	602781
+20q13.12	{Epilepsy, idiopathic generalized, susceptibility to, 14}	AD	3	616685	SLC12A5, KCC2, KIAA1176, DEE34, EIG14	606726
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

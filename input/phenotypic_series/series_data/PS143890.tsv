@@ -1,0 +1,50 @@
+Phenotypic Series  - PS143890
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Hypercholesterolemia, familial - PS143890 - 10 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+1p36.11	Hypercholesterolemia, familial, 4	AR	3	603813	LDLRAP1, ARH, FHCB2, FHCB1, FHCL4	605747
+1p32.3	Hypercholesterolemia, familial, 3	AD	3	603776	PCSK9, NARC1, HCHOLA3, FH3, LDLCQ1, FHCL3	607786
+1p32.3	{Low density lipoprotein cholesterol level QTL 1}	AD	3	603776	PCSK9, NARC1, HCHOLA3, FH3, LDLCQ1, FHCL3	607786
+1q23.3	{Hypercholesterolemia, familial, modifier of}	AD, AR	3	143890	APOA2	107670
+2p24.1	Hypercholesterolemia, familial, 2	AD	3	144010	APOB, FLDB, LDLCQ4, FCHL2	107730
+5p13.1-p12	{Hypercholesterolemia, familial, modifier of}	AD, AR	3	143890	GHR, GHIP	600946
+7p14.3	{Hypercholesterolemia, susceptibility to}	AD, AR	3	143890	GSBS	604088
+8p21.2-p21.1	{Hypercholesterolemia, familial, due to LDLR defect, modifier of}	AD, AR	3	143890	EPHX2	132811
+19p13.2	Hypercholesterolemia, familial, 1	AD, AR	3	143890	LDLR, FHCL1, FHC, FH, LDLCQ2	606945
+19p13.2	LDL cholesterol level QTL2	AD, AR	3	143890	LDLR, FHCL1, FHC, FH, LDLCQ2	606945
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

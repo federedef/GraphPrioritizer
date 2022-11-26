@@ -1,0 +1,45 @@
+Phenotypic Series  - PS308230
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Immunodeficiency with hyper-IgM - PS308230 - 5 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+12p13.31	Immunodeficiency with hyper-IgM, type 2	AR	3	605258	AICDA, AID, HIGM2	605257
+12q24.11	Immunodeficiency with hyper IgM, type 5	AR	3	608106	UNG, DGU, HIGM5	191525
+20q13.12	Immunodeficiency with hyper-IgM, type 3	AR	3	606843	CD40, TNFRSF5	109535
+Xq26.3	Immunodeficiency, X-linked, with hyper-IgM	XLR	3	308230	TNFSF5, CD40LG, HIGM1, IGM	300386
+Not Mapped	Immunodeficiency with hyper-IgM, type 4	AR		608184	HIGM4	608184
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

@@ -101,7 +101,6 @@ if(is.null(opt$names_series)){
 
 if(!is.null(opt$measures)){
     measures <- unlist(strsplit(opt$measures,units_sep))
-    print(measures)
 }
 tags   <- lapply(unlist(strsplit(opt$column_tags,units_sep)), 
     function(col_index){ifelse(suppressWarnings(!is.na(as.numeric(col_index))),as.numeric(col_index),col_index)}) 

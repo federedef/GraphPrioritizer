@@ -49,6 +49,20 @@ def get_cdf_values(known_ranks)
 	return known_ranks
 end
 
+def get_hash2groups(rankings, by_column= 3)
+	group2rankings = {}
+	rankings.each do |row|
+		group_name = row[by_column]
+		if group2rankings[group_name].nil?
+			group2rankings[group_name] = [row]
+		else
+			group2rankings[group_name] << row
+		end
+	end
+	return group2rankings
+end
+
+
 
 ########################### OPTPARSE ########################
 #############################################################
@@ -66,27 +80,38 @@ OptionParser.new do  |opts|
   	options[:execution_mode] = mode 
   end
 
+  options[:by_column] = nil 
+  opts.on("-c","-by_column COLUMN", "The column with the factors to separate groups" ) do |column|
+  	options[:by_column] = column.to_i 
+  end
+
 end.parse!
 
 ########################### MAIN ############################
 #############################################################
+all_ranks = open_rank_file(options[:rankings])
 
-rankings = options[:rankings]
+if !options[:by_column].nil?
+  group2rankings = get_hash2groups(all_ranks, options[:by_column])
+else
+	group2rankings = {:all_groups => all_ranks}
+end
 
-known_ranks = open_rank_file(options[:rankings])
-known_ranks = get_cdf_values(known_ranks)
+group2rankings.each do |group_name, rankings|
+  known_ranks = get_cdf_values(rankings)
 
-if !known_ranks.empty?
-	if options[:execution_mode] == "stats"
-		all_ranks = known_ranks.map{|rank_row| rank_row[2].to_f}
-		report_stats(all_ranks).each do |stat|
-	    puts stat.join("\t")
+  if !known_ranks.empty?
+	  if options[:execution_mode] == "stats"
+		  all_ranks = known_ranks.map{|rank_row| rank_row[2].to_f}
+		  report_stats(all_ranks).each do |stat|
+	      puts group_name + "\t" + stat.join("\t")
+	    end
+	  elsif options[:execution_mode] == "ranks"
+		  report_ranks(known_ranks).each do |rank|
+			  puts rank.join("\t")
+	    end
 	  end
-	elsif options[:execution_mode] == "ranks"
-		report_ranks(known_ranks).each do |rank|
-			puts rank.join("\t")
-	  end
-	end
+  end
 end
 
 

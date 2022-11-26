@@ -1,0 +1,60 @@
+Phenotypic Series  - PS104500
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Amelogenesis imperfecta - PS104500 - 20 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+1q32.2	Amelogenesis imperfecta, type IA	AD	3	104530	LAMB3, AI1A, JEB1B, JEB1A	150310
+2q24.2	Amelogenesis imperfecta, type IH	AR	3	616221	ITGB6, AI1H	147558
+4q13.3	?Amelogenesis imperfecta, type IIIB	AD	3	617607	AMTN, AI3B	610912
+4q13.3	Amelogenesis imperfecta, type IF	AR	3	616270	AMBN, AI1F	601259
+4q13.3	Amelogenesis imperfecta, type IC	AR	3	204650	ENAM, AIH2, AI1C	606585
+4q13.3	Amelogenesis imperfecta, type IB	AD	3	104500	ENAM, AIH2, AI1C	606585
+4q21.1	Amelogenesis imperfecta, type IIA4	AR	3	614832	ODAPH, C4orf26	614829
+8q24.3	Amelogenesis imperfecta, type IIIA	AD	3	130900	FAM83H, AI3A	611927
+11q13.4	Amelogenesis imperfecta, type IIIC	AR	3	618386	RELT, TNFRSF19L, AI3C	611211
+11q22.2	Amelogenesis imperfecta, type IIA2	AR	3	612529	MMP20, AI2A2	604629
+14q32.11	Amelogenesis imperfecta, hypomaturation type, IIA6	AR	3	617217	GPR68, OGR1, AI2A6	601404
+14q32.12	Amelogenesis imperfecta, type IIA5	AR	3	615887	SLC24A4, NCKX4, SHEP6, AI2A5	609840
+15q21.3	Amelogenesis imperfecta, type IIA3	AR	3	613211	WDR72, AI2A3	613214
+17q21.32	Amelogenesis imperfecta, type IK	AD	3	620104	SP6, KLF14, EPFN, AI1K	608613
+17q21.33	Amelogenesis imperfecta, type IV	AD	3	104510	DLX3, TDO, AI4	600525
+17q24.2	Amelogenesis imperfecta, type IG (enamel-renal syndrome)	AR	3	204690	FAM20A, AIGFS, AI1G	611062
+19q13.33	Amelogenesis imperfecta, type IJ	AR	3	617297	ACP4, ACPT, AI1J	606362
+19q13.41	Amelogenesis imperfecta, type IIA1	AR	3	204700	KLK4, EMSP1, PRSS17, AI2A1	603767
+Xp22.2	Amelogenesis imperfecta, type 1E	XLD	3	301200	AMELX, AMG, AIH1, AMGX, AI1E	300391
+Xq22-q28	?Amelogenesis imperfecta, type IE, X-linked 2	XL	2	301201	AI1E2, AIH3	301201
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+
