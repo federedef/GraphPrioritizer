@@ -1,0 +1,20 @@
+############### LOG OUTPUT ###############
+Task: 22
+Node: 5
+Timestamp: 2022-11-29 11:11:46
+Success: TRUE
+
+Task duration:
+   user  system elapsed 
+  0.753   0.111   0.865 
+
+Memory used:
+           used  (Mb) gc trigger  (Mb) max used  (Mb)
+Ncells  5527195 295.2   12597955 672.9 11618952 620.6
+Vcells 18284715 139.6   29785580 227.3 24754647 188.9
+
+Log messages:
+
+
+stderr and stdout:
+

@@ -17,3 +17,4 @@ genetic_interaction_exprs_umap	genetic_interaction_exprs	-	network	-	-	-	NB	umap
 genetic_interaction_paper	paper_coDep	-	network	-	-	F	NB	kernel
 gene_TF	gene_TF	-	network	-	-	-	NB	kernel
 gene_hgncGroup	gene_hgncGroup	-	network	-	-	-	NB	kernel
+gene_PS	gene_PS	-	network	-	-	-	NB	kernel

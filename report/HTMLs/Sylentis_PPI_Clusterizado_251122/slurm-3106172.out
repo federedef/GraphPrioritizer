@@ -1,0 +1,101 @@
+Loading openmpi_gcc/4.1.1_gcc11.1.0
+  Loading requirement: gcc/11.1.0
+
+clusterProfiler v4.4.4  For help: https://yulab-smu.top/biomedical-knowledge-mining-book/
+
+If you use clusterProfiler in published research, please cite:
+T Wu, E Hu, S Xu, M Chen, P Guo, Z Dai, T Feng, L Zhou, W Tang, L Zhan, X Fu, S Liu, X Bo, and G Yu. clusterProfiler 4.0: A universal enrichment tool for interpreting omics data. The Innovation. 2021, 2(3):100141
+
+Attaching package: ‘clusterProfiler’
+
+The following object is masked from ‘package:stats’:
+
+    filter
+
+Warning in dir.create(output_path) :
+  './Final_results/Functional_analysis_from_clusters' already exists
+
+The following `from` values were not present in `x`: .id
+The following `from` values were not present in `x`: .id
+The following `from` values were not present in `x`: .id
+The following `from` values were not present in `x`: .id
+The following `from` values were not present in `x`: .id
+The following `from` values were not present in `x`: .id
+The following `from` values were not present in `x`: .id
+ chr "/mnt/home/users/bio_267_uma/federogc/projects/backupgenes/report/HTMLs/Sylentis_PPI_Clusterizado_251122/bcplogs/1669643521"
+items: 0 task_size: 1
+class: MulticoreParam
+  bpisup: FALSE; bpnworkers: 15; bptasks: 0; bpjobname: BPJOB
+  bplog: TRUE; bpthreshold: INFO; bpstopOnError: TRUE
+  bpRNGseed: ; bptimeout: NA; bpprogressbar: FALSE
+  bpexportglobals: TRUE; bpexportvariables: FALSE; bpforceGC: TRUE; bpfallback: TRUE
+  bplogdir: /mnt/home/users/bio_267_uma/federogc/projects/backupge.../1669643521
+  bpresultdir: NA
+  cluster type: FORK
+exec_status => exec items: 0 fails: 0
+	Rendering full cluster reports
+
+
+processing file: clusters_main_report.Rmd
+  |                                                                              |                                                                      |   0%  |                                                                              |.......                                                               |  10%
+  ordinary text without R code
+
+  |                                                                              |..............                                                        |  20%
+label: config (with options) 
+List of 2
+ $ include: logi FALSE
+ $ message: logi FALSE
+
+Loading required package: ggplot2
+Loading required package: knitr
+Loading required package: enrichplot
+Loading required package: DOSE
+DOSE v3.22.0  For help: https://yulab-smu.top/biomedical-knowledge-mining-book/
+
+If you use DOSE in published research, please cite:
+Guangchuang Yu, Li-Gen Wang, Guang-Rong Yan, Qing-Yu He. DOSE: an R/Bioconductor package for Disease Ontology Semantic and Enrichment analysis. Bioinformatics 2015, 31(4):608-609
+
+  |                                                                              |.....................                                                 |  30%
+  ordinary text without R code
+
+  |                                                                              |............................                                          |  40%
+label: unnamed-chunk-1 (with options) 
+List of 2
+ $ child: chr "func_initial_details.Rmd"
+ $ eval : logi FALSE
+
+  |                                                                              |...................................                                   |  50%
+label: unnamed-chunk-2 (with options) 
+List of 2
+ $ child: chr "func_deg_details.Rmd"
+ $ eval : logi FALSE
+
+  |                                                                              |..........................................                            |  60%
+  ordinary text without R code
+
+  |                                                                              |.................................................                     |  70%
+label: func_specific (with options) 
+List of 3
+ $ echo   : logi FALSE
+ $ results: chr "asis"
+ $ eval   : logi FALSE
+
+  |                                                                              |........................................................              |  80%
+  ordinary text without R code
+
+  |                                                                              |...............................................................       |  90%
+label: multiple_children (with options) 
+List of 2
+ $ echo   : logi FALSE
+ $ results: chr "asis"
+
+  |                                                                              |......................................................................| 100%
+  ordinary text without R code
+
+
+output file: /mnt/home/users/bio_267_uma/federogc/projects/backupgenes/report/HTMLs/Sylentis_PPI_Clusterizado_251122/Final_results/Functional_analysis_from_clusters/clusters_main_report.knit.md
+
+/mnt/home/soft/pandoc/programs/x86_64/2.2.1/bin/pandoc +RTS -K512m -RTS /mnt/home/users/bio_267_uma/federogc/projects/backupgenes/report/HTMLs/Sylentis_PPI_Clusterizado_251122/Final_results/Functional_analysis_from_clusters/clusters_main_report.knit.md --to html4 --from markdown+autolink_bare_uris+tex_math_single_backslash --output /mnt/home/users/bio_267_uma/federogc/projects/backupgenes/report/HTMLs/Sylentis_PPI_Clusterizado_251122/Final_results/Functional_analysis_from_clusters/clusters_func_report.html --lua-filter /mnt/home/soft/soft_bio_267/programs/x86_64/R/R_installation42/lib64/R/library/rmarkdown/rmarkdown/lua/pagebreak.lua --lua-filter /mnt/home/soft/soft_bio_267/programs/x86_64/R/R_installation42/lib64/R/library/rmarkdown/rmarkdown/lua/latex-div.lua --self-contained --variable bs3=TRUE --standalone --section-divs --table-of-contents --toc-depth 3 --variable toc_float=1 --variable toc_selectors=h1,h2,h3 --variable toc_collapsed=1 --variable toc_smooth_scroll=1 --variable toc_print=1 --template /mnt/home/soft/soft_bio_267/programs/x86_64/R/R_installation42/lib64/R/library/rmarkdown/rmd/h/default.html --no-highlight --variable highlightjs=1 --variable theme=bootstrap --mathjax --variable 'mathjax-url=https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML' --include-in-header /localscratch/users/tmp/RtmpHJmDCX/rmarkdown-str3b0bd3fadfe01.html 
+
+Output created: Final_results/Functional_analysis_from_clusters/clusters_func_report.html
+Calling clean_tmpfiles_mod()

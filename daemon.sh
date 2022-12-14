@@ -7,7 +7,7 @@ add_opt=$2
 
 # Used Paths.
 export input_path=`pwd`
-export PATH=$input_path/scripts/aux_scripts:~soft_bio_267/programs/x86_64/scripts:$PATH
+export PATH=/mnt/home/users/bio_267_uma/federogc/sys_bio_lab_scripts:$input_path/scripts/aux_scripts:~soft_bio_267/programs/x86_64/scripts:$PATH
 export autoflow_scripts=$input_path/scripts/autoflow_scripts
 daemon_scripts=$input_path/scripts/daemon_scripts
 export control_genes_folder=$input_path/control_genes
@@ -19,16 +19,18 @@ annotations="disease phenotype molecular_function biological_process cellular_co
 annotations="disease phenotype molecular_function biological_process cellular_component"
 annotations+="protein_interaction pathway gene_TF gene_hgncGroup"
 annotations+="genetic_interaction_effect genetic_interaction_exprs genetic_interaction_effect_bicor genetic_interaction_exprs_bicor"
-annotations+="genetic_interaction_effect_spearman genetic_interaction_exprs_spearman genetic_interaction_effect_umap"
+annotations="genetic_interaction_effect genetic_interaction_exprs genetic_interaction_effect_bicor genetic_interaction_exprs_bicor"
+annotations+=" genetic_interaction_effect_spearman genetic_interaction_exprs_spearman genetic_interaction_effect_umap "
 annotations+="genetic_interaction_exprs_umap"
-annotations="protein_interaction"
+annotations="gene_PS"
 kernels="ka rf ct el node2vec"
-kernels="ka"
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom' 
 control_pos=$input_path'/control_pos'
 control_neg=$input_path'/control_neg'
 production_seedgens=$input_path'/production_seedgens'
+
+echo "$annotations"
 
 kernels_varflow=`echo $kernels | tr " " ";"`
 
@@ -73,11 +75,15 @@ elif [ "$exec_mode" == "download_translators" ] ; then
   ## Obtain TRANSLATOR TABLES.
   mkdir -p ./translators
 
-  # Downloading Ensemble_HGNC from STRING.
+  # Downloading ProtEnsemble_HGNC from STRING.
   wget https://stringdb-static.org/download/protein.aliases.v11.5/9606.protein.aliases.v11.5.txt.gz -O ./translators/protein_aliases.v11.5.txt.gz
   gzip -d translators/protein_aliases.v11.5.txt.gz
-  grep -w "Ensembl_HGNC_HGNC_ID" translators/protein_aliases.v11.5.txt | cut -f 1,2 > ./translators/Ensemble_HGNC
+  grep -w "Ensembl_HGNC_HGNC_ID" translators/protein_aliases.v11.5.txt | cut -f 1,2 > ./translators/ProtEnsemble_HGNC
   rm ./translators/protein_aliases.v11.5.txt
+
+  # Downloading Ensemble_HGNC from BioMart
+
+  # TODO
 
   # Downloading HGNC_symbol
   wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./translators/HGNC_symbol
@@ -89,7 +95,7 @@ elif [ "$exec_mode" == "download_translators" ] ; then
 elif [ "$exec_mode" == "process_download" ] ; then
   source ~soft_bio_267/initializes/init_python
 
-   mkdir -p ./input/input_processed
+  mkdir -p ./input/input_processed
 
   declare -A tag_filter 
   tag_filter[phenotype]='HP:'
@@ -117,7 +123,7 @@ elif [ "$exec_mode" == "process_download" ] ; then
   
   # PROCESS PROTEIN INTERACTIONS # | head -n 200 
   cat ./input/input_raw/string_data.v11.5.txt | tr -s " " "\t" > string_data.v11.5.txt
-  idconverter.rb -d ./translators/Ensemble_HGNC -i string_data.v11.5.txt -c 0,1 > ./input/input_raw/interaction_scored && rm string_data.v11.5.txt
+  idconverter.rb -d ./translators/ProtEnsemble_HGNC -i string_data.v11.5.txt -c 0,1 > ./input/input_raw/interaction_scored && rm string_data.v11.5.txt
   #awk '{OFS="\t"}{print $1,$2}' ./input/input_raw/interaction_scored > ./input/input_processed/protein_interaction_unweighted # && rm ./input_raw/interaction_scored
   # if ( $3 > 700 )
   #awk '{OFS="\t"}{print $1,$2,$3}' ./input/input_raw/interaction_scored > .input/input_processed/protein_interaction_weighted
@@ -144,7 +150,7 @@ elif [ "$exec_mode" == "process_download" ] ; then
 
   get_PS_gene_relation.py -i "/mnt/home/users/bio_267_uma/federogc/projects/backupgenes/input/phenotypic_series/series_data" -o "./input/input_processed/PS_genes"
   desaggregate_column_data.rb -i ./input/input_processed/PS_genes -x 1 > ./input/input_processed/tmp 
-  idconverter.rb -d ./translators/symbol_HGNC -i ./input/input_processed/tmp -c 1 | awk '{print $2,$1}' > ./input/input_processed/gene_PS
+  idconverter.rb -d ./translators/symbol_HGNC -i ./input/input_processed/tmp -c 1 | awk 'BEGIN{FS="\t";OFS="\t"}{print $2,$1}' > ./input/input_processed/gene_PS
   rm ./input/input_processed/PS_genes ./input/input_processed/tmp 
 
 
@@ -289,6 +295,7 @@ elif [ "$exec_mode" == "kernels" ] ; then
 
       process_type=`grep -P -w "^$annotation" $net2custom | cut -f 9`
       if [ "$process_type" == "kernel" ] ; then
+        echo "Performing kernels without umap $annotation"
         AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt 
       elif [ "$process_type" == "umap" ]; then
         echo "Performing umap for $annotation"

@@ -1,4 +1,4 @@
-%calc_similarity){
+calc_similarity){
 	resources: -m '60gb' -t '4-00:00:00'
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
@@ -40,12 +40,19 @@
     		# Select just the interactions of jaccard filtering by the counts values.
     		paste $annotation_similarity_list <(cut -f 3 counts_similarity_list) | awk 'BEGIN{FS="\t";OFS="\t"}{if( $4 >= 3 ) print $1,$2,$3}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list
     		#NetAnalyzer.rb -i $input_path/input_processed/$annotation -a "similarity_list" -t pair -l 'gen,HGNC:;tf,TF:' -m "jaccard" -u 'gen,gen;tf'
-    	elif [ "$annotation" == "gen_hgncGroup" ] ; then
+    	elif [ "$annotation" == "gene_hgncGroup" ] ; then
     		NetAnalyzer.rb -i $input_path/input_processed/$source -a "similarity_list" -t pair -l 'gen,HGNC:;group,GROUP:' -m "jaccard" -u 'gen,gen;group'
     	elif [ "$source" == "genetic_interaction_effect" -o "$source" == "genetic_interaction_exprs" ] ; then
     		echo "$custom_parameters"
     		build_corNetwork.R -i $input_path/input_processed/$source -s "\t" -O $annotation_similarity_list -m $custom_parameters -t "greater" -f
     		cat $annotation_similarity_list | awk '{if ( $3 != "NA" ) {print $0}}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list # sed 's/HGNC./HGNC:/g'|
+    	elif [ "$annotation" == "gene_PS" ] ; then
+    		# Perform a projection layer with jaccard
+    		NetAnalyzer.rb -i $input_path/input_processed/$source -a "$annotation_similarity_list" -t pair -l 'gen,HGNC:;ps,PS' -m "jaccard" -u 'gen,gen;ps'
+    		# Perform a projection layer with counts
+    		NetAnalyzer.rb -i $input_path/input_processed/$source -a "counts_similarity_list" -t pair -l 'gen,HGNC:;ps,PS' -m "counts" -u 'gen,gen;ps'
+    		# Select just the interactions of jaccard filtering by the counts values.
+    		paste $annotation_similarity_list <(cut -f 3 counts_similarity_list) | awk 'BEGIN{FS="\t";OFS="\t"}{if( $4 >= 1 ) print $1,$2,$3}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list
     	else
     		# Keep it without changes
     		cp $input_path/input_processed/$annotation ./similarity_list
@@ -59,7 +66,7 @@
 	fi
 }
 
-%list2matrix_similarity){
+list2matrix_similarity){
 	resources: -m '60gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_netanalyzer
 	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
