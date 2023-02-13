@@ -1,0 +1,20 @@
+Net	Source 	Ontology	Type	Code	cutoff_filter	disparity_filter	Binarize	Process	Custom
+phenotype	phenotype	HPO	ontology	HP:0000001	-	-	NB	kernel	-
+disease	disease	MONDO	ontology	-	-	-	NB	kernel	-
+molecular_function	molecular_function	GO	ontology	GO:0003674	-	-	NB	kernel	-
+biological_process	biological_process	GO	ontology	GO:0008150	-	-	NB	kernel	-
+cellular_component	cellular_component	GO	ontology	GO:0005575	-	-	NB	kernel	-
+protein_interaction	protein_interaction	-	network	-	700	-	B	kernel	-
+pathway	pathway	-	network	-	-	-	NB	kernel	-
+genetic_interaction_effect_bicor	genetic_interaction_effect	-	network	-	-	-	NB	kernel	bicor
+genetic_interaction_exprs_bicor	genetic_interaction_exprs	-	network	-	-	-	NB	kernel	bicor
+genetic_interaction_effect	genetic_interaction_effect	-	network	-	-	-	NB	kernel	pearson
+genetic_interaction_exprs	genetic_interaction_exprs	-	network	-	-	-	NB	kernel	pearson
+genetic_interaction_effect_spearman	genetic_interaction_effect	-	network	-	-	-	NB	kernel	spearman
+genetic_interaction_exprs_spearman	genetic_interaction_exprs	-	network	-	-	-	NB	kernel	spearman
+genetic_interaction_effect_umap	genetic_interaction_effect	-	network	-	-	-	NB	umap	-
+genetic_interaction_exprs_umap	genetic_interaction_exprs	-	network	-	-	-	NB	umap	-
+genetic_interaction_paper	paper_coDep	-	network	-	-	F	NB	kernel
+gene_TF	gene_TF	-	network	-	-	-	NB	kernel
+gene_hgncGroup	gene_hgncGroup	-	network	-	-	-	NB	kernel
+gene_PS	gene_PS	-	network	-	-	-	NB	kernel
