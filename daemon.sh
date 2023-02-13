@@ -15,15 +15,16 @@ export output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway gene_TF gene_hgncGroup"
-annotations="disease phenotype molecular_function biological_process cellular_component"
-annotations+="protein_interaction pathway gene_TF gene_hgncGroup"
-annotations+="genetic_interaction_effect genetic_interaction_exprs genetic_interaction_effect_bicor genetic_interaction_exprs_bicor"
-annotations="genetic_interaction_effect genetic_interaction_exprs genetic_interaction_effect_bicor genetic_interaction_exprs_bicor"
-annotations+=" genetic_interaction_effect_spearman genetic_interaction_exprs_spearman genetic_interaction_effect_umap "
-annotations+="genetic_interaction_exprs_umap"
+annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway gene_TF gene_hgncGroup genetic_interaction_effect_bicor gene_PS"
+#annotations+="protein_interaction pathway gene_TF gene_hgncGroup"
+#annotations+="genetic_interaction_effect genetic_interaction_exprs genetic_interaction_effect_bicor genetic_interaction_exprs_bicor"
+#annotations="genetic_interaction_effect genetic_interaction_exprs genetic_interaction_effect_bicor genetic_interaction_exprs_bicor"
+#annotations+=" genetic_interaction_effect_spearman genetic_interaction_exprs_spearman genetic_interaction_effect_umap "
+#annotations+="genetic_interaction_exprs_umap"
 #annotations="gene_PS gene_TF gene_hgncGroup"
+#annotations="gene_hgncGroup"
 kernels="ka rf ct el node2vec"
+kernels="ka rf ct el"
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom' 
 control_pos=$input_path'/control_pos'
@@ -144,7 +145,7 @@ elif [ "$exec_mode" == "process_download" ] ; then
 
   # Formatting data_columns
   cut -f 1,14 ./input/input_raw/gene_hgncGroup | sed "s/\"//g" | tr -s "|" "," | awk '{if( $2 != "") print $0}' \
-  | desaggregate_column_data.rb -i "-" -x 1 | sed 's/\t/\tGROUP:/1g' > ./input/input_processed/gene_hgncGroup
+  | desaggregate_column_data.rb -i "-" -x 1 | sed 's/\t/\tGROUP:/1g' | sed 1d > ./input/input_processed/gene_hgncGroup
 
   # Formatting PS-Genes
 

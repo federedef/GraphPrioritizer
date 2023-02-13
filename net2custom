@@ -4,7 +4,7 @@ disease	disease	MONDO	ontology	-	-	-	NB	kernel	-
 molecular_function	molecular_function	GO	ontology	GO:0003674	-	-	NB	kernel	-
 biological_process	biological_process	GO	ontology	GO:0008150	-	-	NB	kernel	-
 cellular_component	cellular_component	GO	ontology	GO:0005575	-	-	NB	kernel	-
-protein_interaction	protein_interaction	-	network	-	-	F	B	kernel	-
+protein_interaction	protein_interaction	-	network	-	700	-	B	kernel	-
 pathway	pathway	-	network	-	-	-	NB	kernel	-
 genetic_interaction_effect_bicor	genetic_interaction_effect	-	network	-	-	-	NB	kernel	bicor
 genetic_interaction_exprs_bicor	genetic_interaction_exprs	-	network	-	-	-	NB	kernel	bicor
