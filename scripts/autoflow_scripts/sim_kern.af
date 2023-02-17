@@ -1,9 +1,10 @@
-%calc_similarity){
+calc_similarity){
 	resources: -m '60gb' -t '4-00:00:00'
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
-	source ~soft_bio_267/initializes/init_netanalyzer
+	source ~soft_bio_267/initializes/init_ruby
 	source ~soft_bio_267/initializes/init_R
+	source ~soft_bio_267/initializes/init_python
 	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 
 	echo -e "$annotation_sim" > tracker
@@ -26,31 +27,31 @@
     elif [ "$exec_mode" == "network" ] ; then
     	if [ "$annotation" == "pathway" ] ; then 
     		# Perform a projection layer with jaccard
-    		NetAnalyzer.rb -i $input_path/input_processed/$source -a "$annotation_similarity_list" -t pair -l 'gen,HGNC:;pathway,REACT:' -m "jaccard" -u 'gen;pathway'
+    		netanalyzer.py -i $input_path/input_processed/$source -a "$annotation_similarity_list" -t pair -l 'gen,HGNC:;pathway,REACT:' -m "jaccard" -u 'gen;pathway'
     		# Perform a projection layer with counts
-    		NetAnalyzer.rb -i $input_path/input_processed/$source -a "counts_similarity_list" -t pair -l 'gen,HGNC:;pathway,REACT:' -m "counts" -u 'gen;pathway'
+    		netanalyzer.py -i $input_path/input_processed/$source -a "counts_similarity_list" -t pair -l 'gen,HGNC:;pathway,REACT:' -m "counts" -u 'gen;pathway'
     		# Select just the interactions of jaccard filtering by the counts values.
     		paste $annotation_similarity_list <(cut -f 3 counts_similarity_list) | awk 'BEGIN{FS="\t";OFS="\t"}{if( $4 >= 3 ) print $1,$2,$3}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list
     		#awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $annotation_similarity_list > similarity_list # Set diagonal to 0.
     	elif [ "$annotation" == "gene_TF" ] ; then
     		# Perform a projection layer with jaccard
-    		NetAnalyzer.rb -i $input_path/input_processed/$source -a "$annotation_similarity_list" -t pair -l 'gen,HGNC:;tf,TF:' -m "jaccard" -u 'gen;tf'
+    		netanalyzer.py -i $input_path/input_processed/$source -a "$annotation_similarity_list" -t pair -l 'gen,HGNC:;tf,TF:' -m "jaccard" -u 'gen;tf'
     		# Perform a projection layer with counts
-    		NetAnalyzer.rb -i $input_path/input_processed/$source -a "counts_similarity_list" -t pair -l 'gen,HGNC:;tf,TF:' -m "counts" -u 'gen;tf'
+    		netanalyzer.py -i $input_path/input_processed/$source -a "counts_similarity_list" -t pair -l 'gen,HGNC:;tf,TF:' -m "counts" -u 'gen;tf'
     		# Select just the interactions of jaccard filtering by the counts values.
     		paste $annotation_similarity_list <(cut -f 3 counts_similarity_list) | awk 'BEGIN{FS="\t";OFS="\t"}{if( $4 >= 3 ) print $1,$2,$3}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list
-    		#NetAnalyzer.rb -i $input_path/input_processed/$annotation -a "similarity_list" -t pair -l 'gen,HGNC:;tf,TF:' -m "jaccard" -u 'gen;tf'
+    		#netanalyzer.py -i $input_path/input_processed/$annotation -a "similarity_list" -t pair -l 'gen,HGNC:;tf,TF:' -m "jaccard" -u 'gen;tf'
     	elif [ "$annotation" == "gene_hgncGroup" ] ; then
-    		NetAnalyzer.rb -i $input_path/input_processed/$source -a "similarity_list" -t pair -l 'gen,HGNC:;group,GROUP:' -m "jaccard" -u 'gen;group'
+    		netanalyzer.py -i $input_path/input_processed/$source -a "similarity_list" -t pair -l 'gen,HGNC:;group,GROUP:' -m "jaccard" -u 'gen;group'
     	elif [ "$source" == "genetic_interaction_effect" -o "$source" == "genetic_interaction_exprs" ] ; then
     		echo "$custom_parameters"
     		build_corNetwork.R -i $input_path/input_processed/$source -s "\t" -O $annotation_similarity_list -m $custom_parameters -t "greater" -f
     		cat $annotation_similarity_list | awk '{if ( $3 != "NA" ) {print $0}}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list # sed 's/HGNC./HGNC:/g'|
     	elif [ "$annotation" == "gene_PS" ] ; then
     		# Perform a projection layer with jaccard
-    		NetAnalyzer.rb -i $input_path/input_processed/$source -a "$annotation_similarity_list" -t pair -l 'gen,HGNC:;ps,PS' -m "jaccard" -u 'gen;ps'
+    		netanalyzer.py -i $input_path/input_processed/$source -a "$annotation_similarity_list" -t pair -l 'gen,HGNC:;ps,PS' -m "jaccard" -u 'gen;ps'
     		# Perform a projection layer with counts
-    		NetAnalyzer.rb -i $input_path/input_processed/$source -a "counts_similarity_list" -t pair -l 'gen,HGNC:;ps,PS' -m "counts" -u 'gen;ps'
+    		netanalyzer.py -i $input_path/input_processed/$source -a "counts_similarity_list" -t pair -l 'gen,HGNC:;ps,PS' -m "counts" -u 'gen;ps'
     		# Select just the interactions of jaccard filtering by the counts values.
     		paste $annotation_similarity_list <(cut -f 3 counts_similarity_list) | awk 'BEGIN{FS="\t";OFS="\t"}{if( $4 >= 1 ) print $1,$2,$3}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list
     	else
@@ -178,7 +179,7 @@ calc_kernel_[$kernels_varflow]){
 		nod2vec.py -i filter_disparity)/similarity_matrix_bin -o kernel_matrix_bin
 		mv kernel_matrix_bin.npy kernel_matrix_bin
 	else
-		NetAnalyzer.rb -i filter_disparity)/similarity_matrix_bin -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
+		netanalyzer.py -i filter_disparity)/similarity_matrix_bin -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
 	fi
 	if [ -s kernel_matrix_bin ] ; then
 		echo -e "$annotation_(*)\t$annotation\t(*)\t$kern_net_path" > ugot_path 
