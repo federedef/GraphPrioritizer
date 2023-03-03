@@ -8,19 +8,20 @@ integrate_kernel_[$kernels_varflow]){
 	folder_kernel_paths=`grep -w '\(*)' $ugot_path | awk '{ print $4 }' | tr "\n" " "`
 	echo -e "$folder_kernel_paths"
 	integrate_path=`pwd`
-	path_kernels=`echo "$folder_kernel_paths" | sed 's/ /\/kernel_matrix_bin /g'`
+	path_kernels=`echo "$folder_kernel_paths" | sed 's/ /\/kernel_matrix_bin.npy /g'`
 	path_nodes=`echo "$folder_kernel_paths" | sed 's/ /\/kernel_matrix_bin.lst /g'`
 	if [ -s ugot_path ] ; then
 		rm ugot_path
 	fi
 	?
-	kernel_combined.rb -i $integration_type -t " $path_kernels " -n " $path_nodes " -o general_matrix 
+	kernel_combined.rb -i $integration_type -t " $path_kernels " -n " $path_nodes " -o general_matrix
 	text2binary_matrix.rb -i general_matrix -o general_matrix_undo -t bin -s > generalkernel_metrics
 	if [ -s general_matrix_undo ] ; then
 		rm general_matrix_undo
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' \ 
 		  generalkernel_metrics > comb_kernel_metrics 
 		echo -e "$integration_type_(*)\t$integration_type\t(*)\t$integrate_path" > ugot_path
+		mv general_matrix general_matrix.npy
 	else 
   		exit 1
   	fi

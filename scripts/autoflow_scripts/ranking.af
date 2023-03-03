@@ -2,9 +2,10 @@ rank_genes_classic){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_netanalyzer
+	source ~soft_bio_267/initializes/init_python
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	. ~soft_bio_267/initializes/init_ruby
 	. ~soft_bio_267/initializes/init_R
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	if [ $method != "classic" ] ; then
 		exit 0
 	fi
@@ -18,7 +19,7 @@ rank_genes_classic){
 	desaggregate_column_data.rb -i $control_pos -x 1 |& awk '{OFS="\t"}{print $1,$2,1}' > tags
 	desaggregate_column_data.rb -i $control_neg -x 1 |& awk '{OFS="\t"}{print $1,$2,0}' >> tags
 	?
-	ranker_gene.rb -k $folder_kernel_path/$input_name -n $folder_kernel_path/$input_name.lst -s seed_by_group -f filter
+	ranker.py -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -f filter
 	# Add tags to ranked_genes_all_candidates.
 	add_tags2ranks.rb -i ranked_genes_all_candidates -g 5 -c 0 -t tags -o tagged_ranks.txt
 	number_of_genes=`wc -l tagged_ranks.txt | cut -f1 -d " "`
@@ -75,9 +76,10 @@ rank_genes_with_leave_one_out){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_netanalyzer
+	source ~soft_bio_267/initializes/init_python
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	. ~soft_bio_267/initializes/init_ruby
 	. ~soft_bio_267/initializes/init_R
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	if [ $method != "leave_one_out" ] ; then
 		exit 0
 	fi
@@ -91,7 +93,7 @@ rank_genes_with_leave_one_out){
 	desaggregate_column_data.rb -i $control_pos -x 1 |& awk '{OFS="\t"}{print $1,$2,1}' > tags
 	desaggregate_column_data.rb -i $control_neg -x 1 |& awk '{OFS="\t"}{print $1,$2,0}' >> tags
 	?
-	ranker_gene.rb -k $folder_kernel_path/$input_name -n $folder_kernel_path/$input_name.lst -s seed_by_group -l -f filter
+	ranker.py -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -l -f filter
 	awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/_iteration_[0-9]+$/,"",$6); print $0}' ranked_genes_all_candidates > processed_ranked_genes
 	# Add tags to ranked_genes_all_candidates.
 	add_tags2ranks.rb -i processed_ranked_genes -g 5 -c 0 -t tags -o tagged_ranks.txt
@@ -149,9 +151,11 @@ rank_genes_with_leave_one_out_data_quality){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_netanalyzer
+	source ~soft_bio_267/initializes/init_python
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	. ~soft_bio_267/initializes/init_ruby
 	. ~soft_bio_267/initializes/init_R
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	if [ $method != "data_quality" ] ; then
 		exit 0
 	fi
@@ -160,7 +164,7 @@ rank_genes_with_leave_one_out_data_quality){
 	## Defining seed genes
     cat $production_seedgens > seed_by_group
 	?
-	ranker_gene.rb -k $folder_kernel_path/$input_name -n $folder_kernel_path/$input_name.lst -s seed_by_group -l
+	ranker.py -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -l
 	awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/_iteration_[0-9]+$/,"",$6); print $0}' ranked_genes_all_candidates > all_positive_genes
 
 	awk '{if($3!=1) print $0}' all_positive_genes > positive_genes
@@ -190,6 +194,7 @@ rank_genes_production){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for seed
 	source ~soft_bio_267/initializes/init_netanalyzer
+	#source ~soft_bio_267/initializes/init_python
 	source ~soft_bio_267/initializes/init_ruby
 	if [ $method != "production" ] ; then
 		exit 0
@@ -197,7 +202,7 @@ rank_genes_production){
 	echo -e "$param1_$kernel\t$param1\t$kernel" > tracker
 	cat $production_seedgens > seed_by_group
 	?
-	ranker_gene.rb -k $folder_kernel_path/$input_name -n $folder_kernel_path/$input_name.lst -s seed_by_group
+	ranker.py -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group
     if [ -s ranked_genes_all_candidates ] ; then 
     	awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' ranked_genes_all_candidates > $output_name_ranked_production_candidates
 	else 
