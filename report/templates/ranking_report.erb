@@ -74,13 +74,13 @@
                 <p style="text-align:center;"><b>Backup Pairs Coverage By Layer Non integrated</b></p> 
                 <%=
                 if !@hash_vars['parsed_non_integrated_rank_pos_cov'].nil? 
-                        barplot(id: "parsed_non_integrated_rank_pos_cov", fields: [1,3] , header: true, responsive: false,
+                        barplot(id: "parsed_non_integrated_rank_pos_cov", fields: [2,4] , header: true, responsive: false,
                                 height: '400px', width: '400px', x_label: 'Number of Backup pairs present', smp_attr: [1,2],
                                 title: "Backup Pairs Coverage By Layer",
                                 config: {
                                         'showLegend' => true,
                                         'graphOrientation' => 'horizontal',
-                                        'colorBy' => 'Kernel'
+                                        'colorBy' => 'Sample'
                                         })
                 end
                 %>

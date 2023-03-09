@@ -1,0 +1,97 @@
+<%
+        import os.path
+        def order_columns(name, column):
+                tab_header = plotter.hash_vars[name].pop(0)
+                plotter.hash_vars[name].sort(key=lambda x: x[column])
+                plotter.hash_vars[name].insert(0, tab_header)
+
+        if plotter.hash_vars.get('parsed_non_integrated_rank_summary') is not None:
+                order_columns('parsed_non_integrated_rank_summary',0)
+
+        if plotter.hash_vars.get('parsed_non_integrated_rank_summary') is not None:
+                order_columns('parsed_non_integrated_rank_summary',0)
+        
+        if plotter.hash_vars.get('parsed_integrated_rank_summary') is not None:
+                order_columns('parsed_integrated_rank_summary',0)
+        
+        if plotter.hash_vars.get('parsed_annotation_grade_metrics') is not None:
+                order_columns('parsed_annotation_grade_metrics',0)
+
+        if plotter.hash_vars.get('parsed_annotation_grade_metrics') is not None:
+                order_columns('parsed_annotation_grade_metrics',0)
+        
+        img_path="/mnt/scratch/users/bio_267_uma/federogc/executions/backupgenes/report/img/"
+        
+%>
+
+<div style="width:90%; background-color:#FFFFFF; margin:50 auto; align-content: center;">
+        <h1 style="text-align:center; background-color:#ecf0f1, color: powderblue; "> Analysis of the algorithm: From rankings to backup genes.</h1>
+
+        <h2 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Ranking section </h2>
+
+
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Ranks distribution by seed Not integrated</b></p> 
+                 % if plotter.hash_vars.get('non_integrated_rank_cdf') is not None:
+                                ${plotter.boxplot(id= 'non_integrated_rank_cdf', header= True, row_names= False, default= False, smp_attr= [7,1], group= ["group_seed"],
+                                x_label= "Ranks",
+                                title= "Boxplot of ranks distribution",
+                                config= {"xAxis" : "rank",
+                                        "graphOrientation": "vertical",
+                                        "colorBy" : "group_seed",
+                                        "groupingFactors" :
+                                        ["group_seed","annot"]})}
+                % endif
+        </div>
+
+<!--
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Ranks distribution by seed integrated</b></p> 
+
+                % if plotter.hash_vars.get('integrated_rank_cdf') is not None:
+                                ${plotter.boxplot(id= 'integrated_rank_cdf', header= True, row_names= False, default= False, smp_attr= [7,1], group= ["group_seed"],
+                                x_label= "Ranks",
+                                title= "Boxplot of ranks (with no zero score) distribution",
+                                config= {"xAxis" : "rank",
+                                        "graphOrientation": "vertical",
+                                        "colorBy" : "group_seed",
+                                        "groupingFactors" :
+                                        "group_seed"})}
+                % endif
+        </div>
+-->
+
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"> CDF plots of non integrated kernels </p> 
+                % if plotter.hash_vars.get('non_integrated_rank_cdf') is not None:
+                                <% order_columns('non_integrated_rank_cdf',5) %>
+                                ${plotter.scatter2D(id= "non_integrated_rank_cdf", fields= [5,6] , header= True, row_names= False, responsive= False,
+                                height= '400px', width= '400px', x_label= 'percentiles', smp_attr= [0,1,2],
+                                title= "cummulative distribution function plot",
+                                config= {
+                                        'showLegend' : True,
+                                        'lineBy' : 'kernel',
+                                        'colorBy' : 'kernel',
+                                        'segregateVariablesBy' : 'annot'
+                                        })}
+                % endif
+        </div>
+
+<!--
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"> CDF plots of integrated kernels </p> 
+                % if plotter.hash_vars.get('integrated_rank_cdf') is not None:
+                                <% order_columns('integrated_rank_cdf',5) %>
+                                ${plotter.scatter2D(id= "integrated_rank_cdf", fields= [5,6] , header= True, row_names= False, responsive= False,
+                                height= '400px', width= '400px', x_label= 'percentiles', smp_attr= [0,1,2],
+                                title= "cummulative distribution function plot",
+                                config= {
+                                        'showLegend' : True,
+                                        'lineBy' : 'kernel',
+                                        'colorBy' : 'kernel',
+                                        'segregateVariablesBy' : 'integration'
+                                        })}
+                % endif
+        </div>
+-->
+</div>

@@ -426,6 +426,7 @@ elif [ "$exec_mode" == "get_production_candidates" ] ; then
 
 elif [ "$exec_mode" == "report" ] ; then 
   source ~soft_bio_267/initializes/init_ruby
+  source ~soft_bio_267/initializes/init_python
   source ~soft_bio_267/initializes/init_R
   report_type=$2
   html_name=$3
@@ -522,12 +523,15 @@ elif [ "$exec_mode" == "report" ] ; then
 
   ###################
   # Obtaining HTMLS #
-  
-  report_html -t ./report/templates/kernel_report.erb -d `ls $report_folder/kernel_report/* | tr -s [:space:] ","` -o "report_kernel$html_name"
+  . ~soft_bio_267/initializes/init_python
+
+  export PATH='/mnt/home/users/pab_001_uma/pedro/dev_py/py_report_html/bin':$PATH
+
+  report_html.py -t ./report/templates/kernel_report.txt -d `ls $report_folder/kernel_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_kernel$html_name"
 
   if [ "$report_type" == "data_quality" ] ; then
 
-    report_html -t ./report/templates/dataQuality_report.erb -d `ls $report_folder/ranking_report/* | tr -s [:space:] ","` -o "report_dataQuality$html_name"
+    report_html.py -t ./report/templates/dataQuality_report.txt -d `ls $report_folder/ranking_report/* | tr -s [:space:] ","| sed 's/,*$//g'` -o "report_dataQuality$html_name"
 
   elif [ "$report_type" == "alg_quality" ] ; then
 
@@ -539,8 +543,9 @@ elif [ "$exec_mode" == "report" ] ; then
       get_graph.R -d $report_folder/ranking_report/integrated_rank_measures -x "fpr" -y "tpr" -g "kernel" -w "integration" -O "integrated_ROC" -o "$report_folder/img"
     fi
 
-    report_html -t ./report/templates/ranking_report.erb -d `ls $report_folder/ranking_report/* | tr -s [:space:] ","` -o "report_algQuality$html_name"
-  fi
+    report_html.py -t ./report/templates/ranking_report.txt -d `ls $report_folder/ranking_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_algQuality$html_name"
+
+fi
 
 
 

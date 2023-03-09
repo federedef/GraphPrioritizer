@@ -193,9 +193,7 @@ rank_genes_with_leave_one_out_data_quality){
 rank_genes_production){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for seed
-	source ~soft_bio_267/initializes/init_netanalyzer
-	#source ~soft_bio_267/initializes/init_python
-	source ~soft_bio_267/initializes/init_ruby
+	source ~soft_bio_267/initializes/init_python
 	if [ $method != "production" ] ; then
 		exit 0
 	fi

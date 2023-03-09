@@ -1,0 +1,142 @@
+<%
+        def order_columns(name, column):
+                tab_header = plotter.hash_vars[name].pop(0)
+                plotter.hash_vars[name].sort(key=lambda x: x[column])
+                plotter.hash_vars[name].insert(0, tab_header)
+        end
+ 
+        if plotter.hash_vars.get('parsed_annotations_metrics') is not None:
+                order_columns('parsed_annotations_metrics',0)
+
+        if plotter.hash_vars.get('parsed_similarity_metrics') is not None:
+                order_columns('parsed_similarity_metrics',0)
+
+        if plotter.hash_vars.get('parsed_filtered_similarity_metrics') is not None:
+                order_columns('parsed_filtered_similarity_metrics',0)
+
+        if plotter.hash_vars.get('parsed_uncomb_kernel_metrics') is not None:
+                order_columns('parsed_uncomb_kernel_metrics',0)
+
+        if plotter.hash_vars.get('parsed_comb_kernel_metrics') is not None:
+                order_columns('parsed_comb_kernel_metrics',0)
+%>
+
+
+<div style="width:90%; background-color:#FFFFFF; margin:50 auto; align-content: center;">
+        <h1 style="text-align:center; background-color:#ecf0f1, color: powderblue; ">Analysis of the algorithm: From kernels to backup genes.</h1>
+
+        <h2 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Kernelization section </h2>
+
+        <p> The algorithm transformed the semantic similarity matrix to make it compatible with a kernel. Once this was done for each network and kernel type, it was integrated by kernel type. Below there is a general analysis of the properties of each matrix in the different phases of the process. </p>
+
+        <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Annotations properties </h3>
+
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Table 1.</b> Annotation files descriptors </p> 
+                <div style="overflow: hidden";>
+                        % if plotter.hash_vars.get('parsed_annotations_metrics') is not None:
+                                ${plotter.table(id='parsed_annotations_metrics', header=True,  text= True, row_names = True, fields= [0,5,4,6,8], styled='bs', cell_align= ['left', 'center', 'center', 'center','center'], border= 2, attrib = {'class' : 'table table-striped'})}
+                        % endif
+                </div>
+        </div>
+
+        <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Matrix properties </h3>
+
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Table 2.</b> Similarity matrixes </p> 
+                <div style="overflow: hidden";>
+                        % if plotter.hash_vars.get('parsed_similarity_metrics') is not None:
+                                ${plotter.table(id='parsed_similarity_metrics', header=True,  text= True, row_names = True, fields= [0,1,2,3], styled='bs', cell_align= ['left', 'center', 'center', 'center'], border= 2,attrib = {
+                                        'style' : 'margin-left: auto; margin-right:auto;',
+                                        'cellspacing' : 5,
+                                        'cellpadding' : 2})}
+                        % endif
+                </div>
+        </div>
+
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Table 3.</b> Filtered similarity matrixes </p> 
+                % if plotter.hash_vars.get('parsed_filtered_similarity_metrics') is not None:
+                                ${plotter.table(id='parsed_similarity_metrics', text= True, header=True, row_names = True, fields= [0,1,2,3], styled='bs', cell_align= ['left', 'center', 'center', 'center'], border= 2,attrib= {
+                                        'style' : 'margin-left: auto; margin-right:auto;',
+                                        'cellspacing' : 0,
+                                        'cellpadding' : 2})}
+                % endif
+        </div>
+
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Table 4.</b> Uncombined kernel matrixes </p> 
+                % if plotter.hash_vars.get('parsed_uncomb_kernel_metrics') is not None:
+                                ${plotter.table(id='parsed_uncomb_kernel_metrics', text= True, header=True, row_names = True, fields= [1,2,3,4,5], styled='bs', cell_align= ['left', 'left', 'center', 'center', 'center', 'center'], border= 2,attrib= {
+                                        'style' : 'margin-left: auto; margin-right:auto;',
+                                        'cellspacing' : 0,
+                                        'cellpadding' : 2})}
+                % endif
+        </div>
+
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Table 5.</b> Integrated kernel matrixes </p>
+                % if plotter.hash_vars.get('parsed_comb_kernel_metrics') is not None:
+                                ${plotter.table(id='parsed_comb_kernel_metrics', text= True, header=True, row_names = True, fields= [1,2,3,4,5], styled='bs', cell_align= ['left', 'left', 'center', 'center', 'center', 'center'], border= 2,attrib= {
+                                        'style' : 'margin-left: auto; margin-right:auto;',
+                                        'cellspacing' : 0,
+                                        'cellpadding' : 2})}
+                % endif
+        </div>
+
+        <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Weight values </h3>
+
+        <div style="overflow: hidden">
+
+                % if plotter.hash_vars.get('parsed_similarity_metrics') is not None:
+                                ${plotter.line(id= "parsed_similarity_metrics", fields= [0, 10, 11, 12], header= True, row_names= True,
+                                responsive= False,
+                                height= '400px', width= '400px', x_label= 'Weight',
+                                title= "Weight's similarity values",
+                                config= {
+                                        'showLegend' : True,
+                                        'graphOrientation' : 'vertical',
+                                        })}
+                % endif
+
+                % if plotter.hash_vars.get('parsed_uncomb_kernel_metrics') is not None:
+                                ${plotter.line(id= "parsed_uncomb_kernel_metrics", fields= [0, 12, 13, 14], header= True, row_names= True,
+                                responsive= False,
+                                height= '400px', width= '400px', x_label= 'Weight',
+                                title= "Weight's kernelized values before integration",
+                                config= {
+                                        'showLegend' : True,
+                                        'graphOrientation' : 'vertical',
+                                        })}
+                % endif
+
+                % if plotter.hash_vars.get('parsed_comb_kernel_metrics') is not None:
+                                ${plotter.line(id= "parsed_comb_kernel_metrics", fields= [0, 12, 13, 14], header= True, row_names= True,
+                                responsive= False,
+                                height= '400px', width= '400px', x_label= 'Weight',
+                                title= "Weight's kernelized values after integration",
+                                config= {
+                                        'showLegend' : True,
+                                        'graphOrientation' : 'vertical',
+                                        })}
+                % endif
+        </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
