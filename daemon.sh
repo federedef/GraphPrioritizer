@@ -23,8 +23,11 @@ annotations="disease phenotype molecular_function biological_process cellular_co
 #annotations+="genetic_interaction_exprs_umap"
 #annotations="gene_PS gene_TF gene_hgncGroup"
 #annotations="pathway gene_PS"
+annotations="protein_interaction"
+annotations="disease phenotype molecular_function biological_process cellular_component"
 kernels="ka rf ct el node2vec"
 kernels="ka rf ct el"
+#kernels="ka"
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom' 
 control_pos=$input_path'/control_pos'
@@ -497,6 +500,7 @@ elif [ "$exec_mode" == "report" ] ; then
 
   for metric in non_integrated_rank_summary integrated_rank_summary non_integrated_rank_pos_cov integrated_rank_pos_cov non_integrated_rank_positive_stats integrated_rank_positive_stats ; do
     if [ -s $output_folder/$metric ] ; then
+      echo "$output_folder/$metric"
       create_metric_table.rb $output_folder/$metric ${references[$metric]} $report_folder/ranking_report/parsed_${metric} 
     fi
   done
@@ -520,8 +524,7 @@ elif [ "$exec_mode" == "report" ] ; then
      echo -e "integration_kernel\tintegration\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"| \
      cat - $output_folder/integrated_rank_cdf > $report_folder/ranking_report/integrated_rank_cdf
   fi
-
-  ###################
+ ###################
   # Obtaining HTMLS #
   . ~soft_bio_267/initializes/init_python
 
@@ -530,10 +533,11 @@ elif [ "$exec_mode" == "report" ] ; then
   report_html.py -t ./report/templates/kernel_report.txt -d `ls $report_folder/kernel_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_kernel$html_name"
 
   if [ "$report_type" == "data_quality" ] ; then
-
-    report_html.py -t ./report/templates/dataQuality_report.txt -d `ls $report_folder/ranking_report/* | tr -s [:space:] ","| sed 's/,*$//g'` -o "report_dataQuality$html_name"
+    #`ls $report_folder/ranking_report/* | tr -s [:space:] ","| sed 's/,*$//g'`
+    report_html.py -t ./report/templates/dataQuality_report.txt -d "$report_folder/ranking_report/non_integrated_rank_cdf" -o "report_dataQuality$html_name"
 
   elif [ "$report_type" == "alg_quality" ] ; then
+    echo "me he activado"
 
     if [ -s $output_folder/non_integrated_rank_measures ] ; then
       get_graph.R -d $report_folder/ranking_report/non_integrated_rank_measures -x "fpr" -y "tpr" -g "kernel" -w "annot" -O "non_integrated_ROC" -o "$report_folder/img"

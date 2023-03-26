@@ -152,9 +152,8 @@ rank_genes_with_leave_one_out_data_quality){
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_netanalyzer
 	source ~soft_bio_267/initializes/init_python
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	. ~soft_bio_267/initializes/init_ruby
-	. ~soft_bio_267/initializes/init_R
+	#. ~soft_bio_267/initializes/init_R
 	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	if [ $method != "data_quality" ] ; then
 		exit 0

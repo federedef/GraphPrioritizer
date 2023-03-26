@@ -80,6 +80,6 @@ sem_m <- adj_mat_from_pvalmat(pval_matrix, 0.1, sem_m, opt$binarize)
 # Preparing output path
 output_matrix <- file.path(opt$output_path, opt$output_name) # Return the matrix network.
 # Saving matrix
-npySave(paste(output_matrix,".npy"),sem_m)
+npySave(paste(output_matrix,".npy",sep=""),sem_m)
 # Saving node list
 write.table(colnames(sem_m),paste(output_matrix,".lst",sep=""),row.names=FALSE,col.names=FALSE,quote=FALSE)

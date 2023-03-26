@@ -19,9 +19,9 @@
 	if [ "$exec_mode" == "ontology" ] ; then
 		# Perform gen-gen similiratiry list
 		if [ $simil_code == "-" ] ; then 
-			time semtools.rb -i $input_path/input_processed/$source -o ./results.txt -O $ont_id -s lin -S "," -o $annotation_similarity_list
+			time semtools.py -i $input_path/input_processed/$source -o ./results.txt -O $ont_id -s lin -S "," -o $annotation_similarity_list
 	    else
-	    	time semtools.rb -i $input_path/input_processed/$source -o ./results.txt -O $ont_id -s lin -S "," -c -T $simil_code -o $annotation_similarity_list
+	    	time semtools.py -i $input_path/input_processed/$source -o ./results.txt -O $ont_id -s lin -S "," -c -T $simil_code -o $annotation_similarity_list
 		fi
 		awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $annotation_similarity_list > similarity_list # Set diagonal to 0.
     elif [ "$exec_mode" == "network" ] ; then
@@ -83,7 +83,7 @@
 }
 
 
-%filter_cutoff){
+filter_cutoff){
 	resources: -m '60gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_python
 	echo -e "$annotation_sim" > tracker
@@ -118,7 +118,7 @@
     fi
 }
 
-%filter_disparity){
+filter_disparity){
 	resources: -c 8 -m '60gb' -t '5-00:00:00'
 	source ~soft_bio_267/initializes/init_R
 	source ~soft_bio_267/initializes/init_python
@@ -139,8 +139,8 @@
 			custom_disparity_filter.R -i filter_cutoff)/similarity_matrix_bin.npy -o "./" -O similarity_matrix_bin -n filter_cutoff)/similarity_matrix_bin.lst
 		fi
 		text2binary_matrix.py -i similarity_matrix_bin.npy -t bin -o similarity_matrix_bin_undo -s > filtered_similarity_metrics
-		if [ -s similarity_matrix_bin_undo ] ; then
-			rm similarity_matrix_bin_undo
+		if [ -s similarity_matrix_bin_undo.npy ] ; then
+			rm similarity_matrix_bin_undo.npy
 			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' filtered_similarity_metrics > tmp
 			mv tmp filtered_similarity_metrics
 		else
@@ -151,12 +151,12 @@
         cp filter_cutoff)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
     fi
 
-    if [ ! -s similarity_matrix_bin ] ; then
+    if [ ! -s similarity_matrix_bin.npy ] ; then
     	exit 1
     fi
 }
 
-%calc_kernel_[$kernels_varflow]){
+calc_kernel_[$kernels_varflow]){
 	resources: -c 16 -m '240gb' -t '2-00:00:00'
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
