@@ -1,9 +1,9 @@
 rank_genes_classic){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
-	source ~soft_bio_267/initializes/init_netanalyzer
+	#source ~soft_bio_267/initializes/init_netanalyzer
 	source ~soft_bio_267/initializes/init_python
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
+	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	. ~soft_bio_267/initializes/init_ruby
 	. ~soft_bio_267/initializes/init_R
 	if [ $method != "classic" ] ; then
@@ -75,9 +75,9 @@ rank_genes_classic){
 rank_genes_with_leave_one_out){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
-	source ~soft_bio_267/initializes/init_netanalyzer
+	#source ~soft_bio_267/initializes/init_netanalyzer
 	source ~soft_bio_267/initializes/init_python
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
+	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	. ~soft_bio_267/initializes/init_ruby
 	. ~soft_bio_267/initializes/init_R
 	if [ $method != "leave_one_out" ] ; then
@@ -150,11 +150,11 @@ rank_genes_with_leave_one_out){
 rank_genes_with_leave_one_out_data_quality){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
-	source ~soft_bio_267/initializes/init_netanalyzer
+	#source ~soft_bio_267/initializes/init_netanalyzer
 	source ~soft_bio_267/initializes/init_python
 	. ~soft_bio_267/initializes/init_ruby
 	#. ~soft_bio_267/initializes/init_R
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
+	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	if [ $method != "data_quality" ] ; then
 		exit 0
 	fi

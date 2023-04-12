@@ -27,6 +27,7 @@ statistics_profiles){
 	else
 		exit 1
 	fi
+	# TODO: Check how to translate this section to python sections. Specially the semtools sections statistics.
 }
 
 

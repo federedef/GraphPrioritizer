@@ -1,9 +1,10 @@
-%extract_subgraphs_[$seed_group_names]){
+extract_subgraphs_[$seed_group_names]){
 	resources: -m '120gb' 
 	source ~soft_bio_267/initializes/init_python
 	grep -w "(*)" $production_seedgens > seed_by_group
 	?
 	extract_subgraph.py -i $folder_kernel_path/$input_name.npy  -n $folder_kernel_path/$input_name.lst -s seed_by_group 
+	# TODO: Try to use netanalyzer.py to extract the subgraph.
 	if ! [ -s "(*)_subgraph" ] ; then
 		exit 0
 	fi
@@ -12,12 +13,14 @@
 get_clusters_[$seed_group_names]){
 	resources: -m '120gb' 
 	source ~soft_bio_267/initializes/init_python
+	source ~soft_bio_267/initializes/init_ruby
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	grep -w "(*)" $production_seedgens | cut -f2 | tr -s "," "\n" | awk 'BEGIN{OFS="\t"}{print "All",$1}' > seed
 	echo "!extract_subgraphs_*!/G1_subgraph" > ey
 	method="rber_pots"
 	?
-	netanalyzer.py -i !extract_subgraphs_*!/(*)_subgraph -b $method -o clusters
-	cat seed $method_discovered_clusters.txt > all_groups
+	netanalyzer.py -i !extract_subgraphs_*!/(*)_subgraph -f "pair" -b $method 
+	cat seed ${method}_discovered_clusters.txt > all_groups
 	sed -i -e 's/^/(*)_/' all_groups
 	if [ -s all_groups ] ; then
 		aggregate_column_data.rb -i all_groups -x 0 -a 1 > all_groups_aggregated
@@ -29,11 +32,12 @@ get_clusters_[$seed_group_names]){
 get_metrics){
 	resources: -m '200gb' 
 	source ~soft_bio_267/initializes/init_python
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	cat !get_clusters_!/all_groups > all_groups
 	cat !get_clusters_!/all_groups_aggregated > all_groups_aggregated
 	stats="size;avg_transitivity;internal_edge_density;conductance;triangle_participation_ratio;max_odf;avg_odf;avg_embeddedness;average_internal_degree;cut_ratio;fraction_over_median_degree;scaled_density;avg_distance"
 	?
-	netanalyzer.py -i $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -t "matrix" -G all_groups -M $stats
+	netanalyzer.py -i $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -f "bin" -G all_groups -M $stats
 }
 
 

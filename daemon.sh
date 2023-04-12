@@ -23,10 +23,12 @@ annotations="disease phenotype molecular_function biological_process cellular_co
 #annotations+="genetic_interaction_exprs_umap"
 #annotations="gene_PS gene_TF gene_hgncGroup"
 #annotations="pathway gene_PS"
-annotations="protein_interaction"
-annotations="disease phenotype molecular_function biological_process cellular_component"
+#annotations="disease phenotype molecular_function biological_process cellular_component"
+#annotations="protein_interaction gene_hgncGroup"
+#annotations="genetic_interaction_effect_bicor"
+#annotations="pathway"
 kernels="ka rf ct el node2vec"
-kernels="ka rf ct el"
+#kernels="ka rf ct el"
 #kernels="ka"
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom' 
@@ -232,6 +234,7 @@ elif [ "$exec_mode" == "clusterize_seeds" ] ; then
   mkdir -p $output_folder/clusters_seeds
 
   seed_group_names=`cat $production_seedgens | cut -f 1 | tr -s "\n" ";"`
+  cat  $output_folder/integrations/*/*/ugot_path > $output_folder/integrations/ugot_path
 
   for integration_type in ${integration_types} ; do 
     for kernel in $kernels ; do 
@@ -423,6 +426,14 @@ elif [ "$exec_mode" == "get_production_candidates" ] ; then
   cat  $output_folder/rankings/*/*/non_integrated_rank_ranked_production_candidates > ./production_seedgenes/output/"$name"_non_integrated
   cat $output_folder/integrated_rankings/*/*/integrated_rank_ranked_production_candidates > ./production_seedgenes/output/"$name"_integrated
 
+elif [ "$exec_mode" == "functional_analysis" ] ; then 
+  input_file=$2
+  folder_name=`date +'%m_%d_%Y'`
+  output_path=$output_folder/functional_analysis_clusters/$folder_name/Functional_analysis_from_clusters
+  mkdir -p $output_folder/functional_analysis_clusters/$folder_name
+  
+  sbatch ./get_FunctionalAnalysis.sh $input_file $output_path
+
 #########################################################
 # STAGE 3 OBTAIN REPORT FROM RESULTS
 #########################################################
@@ -528,7 +539,8 @@ elif [ "$exec_mode" == "report" ] ; then
   # Obtaining HTMLS #
   . ~soft_bio_267/initializes/init_python
 
-  export PATH='/mnt/home/users/pab_001_uma/pedro/dev_py/py_report_html/bin':$PATH
+  #export PATH='/mnt/home/users/pab_001_uma/pedro/dev_py/py_report_html/bin':$PATH
+  # TODO check if this external is okey or not.
 
   report_html.py -t ./report/templates/kernel_report.txt -d `ls $report_folder/kernel_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_kernel$html_name"
 

@@ -102,12 +102,12 @@
     fi
 }
 
-%calc_kernel_[$kernels_varflow]){
+calc_kernel_[$kernels_varflow]){
 	resources: -c 16 -m '240gb' -t '2-00:00:00'
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
 	source ~soft_bio_267/initializes/init_python
-	module load python/3.8.8
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	echo -e "$annotation_(*)\t$annotation\t(*)" > tracker
 	cp filter_disparity)/similarity_matrix_bin.lst kernel_matrix_bin.lst # To pass the list of node names.
 	kern_net_path=`pwd`
@@ -117,11 +117,11 @@
 	fi
 	?
 	if [ "(*)" == "node2vec" ] ; then
-		nod2vec.py -i filter_disparity)/similarity_matrix_bin -o kernel_matrix_bin
-		mv kernel_matrix_bin.npy kernel_matrix_bin
+		netanalyzer.py -i filter_disparity)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin --both_repre_formats
 	else
-		netanalyzer.py -i filter_disparity)/similarity_matrix_bin -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin -z
+		netanalyzer.py -i filter_disparity)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
 	fi
+	
 	if [ -s kernel_matrix_bin ] ; then
 		echo -e "$annotation_(*)\t$annotation\t(*)\t$kern_net_path" > ugot_path 
 	else 

@@ -2,10 +2,8 @@
 	resources: -m '60gb' -t '4-00:00:00'
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
-	source ~soft_bio_267/initializes/init_ruby
-	source ~soft_bio_267/initializes/init_R
 	source ~soft_bio_267/initializes/init_python
-	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
+	source ~soft_bio_267/initializes/init_R
 
 	echo -e "$annotation_sim" > tracker
 	similarity_path=`pwd`
@@ -19,7 +17,7 @@
 	if [ "$exec_mode" == "ontology" ] ; then
 		# Perform gen-gen similiratiry list
 		if [ $simil_code == "-" ] ; then 
-			time semtools.py -i $input_path/input_processed/$source -o ./results.txt -O $ont_id -s lin -S "," -o $annotation_similarity_list
+			time semtools.py -i $input_path/input_processed/$source -o ./results.txt -O $ont_id -s lin -S "," -c -o $annotation_similarity_list
 	    else
 	    	time semtools.py -i $input_path/input_processed/$source -o ./results.txt -O $ont_id -s lin -S "," -c -T $simil_code -o $annotation_similarity_list
 		fi
@@ -27,31 +25,31 @@
     elif [ "$exec_mode" == "network" ] ; then
     	if [ "$annotation" == "pathway" ] ; then 
     		# Perform a projection layer with jaccard
-    		netanalyzer.py -i $input_path/input_processed/$source -a "$annotation_similarity_list" -t pair -l 'gen,HGNC:;pathway,REACT:' -m "jaccard" -u 'gen;pathway'
+    		netanalyzer.py -i $input_path/input_processed/$source -a "$annotation_similarity_list" -f pair -l 'gen,HGNC:;pathway,REACT:' -m "jaccard" -u 'gen;pathway'
     		# Perform a projection layer with counts
-    		netanalyzer.py -i $input_path/input_processed/$source -a "counts_similarity_list" -t pair -l 'gen,HGNC:;pathway,REACT:' -m "counts" -u 'gen;pathway'
+    		netanalyzer.py -i $input_path/input_processed/$source -a "counts_similarity_list" -f pair -l 'gen,HGNC:;pathway,REACT:' -m "counts" -u 'gen;pathway'
     		# Select just the interactions of jaccard filtering by the counts values.
     		paste $annotation_similarity_list <(cut -f 3 counts_similarity_list) | awk 'BEGIN{FS="\t";OFS="\t"}{if( $4 >= 3 ) print $1,$2,$3}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list
     		#awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $annotation_similarity_list > similarity_list # Set diagonal to 0.
     	elif [ "$annotation" == "gene_TF" ] ; then
     		# Perform a projection layer with jaccard
-    		netanalyzer.py -i $input_path/input_processed/$source -a "$annotation_similarity_list" -t pair -l 'gen,HGNC:;tf,TF:' -m "jaccard" -u 'gen;tf'
+    		netanalyzer.py -i $input_path/input_processed/$source -a "$annotation_similarity_list" -f pair -l 'gen,HGNC:;tf,TF:' -m "jaccard" -u 'gen;tf'
     		# Perform a projection layer with counts
-    		netanalyzer.py -i $input_path/input_processed/$source -a "counts_similarity_list" -t pair -l 'gen,HGNC:;tf,TF:' -m "counts" -u 'gen;tf'
+    		netanalyzer.py -i $input_path/input_processed/$source -a "counts_similarity_list" -f pair -l 'gen,HGNC:;tf,TF:' -m "counts" -u 'gen;tf'
     		# Select just the interactions of jaccard filtering by the counts values.
     		paste $annotation_similarity_list <(cut -f 3 counts_similarity_list) | awk 'BEGIN{FS="\t";OFS="\t"}{if( $4 >= 3 ) print $1,$2,$3}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list
     		#netanalyzer.py -i $input_path/input_processed/$annotation -a "similarity_list" -t pair -l 'gen,HGNC:;tf,TF:' -m "jaccard" -u 'gen;tf'
     	elif [ "$annotation" == "gene_hgncGroup" ] ; then
-    		netanalyzer.py -i $input_path/input_processed/$source -a "similarity_list" -t pair -l 'gen,HGNC:;group,GROUP:' -m "jaccard" -u 'gen;group'
+    		netanalyzer.py -i $input_path/input_processed/$source -a "similarity_list" -f pair -l 'gen,HGNC:;group,GROUP:' -m "jaccard" -u 'gen;group'
     	elif [ "$source" == "genetic_interaction_effect" -o "$source" == "genetic_interaction_exprs" ] ; then
     		echo "$custom_parameters"
     		build_corNetwork.R -i $input_path/input_processed/$source -s "\t" -O $annotation_similarity_list -m $custom_parameters -t "greater" -f
     		cat $annotation_similarity_list | awk '{if ( $3 != "NA" ) {print $0}}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list # sed 's/HGNC./HGNC:/g'|
     	elif [ "$annotation" == "gene_PS" ] ; then
     		# Perform a projection layer with jaccard
-    		netanalyzer.py -i $input_path/input_processed/$source -a "$annotation_similarity_list" -t pair -l 'gen,HGNC:;ps,PS' -m "jaccard" -u 'gen;ps'
+    		netanalyzer.py -i $input_path/input_processed/$source -a "$annotation_similarity_list" -f pair -l 'gen,HGNC:;ps,PS' -m "jaccard" -u 'gen;ps'
     		# Perform a projection layer with counts
-    		netanalyzer.py -i $input_path/input_processed/$source -a "counts_similarity_list" -t pair -l 'gen,HGNC:;ps,PS' -m "counts" -u 'gen;ps'
+    		netanalyzer.py -i $input_path/input_processed/$source -a "counts_similarity_list" -f pair -l 'gen,HGNC:;ps,PS' -m "counts" -u 'gen;ps'
     		# Select just the interactions of jaccard filtering by the counts values.
     		paste $annotation_similarity_list <(cut -f 3 counts_similarity_list) | awk 'BEGIN{FS="\t";OFS="\t"}{if( $4 >= 1 ) print $1,$2,$3}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list
     	else
@@ -73,7 +71,7 @@
 	echo -e "$annotation_sim" > tracker
 	?
 	text2binary_matrix.py -i calc_similarity)/similarity_list -o similarity_matrix_bin -t pair -s > similarity_metrics
-	mv similarity_matrix_bin similarity_matrix_bin.npy
+	#mv similarity_matrix_bin similarity_matrix_bin.npy
 	if [ -s similarity_metrics ] ; then 
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' similarity_metrics > tmp
 		mv tmp similarity_metrics
@@ -83,7 +81,7 @@
 }
 
 
-filter_cutoff){
+%filter_cutoff){
 	resources: -m '60gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_python
 	echo -e "$annotation_sim" > tracker
@@ -101,7 +99,7 @@ filter_cutoff){
 		elif [ $binarize_factor == "NB" ] ; then
 			text2binary_matrix.py -i list2matrix_similarity)/similarity_matrix_bin.npy -o similarity_matrix_bin -t bin -c $cutoff_filter -s > filtered_similarity_metrics
 		fi
-		mv similarity_matrix_bin similarity_matrix_bin.npy
+		#mv similarity_matrix_bin similarity_matrix_bin.npy
 		if [ -s filtered_similarity_metrics ] ; then 
 			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' filtered_similarity_metrics > tmp
 			mv tmp filtered_similarity_metrics
@@ -118,7 +116,7 @@ filter_cutoff){
     fi
 }
 
-filter_disparity){
+%filter_disparity){
 	resources: -c 8 -m '60gb' -t '5-00:00:00'
 	source ~soft_bio_267/initializes/init_R
 	source ~soft_bio_267/initializes/init_python
@@ -162,6 +160,7 @@ calc_kernel_[$kernels_varflow]){
 	# output: binary Kernel from similarity matrix + metrics
 	# source ~soft_bio_267/initializes/init_netanalyzer
 	source ~soft_bio_267/initializes/init_python
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	echo -e "$annotation_(*)\t$annotation\t(*)" > tracker
 	cp filter_disparity)/similarity_matrix_bin.lst kernel_matrix_bin.lst # To pass the list of node names.
 	kern_net_path=`pwd`
@@ -174,11 +173,11 @@ calc_kernel_[$kernels_varflow]){
 	fi
 	?
 	if [ "(*)" == "node2vec" ] ; then
-		nod2vec.py -i filter_disparity)/similarity_matrix_bin -o kernel_matrix_bin
-		#mv kernel_matrix_bin.npy kernel_matrix_bin
+		netanalyzer.py -i filter_disparity)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin --both_repre_formats
 	else
-		netanalyzer.py -i filter_disparity)/similarity_matrix_bin -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
+		netanalyzer.py -i filter_disparity)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
 	fi
+
 	if [ -s kernel_matrix_bin.npy ] ; then
 		echo -e "$annotation_(*)\t$annotation\t(*)\t$kern_net_path" > ugot_path 
 	else 
