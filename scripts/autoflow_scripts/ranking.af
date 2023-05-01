@@ -1,7 +1,6 @@
 rank_genes_classic){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
-	#source ~soft_bio_267/initializes/init_netanalyzer
 	source ~soft_bio_267/initializes/init_python
 	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	. ~soft_bio_267/initializes/init_ruby
@@ -14,14 +13,14 @@ rank_genes_classic){
 	## Defining seed genes
     awk 'BEGIN{OFS="\t";}{print $1,$1}' $control_pos > seed_by_group
 	## Obtaining genes of interest
-	cat $control_pos $control_neg | aggregate_column_data.rb -i - -x 0 -a 1 > filter
+	cat $control_pos $control_neg | aggregate_column_data.py -i - -x 1 -a 2 > filter
 	## Obtaining tags for group-case
-	desaggregate_column_data.rb -i $control_pos -x 1 |& awk '{OFS="\t"}{print $1,$2,1}' > tags
-	desaggregate_column_data.rb -i $control_neg -x 1 |& awk '{OFS="\t"}{print $1,$2,0}' >> tags
+	desaggregate_column_data.py -i $control_pos -x 2 |& awk '{OFS="\t"}{print $1,$2,1}' > tags
+	desaggregate_column_data.py -i $control_neg -x 2 |& awk '{OFS="\t"}{print $1,$2,0}' >> tags
 	?
 	ranker.py -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -f filter
 	# Add tags to ranked_genes_all_candidates.
-	add_tags2ranks.rb -i ranked_genes_all_candidates -g 5 -c 0 -t tags -o tagged_ranks.txt
+	add_tags2ranks.py -i ranked_genes_all_candidates -g 5 -c 0 -t tags -o tagged_ranks.txt
 	number_of_genes=`wc -l tagged_ranks.txt | cut -f1 -d " "`
 
 	
@@ -55,7 +54,7 @@ rank_genes_classic){
 		number_of_positive_genes=`wc -l positive_genes | cut -f1 -d " "`
 
 	    if [ $number_of_positive_genes -ge 1 ] ; then 
-			rank_metrics.rb -r positive_genes -e "ranks" > prerank_list
+			rank_metrics.py -r positive_genes -e "ranks" > prerank_list
 			if [ -a prerank_list ] ; then
 				awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' prerank_list > $output_name_cdf
 			else 
@@ -75,7 +74,6 @@ rank_genes_classic){
 rank_genes_with_leave_one_out){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
-	#source ~soft_bio_267/initializes/init_netanalyzer
 	source ~soft_bio_267/initializes/init_python
 	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	. ~soft_bio_267/initializes/init_ruby
@@ -90,13 +88,13 @@ rank_genes_with_leave_one_out){
 	## Obtaining genes of interest
 	cat $control_neg > filter
 	## Obtaining tags for group-case
-	desaggregate_column_data.rb -i $control_pos -x 1 |& awk '{OFS="\t"}{print $1,$2,1}' > tags
-	desaggregate_column_data.rb -i $control_neg -x 1 |& awk '{OFS="\t"}{print $1,$2,0}' >> tags
+	desaggregate_column_data.py -i $control_pos -x 2 |& awk '{OFS="\t"}{print $1,$2,1}' > tags
+	desaggregate_column_data.py -i $control_neg -x 2 |& awk '{OFS="\t"}{print $1,$2,0}' >> tags
 	?
 	ranker.py -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -l -f filter
 	awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/_iteration_[0-9]+$/,"",$6); print $0}' ranked_genes_all_candidates > processed_ranked_genes
 	# Add tags to ranked_genes_all_candidates.
-	add_tags2ranks.rb -i processed_ranked_genes -g 5 -c 0 -t tags -o tagged_ranks.txt
+	add_tags2ranks.py -i processed_ranked_genes -g 5 -c 0 -t tags -o tagged_ranks.txt
 	number_of_genes=`wc -l tagged_ranks.txt | cut -f1 -d " "`
 
 	# Obtaining Metrics And statistical summary
@@ -130,7 +128,7 @@ rank_genes_with_leave_one_out){
 		awk '{if($7==1 && $3!=1) print $0}' tagged_ranks.txt | cut -f 1-6 > positive_genes
 		number_of_positive_genes=`wc -l positive_genes | cut -f1 -d " "`
 	    if [ $number_of_positive_genes -ge 1 ] ; then 
-			rank_metrics.rb -r positive_genes -e "ranks" > prerank_list
+			rank_metrics.py -r positive_genes -e "ranks" > prerank_list
 		else 
 			echo -e "positive_coverage\t0" > prerank_list
 		fi
@@ -150,10 +148,7 @@ rank_genes_with_leave_one_out){
 rank_genes_with_leave_one_out_data_quality){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
-	#source ~soft_bio_267/initializes/init_netanalyzer
 	source ~soft_bio_267/initializes/init_python
-	. ~soft_bio_267/initializes/init_ruby
-	#. ~soft_bio_267/initializes/init_R
 	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	if [ $method != "data_quality" ] ; then
 		exit 0
@@ -170,12 +165,11 @@ rank_genes_with_leave_one_out_data_quality){
 
 	# Obtaining Metrics And statistical summary
     if [ -s positive_genes ] ; then 
-		rank_metrics.rb -r positive_genes -e "ranks" > prerank_list
-		rank_metrics.rb -r positive_genes -e "stats" -c 3 > prerank_stats_from_positive
+		rank_metrics.py -r positive_genes -e "ranks" > prerank_list
+		rank_metrics.py -r positive_genes -e "stats" -c 3 > prerank_stats_from_positive
 		if [ -a prerank_stats_from_positive ] ; then
 			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2,$3}' \ 
 			  prerank_stats_from_positive | awk 'BEGIN{FS="\t";OFS="\t"}{print $1"_"$4,$2,$3,$4,$5,$6}' > $output_name_positive_stats
-			  #reate_metric_table.rb $output_name_positive_stats 'Sample,sample,Net,kernel,group' $output_name_final
 		else 
 		  	exit 0
 		fi

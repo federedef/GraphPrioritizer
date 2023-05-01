@@ -160,7 +160,7 @@ calc_kernel_[$kernels_varflow]){
 	# output: binary Kernel from similarity matrix + metrics
 	# source ~soft_bio_267/initializes/init_netanalyzer
 	source ~soft_bio_267/initializes/init_python
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
+	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	echo -e "$annotation_(*)\t$annotation\t(*)" > tracker
 	cp filter_disparity)/similarity_matrix_bin.lst kernel_matrix_bin.lst # To pass the list of node names.
 	kern_net_path=`pwd`
@@ -173,7 +173,8 @@ calc_kernel_[$kernels_varflow]){
 	fi
 	?
 	if [ "(*)" == "node2vec" ] ; then
-		netanalyzer.py -i filter_disparity)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin --both_repre_formats
+		nod2vec.py -i filter_disparity)/similarity_matrix_bin.npy 
+		#netanalyzer.py -i filter_disparity)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin --both_repre_formats --embedding_add_options "'window':1,'p':1,'seed':123, 'workers': 8, 'quiet': False, 'walk_length' :30, 'dimensions': 10, 'num_walks' : 10"                                                                
 	else
 		netanalyzer.py -i filter_disparity)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
 	fi

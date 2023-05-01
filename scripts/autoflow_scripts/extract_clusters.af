@@ -14,7 +14,6 @@ get_clusters_[$seed_group_names]){
 	resources: -m '120gb' 
 	source ~soft_bio_267/initializes/init_python
 	source ~soft_bio_267/initializes/init_ruby
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	grep -w "(*)" $production_seedgens | cut -f2 | tr -s "," "\n" | awk 'BEGIN{OFS="\t"}{print "All",$1}' > seed
 	echo "!extract_subgraphs_*!/G1_subgraph" > ey
 	method="rber_pots"
@@ -23,7 +22,7 @@ get_clusters_[$seed_group_names]){
 	cat seed ${method}_discovered_clusters.txt > all_groups
 	sed -i -e 's/^/(*)_/' all_groups
 	if [ -s all_groups ] ; then
-		aggregate_column_data.rb -i all_groups -x 0 -a 1 > all_groups_aggregated
+		aggregate_column_data.py -i all_groups -x 1 -a 2 > all_groups_aggregated
 	else
 		exit 0
 	fi

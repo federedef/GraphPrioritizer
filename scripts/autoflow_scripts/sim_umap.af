@@ -1,4 +1,4 @@
-%calc_similarity){
+calc_similarity){
 	resources: -m '60gb' -t '4-00:00:00'
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
@@ -14,7 +14,7 @@
 	fi
 }
 
-%list2matrix_similarity){
+list2matrix_similarity){
 	resources: -m '60gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_python
 	echo -e "$annotation_sim" > tracker
@@ -30,7 +30,7 @@
 	fi
 }
 
-%filter_cutoff){
+filter_cutoff){
 	resources: -m '60gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_python
 	echo -e "$annotation_sim" > tracker
@@ -64,7 +64,7 @@
     fi
 }
 
-%filter_disparity){
+filter_disparity){
 	resources: -c 8 -m '60gb' -t '5-00:00:00'
 	source ~soft_bio_267/initializes/init_R
 	source ~soft_bio_267/initializes/init_python

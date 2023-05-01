@@ -1,5 +1,6 @@
 statistics_profiles){
-	source ~soft_bio_267/initializes/init_ruby 
+	source ~soft_bio_267/initializes/init_python
+	source ~soft_bio_267/initializes/init_ruby
 	echo -e "$annotation" > tracker
 	data=`grep -P '^$annotation' $net2custom | cut -f 2`
 	ont_id=`grep -P '^$annotation' $net2custom | cut -f 3`
@@ -16,9 +17,9 @@ statistics_profiles){
     	if [ "$data" == "pathway" -o "$data" == "protein_interaction" -o "$data" == "gene_hgncGroup" -o "$data" == "gene_TF" -o "$data" == "gene_PS" ] ; then
 	    	sort -k1 $input_path/input_processed/$data| cut -f 1 | sort | uniq -c | awk '{print $1}' > data_list
 	    elif [ "$data" == "genetic_interaction_effect" -o "$data" == "genetic_interaction_exprs" ] ; then
-	    	summInfo_genetic_interaction.rb -f $input_path/input_processed/$data > data_list
+	    	summInfo_genetic_interaction.py -f $input_path/input_processed/$data > data_list
 	    fi
-	    get_stats.rb -d data_list > annotations_metrics
+	    get_stats.py -d data_list > annotations_metrics
     fi
 
 	if [ -s annotations_metrics ] ; then 
