@@ -16,20 +16,9 @@ report_folder=$output_folder/report
 
 # Custom variables.
 annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway gene_TF gene_hgncGroup genetic_interaction_effect_bicor gene_PS"
-#annotations+="protein_interaction pathway gene_TF gene_hgncGroup"
-#annotations+="genetic_interaction_effect genetic_interaction_exprs genetic_interaction_effect_bicor genetic_interaction_exprs_bicor"
-#annotations="genetic_interaction_effect genetic_interaction_exprs genetic_interaction_effect_bicor genetic_interaction_exprs_bicor"
-#annotations+=" genetic_interaction_effect_spearman genetic_interaction_exprs_spearman genetic_interaction_effect_umap "
-#annotations+="genetic_interaction_exprs_umap"
-#annotations="gene_PS gene_TF gene_hgncGroup"
-#annotations="pathway gene_PS"
-#annotations="disease phenotype molecular_function biological_process cellular_component"
-#annotations="protein_interaction gene_hgncGroup"
 #annotations="genetic_interaction_effect_bicor"
-#annotations="pathway"
 kernels="ka rf ct el node2vec"
 #kernels="ka rf ct el"
-#kernels="ka"
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2custom' 
 control_pos=$input_path'/control_pos'
@@ -113,7 +102,7 @@ elif [ "$exec_mode" == "process_download" ] ; then
   # PROCESS ONTOLOGIES #
   for sample in phenotype disease function ; do
     zgrep ${tag_filter[$sample]} ./input/input_raw/gene_${sample}.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
-    aggregate_column_data.rb -i - -x 0 -a 4 > ./input/input_processed/$sample # | head -n 230
+    aggregate_column_data.py -i - -x 1 -a 5 > ./input/input_processed/$sample # | head -n 230
   done
 
   ## Creating paco files for each go branch.
@@ -129,10 +118,7 @@ elif [ "$exec_mode" == "process_download" ] ; then
   
   # PROCESS PROTEIN INTERACTIONS # | head -n 200 
   cat ./input/input_raw/string_data.v11.5.txt | tr -s " " "\t" > string_data.v11.5.txt
-  idconverter.rb -d ./translators/ProtEnsemble_HGNC -i string_data.v11.5.txt -c 0,1 > ./input/input_raw/interaction_scored && rm string_data.v11.5.txt
-  #awk '{OFS="\t"}{print $1,$2}' ./input/input_raw/interaction_scored > ./input/input_processed/protein_interaction_unweighted # && rm ./input_raw/interaction_scored
-  # if ( $3 > 700 )
-  #awk '{OFS="\t"}{print $1,$2,$3}' ./input/input_raw/interaction_scored > .input/input_processed/protein_interaction_weighted
+  standard_name_replacer.py -i string_data.v11.5.txt -I ./translators/ProtEnsemble_HGNC -c 1,2 -u > ./input/input_raw/interaction_scored && rm string_data.v11.5.txt
   awk '{OFS="\t"}{print $1,$2,$3}' ./input/input_raw/interaction_scored > ./input/input_processed/protein_interaction
 
   # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 100
@@ -146,17 +132,17 @@ elif [ "$exec_mode" == "process_download" ] ; then
   rm ./input/input_raw/CRISPR_gene_exprs_symbol
 
   # Translating to GENE-TF interaction.
-  idconverter.rb -d ./translators/symbol_HGNC -i ./input/input_raw/gene_TF -c 0,1 | sed 's/HGNC:/TF:/2g' > ./input/input_processed/gene_TF
+  standard_name_replacer.py -i ./input/input_raw/gene_TF -I ./translators/symbol_HGNC -c 1,2 -u | sed 's/HGNC:/TF:/2g' > ./input/input_processed/gene_TF
 
   # Formatting data_columns
   cut -f 1,14 ./input/input_raw/gene_hgncGroup | sed "s/\"//g" | tr -s "|" "," | awk '{if( $2 != "") print $0}' \
-  | desaggregate_column_data.rb -i "-" -x 1 | sed 's/\t/\tGROUP:/1g' | sed 1d > ./input/input_processed/gene_hgncGroup
+  | desaggregate_column_data.py -i "-" -x 2 | sed 's/\t/\tGROUP:/1g' | sed 1d > ./input/input_processed/gene_hgncGroup
 
   # Formatting PS-Genes
 
   get_PS_gene_relation.py -i "/mnt/home/users/bio_267_uma/federogc/projects/backupgenes/input/phenotypic_series/series_data" -o "./input/input_processed/PS_genes"
-  desaggregate_column_data.rb -i ./input/input_processed/PS_genes -x 1 > ./input/input_processed/tmp 
-  idconverter.rb -d ./translators/symbol_HGNC -i ./input/input_processed/tmp -c 1 | awk 'BEGIN{FS="\t";OFS="\t"}{print $2,$1}' > ./input/input_processed/gene_PS
+  desaggregate_column_data.py -i ./input/input_processed/PS_genes -x 2 > ./input/input_processed/tmp 
+  standard_name_replacer.py -i ./input/input_processed/tmp -I ./translators/symbol_HGNC -c 2 -u | awk 'BEGIN{FS="\t";OFS="\t"}{print $2,$1}' > ./input/input_processed/gene_PS
   rm ./input/input_processed/PS_genes ./input/input_processed/tmp 
 
 
@@ -166,10 +152,12 @@ elif [ "$exec_mode" == "white_list" ] ; then
 # OPTIONAL STAGE : SELECT GENES FROM WHITELIST
 #########################################################
 
+# TODO: Check this to put all layers new.
+
   cd ./input/input_processed
-  filter_by_whitelist.rb -f phenotype,disease,biological_process,cellular_component,molecular_function,pathway,protein_interaction \
-  -c "0;0;0;0;0;0;0,1" -t ../white_list/hgnc_white_list
-  filter_by_whitelist.rb -f genetic_interaction -c "0;" -t ../white_list/hgnc_white_list -r
+  filter_by_whitelist.py -f phenotype,disease,biological_process,cellular_component,molecular_function,pathway,protein_interaction \
+  -c "0;0;0;0;0;0;0,1" -t ../../white_list/hgnc_white_list
+  filter_by_whitelist.py -f genetic_interaction -c "0;" -t ../../white_list/hgnc_white_list -r
 
   echo -e "sample\tprefiltered_rows\tprefiltered_cols\tposfiltered_rows\tposfiltered_cols" > filter_metrics
   for sample in phenotype disease biological_process cellular_component molecular_function pathway protein_interaction genetic_interaction ; do
@@ -199,11 +187,11 @@ elif [ "$exec_mode" == "control_type" ] ; then
   echo "$filter_feature"
 
   if [ $add_opt == "reverse" ] ; then 
-      awk '{OFS="\t"}{print $2,$1,$3}' $control_genes_folder/backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_pos
-      awk '{OFS="\t"}{print $2,$1,$3}' $control_genes_folder/backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_neg   
+      awk '{OFS="\t"}{print $2,$1,$3}' $control_genes_folder/backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.py -i - -x 1 -a 2 > ./control_pos
+      awk '{OFS="\t"}{print $2,$1,$3}' $control_genes_folder/backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.py -i - -x 1 -a 2 > ./control_neg   
   elif [ $add_opt == "right" ] ; then 
-      awk '{OFS="\t"}{print $1,$2,$3}' $control_genes_folder/backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_pos
-      awk '{OFS="\t"}{print $1,$2,$3}' $control_genes_folder/backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.rb -i - -x 0 -a 1 > ./control_neg
+      awk '{OFS="\t"}{print $1,$2,$3}' $control_genes_folder/backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.py -i - -x 1 -a 2 > ./control_pos
+      awk '{OFS="\t"}{print $1,$2,$3}' $control_genes_folder/backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.py -i - -x 1 -a 2 > ./control_neg
   fi
 
   if [ $add_opt == "disease" ] ; then
@@ -213,19 +201,16 @@ elif [ "$exec_mode" == "control_type" ] ; then
 
 elif [ "$exec_mode" == "get_production_seedgenes" ] ; then 
 
-##################################################################
-# OPTIONAL STAGE : SEE IF THE RELATION BACKUP-GENSEED IS SYMMETRIC
-##################################################################
   translate_from=$add_opt
   cat ./production_seedgenes/* > production_seedgens
 
   if [ $translate_from == "symbol" ] ; then
-    desaggregate_column_data.rb -i production_seedgens -x 1 > disaggregated_production_seedgens
-    idconverter.rb -d ./translators/symbol_HGNC -i disaggregated_production_seedgens -c 1 | aggregate_column_data.rb -i - -x 0 -a 1 > production_seedgens
+    desaggregate_column_data.py -i production_seedgens -x 2 > disaggregated_production_seedgens
+    standard_name_replacer.py -I ./translators/symbol_HGNC -i disaggregated_production_seedgens -c 2 -u | aggregate_column_data.py -i - -x 1 -a 2 > production_seedgens
     rm disaggregated_production_seedgens
   elif [ $translate_from == "ensemble" ] ; then
-    desaggregate_column_data.rb -i production_seedgens -x 1 > disaggregated_production_seedgens
-    idconverter.rb -d ./translators/Ensemble_HGNC -i disaggregated_production_seedgens -c 1 | aggregate_column_data.rb -i - -x 0 -a 1 > production_seedgens
+    desaggregate_column_data.py -i production_seedgens -x 2 > disaggregated_production_seedgens
+    standard_name_replacer.py -I ./translators/Ensemble_HGNC -i disaggregated_production_seedgens -c 2 -u | aggregate_column_data.py -i - -x 1 -a 2 > production_seedgens
     rm disaggregated_production_seedgens
   fi
 
@@ -264,10 +249,10 @@ elif [ "$exec_mode" == "input_stats" ] ; then
 # OPTIONAL STAGE : STABLISH THE STATS FOR EACH LAYER
 ##################################################################
   
-  if [ -s $output_folder/input_stats ] ; then
-    rm -r $output_folder/input_stats
-  fi
-  mkdir -p $output_folder/input_stats
+  #if [ -s $output_folder/input_stats ] ; then
+  #  rm -r $output_folder/input_stats
+  #fi
+  #mkdir -p $output_folder/input_stats
 
   for annotation in $annotations ; do 
 
@@ -344,7 +329,7 @@ elif [ "$exec_mode" == "ranking" ] ; then
         \\$geneseeds=$input_path/geneseeds
         " | tr -d [:space:]`
 
-        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/rankings/ranking_${kernel}_${annotation} -m 60gb -t 4-00:00:00 $3
+        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/rankings/ranking_${kernel}_${annotation} -m 60gb -t 4-00:00:00 $3 -b
       fi
 
     done
@@ -360,7 +345,7 @@ elif [ "$exec_mode" == "integrate" ] ; then
   
   echo -e "$annotations" | tr -s " " "\n" > uwant
   cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path
-  filter_by_whitelist.rb -f $output_folder/similarity_kernels/ugot_path -c "1;" -t uwant -o $output_folder/similarity_kernels
+  filter_by_whitelist.py -f $output_folder/similarity_kernels/ugot_path -c "1;" -t uwant -o $output_folder/similarity_kernels
   rm uwant
 
   for integration_type in ${integration_types} ; do 
@@ -503,16 +488,17 @@ elif [ "$exec_mode" == "report" ] ; then
 
   references[annotation_grade_metrics]='Gene_seed'
 
+
   for metric in annotations_metrics similarity_metrics filtered_similarity_metrics uncomb_kernel_metrics comb_kernel_metrics ; do
     if [ -s $output_folder/$metric ] ; then
-      create_metric_table.rb $output_folder/$metric ${references[$metric]} $report_folder/kernel_report/parsed_${metric} 
+      create_metric_table.py $output_folder/$metric ${references[$metric]} $report_folder/kernel_report/parsed_${metric} 
     fi
   done
 
   for metric in non_integrated_rank_summary integrated_rank_summary non_integrated_rank_pos_cov integrated_rank_pos_cov non_integrated_rank_positive_stats integrated_rank_positive_stats ; do
     if [ -s $output_folder/$metric ] ; then
       echo "$output_folder/$metric"
-      create_metric_table.rb $output_folder/$metric ${references[$metric]} $report_folder/ranking_report/parsed_${metric} 
+      create_metric_table.py $output_folder/$metric ${references[$metric]} $report_folder/ranking_report/parsed_${metric} 
     fi
   done
 
@@ -537,7 +523,6 @@ elif [ "$exec_mode" == "report" ] ; then
   fi
  ###################
   # Obtaining HTMLS #
-  . ~soft_bio_267/initializes/init_python
 
   #export PATH='/mnt/home/users/pab_001_uma/pedro/dev_py/py_report_html/bin':$PATH
   # TODO check if this external is okey or not.
