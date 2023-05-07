@@ -89,6 +89,7 @@ elif [ "$exec_mode" == "download_translators" ] ; then
 
 elif [ "$exec_mode" == "process_download" ] ; then
   source ~soft_bio_267/initializes/init_python
+  export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/py_cmdtabs/bin:$PATH
 
   mkdir -p ./input/input_processed
 
@@ -99,7 +100,7 @@ elif [ "$exec_mode" == "process_download" ] ; then
   tag_filter[pathway]='REACT:'
   tag_filter[interaction]='RO:0002434' # RO:0002434 <=> interacts with
 
-  # PROCESS ONTOLOGIES #
+  # # PROCESS ONTOLOGIES #
   for sample in phenotype disease function ; do
     zgrep ${tag_filter[$sample]} ./input/input_raw/gene_${sample}.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
     aggregate_column_data.py -i - -x 1 -a 5 > ./input/input_processed/$sample # | head -n 230
@@ -112,33 +113,35 @@ elif [ "$exec_mode" == "process_download" ] ; then
   done
   rm ./input/input_processed/function
 
-  # PROCESS REACTIONS # | head -n 230 
+  # # PROCESS REACTIONS # | head -n 230 
   zgrep "REACT:" ./input/input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | \
-   cut -f 1,5 > ./input/input_processed/pathway
+    cut -f 1,5 > ./input/input_processed/pathway
   
-  # PROCESS PROTEIN INTERACTIONS # | head -n 200 
+  # # PROCESS PROTEIN INTERACTIONS # | head -n 200 
   cat ./input/input_raw/string_data.v11.5.txt | tr -s " " "\t" > string_data.v11.5.txt
   standard_name_replacer.py -i string_data.v11.5.txt -I ./translators/ProtEnsemble_HGNC -c 1,2 -u > ./input/input_raw/interaction_scored && rm string_data.v11.5.txt
   awk '{OFS="\t"}{print $1,$2,$3}' ./input/input_raw/interaction_scored > ./input/input_processed/protein_interaction
 
   # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 100
   sed 's/([0-9]*)//1g' ./input/input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/input_raw/CRISPR_gene_effect_symbol
-  idconverter.rb -d ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_effect_symbol -r 0 > ./input/input_processed/genetic_interaction_effect
+  standard_name_replacer.py -I ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_effect_symbol -c 1 -u --transposed > ./input/input_processed/genetic_interaction_effect
   rm ./input/input_raw/CRISPR_gene_effect_symbol
 
   # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 100
   sed 's/([0-9]*)//1g' ./input/input_raw/CRISPR_gene_exprs | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/input_raw/CRISPR_gene_exprs_symbol
-  idconverter.rb -d ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_exprs_symbol -r 0 > ./input/input_processed/genetic_interaction_exprs
+  standard_name_replacer.py -I ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_exprs_symbol -c 1 -u --transposed > ./input/input_processed/genetic_interaction_exprs
   rm ./input/input_raw/CRISPR_gene_exprs_symbol
+  echo "ey"
 
-  # Translating to GENE-TF interaction.
+  # # Translating to GENE-TF interaction.ls
+
   standard_name_replacer.py -i ./input/input_raw/gene_TF -I ./translators/symbol_HGNC -c 1,2 -u | sed 's/HGNC:/TF:/2g' > ./input/input_processed/gene_TF
 
   # Formatting data_columns
   cut -f 1,14 ./input/input_raw/gene_hgncGroup | sed "s/\"//g" | tr -s "|" "," | awk '{if( $2 != "") print $0}' \
-  | desaggregate_column_data.py -i "-" -x 2 | sed 's/\t/\tGROUP:/1g' | sed 1d > ./input/input_processed/gene_hgncGroup
+   | desaggregate_column_data.py -i "-" -x 2 | sed 's/\t/\tGROUP:/1g' | sed 1d > ./input/input_processed/gene_hgncGroup
 
-  # Formatting PS-Genes
+   # Formatting PS-Genes
 
   get_PS_gene_relation.py -i "/mnt/home/users/bio_267_uma/federogc/projects/backupgenes/input/phenotypic_series/series_data" -o "./input/input_processed/PS_genes"
   desaggregate_column_data.py -i ./input/input_processed/PS_genes -x 2 > ./input/input_processed/tmp 
@@ -262,7 +265,9 @@ elif [ "$exec_mode" == "input_stats" ] ; then
       \\$net2custom=$net2custom
       " | tr -d [:space:]`
 
-      AutoFlow -w $autoflow_scripts/input_stats.af -V $autoflow_vars -o $output_folder/input_stats/${annotation} $add_opt 
+      sleep 2
+
+      AutoFlow -w $autoflow_scripts/input_stats.af -V $autoflow_vars -o $output_folder/input_stats/${annotation} $add_opt -b
 
   done
 

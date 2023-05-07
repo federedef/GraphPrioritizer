@@ -1,6 +1,5 @@
 statistics_profiles){
 	source ~soft_bio_267/initializes/init_python
-	source ~soft_bio_267/initializes/init_ruby
 	echo -e "$annotation" > tracker
 	data=`grep -P '^$annotation' $net2custom | cut -f 2`
 	ont_id=`grep -P '^$annotation' $net2custom | cut -f 3`
@@ -9,9 +8,9 @@ statistics_profiles){
 	?
     if [ "$exec_mode" == "ontology" ] ; then
     	if [ $simil_code == "-" ] ; then 
-			time semtools.rb -i $input_path/input_processed/$data -o ./results.txt -O $ont_id -n -S "," > annotations_metrics
+			time semtools.py -i $input_path/input_processed/$data -o ./results.txt -O $ont_id -n -S "," > annotations_metrics
 	    else
-	    	time semtools.rb -i $input_path/input_processed/$data -o ./results.txt -O $ont_id -n -S "," -c -T $simil_code > annotations_metrics
+	    	time semtools.py -i $input_path/input_processed/$data -o ./results.txt -O $ont_id -n -S "," -c -T $simil_code > annotations_metrics
 		fi
     else 
     	if [ "$data" == "pathway" -o "$data" == "protein_interaction" -o "$data" == "gene_hgncGroup" -o "$data" == "gene_TF" -o "$data" == "gene_PS" ] ; then
@@ -28,7 +27,6 @@ statistics_profiles){
 	else
 		exit 1
 	fi
-	# TODO: Check how to translate this section to python sections. Specially the semtools sections statistics.
 }
 
 
