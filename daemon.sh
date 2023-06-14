@@ -16,11 +16,12 @@ report_folder=$output_folder/report
 
 # Custom variables.
 annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway gene_TF gene_hgncGroup genetic_interaction_effect_bicor gene_PS"
-#annotations="genetic_interaction_effect_bicor"
+annotations="protein_interaction pathway gene_TF gene_hgncGroup genetic_interaction_effect_bicor gene_PS"
 kernels="ka rf ct el node2vec"
 #kernels="ka rf ct el"
 integration_types="mean integration_mean_by_presence"
-net2custom=$input_path'/net2custom' 
+#net2custom=$input_path'/net2custom' 
+net2custom=$input_path'/net2custom_new' 
 control_pos=$input_path'/control_pos'
 control_neg=$input_path'/control_neg'
 production_seedgens=$input_path'/production_seedgens'
@@ -217,35 +218,6 @@ elif [ "$exec_mode" == "get_production_seedgenes" ] ; then
     rm disaggregated_production_seedgens
   fi
 
-elif [ "$exec_mode" == "clusterize_seeds" ] ; then
-
-  mkdir -p $output_folder/clusters_seeds
-
-  seed_group_names=`cat $production_seedgens | cut -f 1 | tr -s "\n" ";"`
-  cat  $output_folder/integrations/*/*/ugot_path > $output_folder/integrations/ugot_path
-
-  for integration_type in ${integration_types} ; do 
-    for kernel in $kernels ; do 
-
-      ugot_path="$output_folder/integrations/ugot_path"
-      folder_kernel_path=`awk '{print $0,NR}' $ugot_path | sort -k 5 -r -u | grep "${integration_type}_$kernel" | awk '{print $4}'`
-      echo ${folder_kernel_path}
-      if [ ! -z ${folder_kernel_path} ] ; then # This kernel for this integration_type is done? 
-        
-        autoflow_vars=`echo "
-        \\$input_path=$input_path,
-        \\$folder_kernel_path=$folder_kernel_path,
-        \\$input_name='general_matrix',
-        \\$production_seedgens=$production_seedgens,
-        \\$seed_group_names=$seed_group_names
-        " | tr -d [:space:]`
-
-        AutoFlow -w $autoflow_scripts/extract_clusters.af -V $autoflow_vars -o $output_folder/clusters_seeds/clusters_${kernel}_${integration_type} $add_opt 
-      fi
-
-    done
-  done
-
 elif [ "$exec_mode" == "input_stats" ] ; then 
 
 ##################################################################
@@ -290,13 +262,16 @@ elif [ "$exec_mode" == "kernels" ] ; then
       \\$kernels_varflow=$kernels_varflow
       " | tr -d [:space:]`
 
-      process_type=`grep -P -w "^$annotation" $net2custom | cut -f 9`
+      process_type=`grep -P -w "^$annotation" $net2custom | cut -f 14`
+      echo $process_type
       if [ "$process_type" == "kernel" ] ; then
         echo "Performing kernels without umap $annotation"
-        AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt 
+        AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/sk/${annotation} $add_opt 
+        #AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt 
       elif [ "$process_type" == "umap" ]; then
         echo "Performing umap for $annotation"
-        AutoFlow -w $autoflow_scripts/sim_umap.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt 
+        AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/sk/${annotation} $add_opt 
+        #AutoFlow -w $autoflow_scripts/sim_umap.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt 
       fi
 
   done
@@ -410,20 +385,6 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
     done
   done
 
-elif [ "$exec_mode" == "get_production_candidates" ] ; then
-  name=$2
-  mkdir -p ./production_seedgenes/output
-  cat  $output_folder/rankings/*/*/non_integrated_rank_ranked_production_candidates > ./production_seedgenes/output/"$name"_non_integrated
-  cat $output_folder/integrated_rankings/*/*/integrated_rank_ranked_production_candidates > ./production_seedgenes/output/"$name"_integrated
-
-elif [ "$exec_mode" == "functional_analysis" ] ; then 
-  input_file=$2
-  folder_name=`date +'%m_%d_%Y'`
-  output_path=$output_folder/functional_analysis_clusters/$folder_name/Functional_analysis_from_clusters
-  mkdir -p $output_folder/functional_analysis_clusters/$folder_name
-  
-  sbatch ./get_FunctionalAnalysis.sh $input_file $output_path
-
 #########################################################
 # STAGE 3 OBTAIN REPORT FROM RESULTS
 #########################################################
@@ -529,30 +490,17 @@ elif [ "$exec_mode" == "report" ] ; then
  ###################
   # Obtaining HTMLS #
 
-  #export PATH='/mnt/home/users/pab_001_uma/pedro/dev_py/py_report_html/bin':$PATH
-  # TODO check if this external is okey or not.
-
   report_html.py -t ./report/templates/kernel_report.txt -d `ls $report_folder/kernel_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_kernel$html_name"
 
-  if [ "$report_type" == "data_quality" ] ; then
-    #`ls $report_folder/ranking_report/* | tr -s [:space:] ","| sed 's/,*$//g'`
-    report_html.py -t ./report/templates/dataQuality_report.txt -d "$report_folder/ranking_report/non_integrated_rank_cdf" -o "report_dataQuality$html_name"
+  if [ -s $output_folder/non_integrated_rank_measures ] ; then
+    get_graph.R -d $report_folder/ranking_report/non_integrated_rank_measures -x "fpr" -y "tpr" -g "kernel" -w "annot" -O "non_integrated_ROC" -o "$report_folder/img"
+  fi
 
-  elif [ "$report_type" == "alg_quality" ] ; then
-    echo "me he activado"
+  if [ -s $output_folder/integrated_rank_measures ] ; then
+    get_graph.R -d $report_folder/ranking_report/integrated_rank_measures -x "fpr" -y "tpr" -g "kernel" -w "integration" -O "integrated_ROC" -o "$report_folder/img"
+  fi
 
-    if [ -s $output_folder/non_integrated_rank_measures ] ; then
-      get_graph.R -d $report_folder/ranking_report/non_integrated_rank_measures -x "fpr" -y "tpr" -g "kernel" -w "annot" -O "non_integrated_ROC" -o "$report_folder/img"
-    fi
-
-    if [ -s $output_folder/integrated_rank_measures ] ; then
-      get_graph.R -d $report_folder/ranking_report/integrated_rank_measures -x "fpr" -y "tpr" -g "kernel" -w "integration" -O "integrated_ROC" -o "$report_folder/img"
-    fi
-
-    report_html.py -t ./report/templates/ranking_report.txt -d `ls $report_folder/ranking_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_algQuality$html_name"
-
-fi
-
+  report_html.py -t ./report/templates/ranking_report.txt -d `ls $report_folder/ranking_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_algQuality$html_name"
 
 
 #########################################################

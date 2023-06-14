@@ -1,78 +1,37 @@
-%calc_similarity){
+%get_similarity){
 	resources: -m '60gb' -t '4-00:00:00'
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
 	source ~soft_bio_267/initializes/init_python
-	source ~soft_bio_267/initializes/init_R
-
+	source ~/dev_py/myvenv/bin/activate
+	#source ~soft_bio_267/initializes/init_R
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	echo -e "$annotation_sim" > tracker
 	similarity_path=`pwd`
 	#net_id=`grep -P '^$annotation' $net2custom | cut -f 1`
 	source=`grep -P -w '^$annotation' $net2custom | cut -f 2`
-	ont_id=`grep -P -w '^$annotation' $net2custom | cut -f 3`
-	exec_mode=`grep -P -w '^$annotation' $net2custom | cut -f 4`
-	simil_code=`grep -P -w '^$annotation' $net2custom | cut -f 5`
-	custom_parameters=`grep -P -w '^$annotation' $net2custom | cut -f 10`
+	format=`grep -P -w '^$annotation' $net2custom | cut -f 3`
+	layers=`grep -P -w '^$annotation' $net2custom | cut -f 4`
+	ontology=`grep -P -w '^$annotation' $net2custom | cut -f 5`
 	?
-	if [ "$exec_mode" == "ontology" ] ; then
-		# Perform gen-gen similiratiry list
-		if [ $simil_code == "-" ] ; then 
-			time semtools.py -i $input_path/input_processed/$source -o ./results.txt -O $ont_id -s lin -S "," -c -o $annotation_similarity_list
-	    else
-	    	time semtools.py -i $input_path/input_processed/$source -o ./results.txt -O $ont_id -s lin -S "," -c -T $simil_code -o $annotation_similarity_list
-		fi
-		awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $annotation_similarity_list > similarity_list # Set diagonal to 0.
-    elif [ "$exec_mode" == "network" ] ; then
-    	if [ "$annotation" == "pathway" ] ; then 
-    		# Perform a projection layer with jaccard
-    		netanalyzer.py -i $input_path/input_processed/$source -a "$annotation_similarity_list" -f pair -l 'gen,HGNC:;pathway,REACT:' -m "jaccard" -u 'gen;pathway'
-    		# Perform a projection layer with counts
-    		netanalyzer.py -i $input_path/input_processed/$source -a "counts_similarity_list" -f pair -l 'gen,HGNC:;pathway,REACT:' -m "counts" -u 'gen;pathway'
-    		# Select just the interactions of jaccard filtering by the counts values.
-    		paste $annotation_similarity_list <(cut -f 3 counts_similarity_list) | awk 'BEGIN{FS="\t";OFS="\t"}{if( $4 >= 3 ) print $1,$2,$3}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list
-    		#awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' $annotation_similarity_list > similarity_list # Set diagonal to 0.
-    	elif [ "$annotation" == "gene_TF" ] ; then
-    		# Perform a projection layer with jaccard
-    		netanalyzer.py -i $input_path/input_processed/$source -a "$annotation_similarity_list" -f pair -l 'gen,HGNC:;tf,TF:' -m "jaccard" -u 'gen;tf'
-    		# Perform a projection layer with counts
-    		netanalyzer.py -i $input_path/input_processed/$source -a "counts_similarity_list" -f pair -l 'gen,HGNC:;tf,TF:' -m "counts" -u 'gen;tf'
-    		# Select just the interactions of jaccard filtering by the counts values.
-    		paste $annotation_similarity_list <(cut -f 3 counts_similarity_list) | awk 'BEGIN{FS="\t";OFS="\t"}{if( $4 >= 3 ) print $1,$2,$3}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list
-    		#netanalyzer.py -i $input_path/input_processed/$annotation -a "similarity_list" -t pair -l 'gen,HGNC:;tf,TF:' -m "jaccard" -u 'gen;tf'
-    	elif [ "$annotation" == "gene_hgncGroup" ] ; then
-    		netanalyzer.py -i $input_path/input_processed/$source -a "similarity_list" -f pair -l 'gen,HGNC:;group,GROUP:' -m "jaccard" -u 'gen;group'
-    	elif [ "$source" == "genetic_interaction_effect" -o "$source" == "genetic_interaction_exprs" ] ; then
-    		echo "$custom_parameters"
-    		build_corNetwork.R -i $input_path/input_processed/$source -s "\t" -O $annotation_similarity_list -m $custom_parameters -t "greater" -f
-    		cat $annotation_similarity_list | awk '{if ( $3 != "NA" ) {print $0}}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list # sed 's/HGNC./HGNC:/g'|
-    	elif [ "$annotation" == "gene_PS" ] ; then
-    		# Perform a projection layer with jaccard
-    		netanalyzer.py -i $input_path/input_processed/$source -a "$annotation_similarity_list" -f pair -l 'gen,HGNC:;ps,PS' -m "jaccard" -u 'gen;ps'
-    		# Perform a projection layer with counts
-    		netanalyzer.py -i $input_path/input_processed/$source -a "counts_similarity_list" -f pair -l 'gen,HGNC:;ps,PS' -m "counts" -u 'gen;ps'
-    		# Select just the interactions of jaccard filtering by the counts values.
-    		paste $annotation_similarity_list <(cut -f 3 counts_similarity_list) | awk 'BEGIN{FS="\t";OFS="\t"}{if( $4 >= 1 ) print $1,$2,$3}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list
+	if [ "$layers" == "-" ] ; then
+    	build_corNetwork.R -i $input_path/input_processed/$source -s "\t" -O $annotation_similarity_list -m $custom_parameters -t "greater" -f
+    	cat $annotation_similarity_list | awk '{if ( $3 != "NA" ) {print $0}}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list 
+    	text2binary_matrix.py -i similarity_list -o similarity_matrix_bin -t pair -s > stats_from_matrix
+    else
+    	head -n1 $net2custom | cut -f 1-11 > custom
+    	grep -P -w '^$annotation' $net2custom | cut -f 1-11 >> custom
+    	custom2dsl.py -i custom -o dsl
+    	if [ "$ontology" != "-" ] ; then
+    		desaggregate_column_data.py -i $input_path/input_processed/$source -x 2 > ont_profs
+    		netanalyzer.py -i ont_profs -f $format -l $layers  -O "ont:`semtools.py -d list | grep $ontology`" --dsl_script dsl 
     	else
-    		# Keep it without changes
-    		cp $input_path/input_processed/$annotation ./similarity_list
+    		netanalyzer.py -i $input_path/input_processed/$source -f $format -l $layers --dsl_script dsl 
     	fi
     fi
-
-    # TODO: Set diagonal to 0.
-
-	if [ ! -s similarity_list ] ; then 
-		exit 1
-	fi
-}
-
-%list2matrix_similarity){
-	resources: -m '60gb' -t '1-00:00:00'
-	source ~soft_bio_267/initializes/init_python
-	echo -e "$annotation_sim" > tracker
-	?
-	text2binary_matrix.py -i calc_similarity)/similarity_list -o similarity_matrix_bin -t pair -s > similarity_metrics
-	#mv similarity_matrix_bin similarity_matrix_bin.npy
-	if [ -s similarity_metrics ] ; then 
+    mv similarity_matrix_bin_rowIds similarity_matrix_bin.lst
+	if [ -s stats_from_matrix ] ; then 
+    	mv stats_from_matrix similarity_metrics
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' similarity_metrics > tmp
 		mv tmp similarity_metrics
 	else
@@ -81,34 +40,25 @@
 }
 
 
-%filter_cutoff){
+filter_net){
 	resources: -m '60gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_python
+	source ~/dev_py/myvenv/bin/activate
 	echo -e "$annotation_sim" > tracker
-	cutoff_filter=`grep -P -w '^$annotation' $net2custom | cut -f 6`
-	binarize_factor=`grep -P -w '^$annotation' $net2custom | cut -f 8`
-	cp list2matrix_similarity)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
+	cutoff_filter=`grep -P -w '^$annotation' $net2custom | cut -f 12`
+	echo $cutoff_filter > eyy
+	cp get_similarity)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
 	if [ -s filtered_similarity_metrics ] ;then
 		rm filtered_similarity_metrics
 	fi
-
-	if [ ! $cutoff_filter == "-" ] ; then
-		if [ $binarize_factor == "B" ] ; then
-			?
-			text2binary_matrix.py -i list2matrix_similarity)/similarity_matrix_bin.npy -o similarity_matrix_bin -t bin -B $cutoff_filter -s > filtered_similarity_metrics
-		elif [ $binarize_factor == "NB" ] ; then
-			text2binary_matrix.py -i list2matrix_similarity)/similarity_matrix_bin.npy -o similarity_matrix_bin -t bin -c $cutoff_filter -s > filtered_similarity_metrics
-		fi
-		#mv similarity_matrix_bin similarity_matrix_bin.npy
-		if [ -s filtered_similarity_metrics ] ; then 
-			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' filtered_similarity_metrics > tmp
-			mv tmp filtered_similarity_metrics
-		else
-			exit 1
-		fi
+	?
+	if [ ! $cutoff_filter == "-" -a ! $cutoff_filter == "False" ] ; then
+		head -n1 $net2custom | cut -f 11 > custom
+    	echo $cutoff_filter >> custom
+    	custom2dsl.py -i custom -o dsl
+    	netanalyzer.py -i get_similarity)/similarity_matrix_bin.npy -f "bin" -l "gene" -n similarity_matrix_bin.lst --dsl_script dsl > filtered_metrics
 	else 
-		cp list2matrix_similarity)/similarity_matrix_bin.npy ./similarity_matrix_bin.npy
-        cp list2matrix_similarity)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
+		ln -s get_similarity)/similarity_matrix_bin.npy ./similarity_matrix_bin.npy
     fi
 
     if [ ! -s similarity_matrix_bin.npy ] ; then
@@ -116,91 +66,54 @@
     fi
 }
 
-%filter_disparity){
-	resources: -c 8 -m '60gb' -t '5-00:00:00'
-	source ~soft_bio_267/initializes/init_R
-	source ~soft_bio_267/initializes/init_python
-	echo -e "$annotation_sim" > tracker
-	disparity_filter=`grep -P -w '^$annotation' $net2custom | cut -f 7`
-	binarize_factor=`grep -P -w '^$annotation' $net2custom | cut -f 8`
-	cp filter_cutoff)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
-	if [ -s filtered_similarity_metrics ] ;then
-		rm filtered_similarity_metrics
-	fi
-	export OMP_NUM_THREADS=[cpu]
 
-	if [ $disparity_filter == "F" ] ; then
-		if [ $binarize_factor == "B" ] ; then
-		    ?
-			custom_disparity_filter.R -i filter_cutoff)/similarity_matrix_bin.npy -o "./" -O similarity_matrix_bin -n filter_cutoff)/similarity_matrix_bin.lst -b
-		elif [ $binarize_factor == "NB" ] ; then
-			custom_disparity_filter.R -i filter_cutoff)/similarity_matrix_bin.npy -o "./" -O similarity_matrix_bin -n filter_cutoff)/similarity_matrix_bin.lst
-		fi
-		text2binary_matrix.py -i similarity_matrix_bin.npy -t bin -o similarity_matrix_bin_undo -s > filtered_similarity_metrics
-		if [ -s similarity_matrix_bin_undo.npy ] ; then
-			rm similarity_matrix_bin_undo.npy
-			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' filtered_similarity_metrics > tmp
-			mv tmp filtered_similarity_metrics
-		else
-			exit 1
-		fi
-	elif [ $disparity_filter == "-" ] ; then
-		cp filter_cutoff)/similarity_matrix_bin.npy ./similarity_matrix_bin.npy
-        cp filter_cutoff)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
-    fi
+# calc_kernel_[$kernels_varflow]){
+# 	resources: -c 16 -m '240gb' -t '2-00:00:00'
+# 	# input: Similarity binary matrix
+# 	# output: binary Kernel from similarity matrix + metrics
+# 	# source ~soft_bio_267/initializes/init_netanalyzer
+# 	source ~soft_bio_267/initializes/init_python
+# 	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
+# 	echo -e "$annotation_(*)\t$annotation\t(*)" > tracker
+# 	cp filter_disparity)/similarity_matrix_bin.lst kernel_matrix_bin.lst # To pass the list of node names.
+# 	kern_net_path=`pwd`
+# 	export OMP_NUM_THREADS=[cpu]
+# 	if [ -s ugot_path ] ; then
+# 		rm ugot_path
+# 	fi
+# 	if [ -s kernel_matrix_bin ] ; then
+# 		rm kernel_matrix_bin
+# 	fi
+# 	?
+# 	if [ "(*)" == "node2vec" ] ; then
+# 		nod2vec.py -i filter_disparity)/similarity_matrix_bin.npy 
+# 		#netanalyzer.py -i filter_disparity)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin --both_repre_formats --embedding_add_options "'window':1,'p':1,'seed':123, 'workers': 8, 'quiet': False, 'walk_length' :30, 'dimensions': 10, 'num_walks' : 10"                                                                
+# 	else
+# 		netanalyzer.py -i filter_disparity)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
+# 	fi
 
-    if [ ! -s similarity_matrix_bin.npy ] ; then
-    	exit 1
-    fi
-}
+# 	if [ -s kernel_matrix_bin.npy ] ; then
+# 		echo -e "$annotation_(*)\t$annotation\t(*)\t$kern_net_path" > ugot_path 
+# 	else 
+#   		exit 1
+#   	fi
+# }
 
-calc_kernel_[$kernels_varflow]){
-	resources: -c 16 -m '240gb' -t '2-00:00:00'
-	# input: Similarity binary matrix
-	# output: binary Kernel from similarity matrix + metrics
-	# source ~soft_bio_267/initializes/init_netanalyzer
-	source ~soft_bio_267/initializes/init_python
-	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
-	echo -e "$annotation_(*)\t$annotation\t(*)" > tracker
-	cp filter_disparity)/similarity_matrix_bin.lst kernel_matrix_bin.lst # To pass the list of node names.
-	kern_net_path=`pwd`
-	export OMP_NUM_THREADS=[cpu]
-	if [ -s ugot_path ] ; then
-		rm ugot_path
-	fi
-	if [ -s kernel_matrix_bin ] ; then
-		rm kernel_matrix_bin
-	fi
-	?
-	if [ "(*)" == "node2vec" ] ; then
-		nod2vec.py -i filter_disparity)/similarity_matrix_bin.npy 
-		#netanalyzer.py -i filter_disparity)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin --both_repre_formats --embedding_add_options "'window':1,'p':1,'seed':123, 'workers': 8, 'quiet': False, 'walk_length' :30, 'dimensions': 10, 'num_walks' : 10"                                                                
-	else
-		netanalyzer.py -i filter_disparity)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
-	fi
-
-	if [ -s kernel_matrix_bin.npy ] ; then
-		echo -e "$annotation_(*)\t$annotation\t(*)\t$kern_net_path" > ugot_path 
-	else 
-  		exit 1
-  	fi
-}
-
-stats_kernels_[$kernels_varflow]){
-	resources: -m '120gb' -t '1-00:00:00'
-	source ~soft_bio_267/initializes/init_python
-	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
-	if [ -s tracker ] ; then
-		rm tracker
-		# TODO: Remove this part and check
-	fi
-	ln -s !calc_kernel_*!/tracker
-	?
-	text2binary_matrix.py -i !calc_kernel_*!/kernel_matrix_bin.npy -o kernel_matrix_undo -t bin -s > kernel_metrics
-	if [ -s kernel_matrix_undo.npy ] ; then
-		rm kernel_matrix_undo.npy
-		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' kernel_metrics > uncomb_kernel_metrics
-	else 
-  		exit 1
-  	fi
-}
+# stats_kernels_[$kernels_varflow]){
+# 	resources: -m '120gb' -t '1-00:00:00'
+# 	source ~soft_bio_267/initializes/init_python
+# 	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
+# 	if [ -s tracker ] ; then
+# 		rm tracker
+# 		# TODO: Remove this part and check
+# 	fi
+# 	ln -s !calc_kernel_*!/tracker
+# 	?
+# 	text2binary_matrix.py -i !calc_kernel_*!/kernel_matrix_bin.npy -o kernel_matrix_undo -t bin -s > kernel_metrics
+# 	if [ -s kernel_matrix_undo.npy ] ; then
+# 		rm kernel_matrix_undo.npy
+# 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' kernel_metrics > uncomb_kernel_metrics
+# 	else 
+#   		exit 1
+#   	fi
+# }
