@@ -74,17 +74,17 @@ if custom_options.get("Comb_mat") != "-" and custom_options.get("Comb_mat") is n
 	dsl += add_dsl("mat_vs_mat_operation", custom_options["Comb_mat"])
 
 if custom_options.get("Write_mat") != "-" and custom_options.get("Write_mat") is not None :
-	dsl += add_dsl("write_mat", custom_options["Write_mat"])
+	dsl += add_dsl("write_matrix", custom_options["Write_mat"])
 	# Now we prepare the parameters needed.
 	dsl += add_dsl("write_stats_from_matrix", custom_options["Write_mat"], mod_parameters = lambda x: x.split(" ")[0])
 
 if custom_options.get("Filter") != "-" and custom_options.get("Filter") is not None :
 	# Get filter
-	dsl += add_dsl("filter_mat", custom_options["Filter"])
+	dsl += add_dsl("filter_matrix", custom_options["Filter"])
 	# Extract adjacency
-	dsl += add_dsl("write_mat", "(modified_mats,)", mod_parameters = lambda x: x.split(" ")[0] + " output_filename='similarity_matrix_bin'")
+	dsl += add_dsl("write_matrix", "mat_keys=('modified_mats',('gene','gene'),'filtered');output_filename='similarity_matrix_bin'")
 	# Get statistics
-	dsl += add_dsl("write_stats_from_matrix", custom_options["Filter"], mod_parameters = lambda x: x.split(" ")[0])
+	dsl += add_dsl("write_stats_from_matrix", "mat_keys=('modified_mats',('gene','gene'),'filtered');output_filename='stats_from_matrix'")
 
 with open(options.output_name, "w") as f:
 	f.write(dsl)

@@ -1,39 +1,47 @@
-%get_similarity){
+get_similarity){
 	resources: -m '60gb' -t '4-00:00:00'
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
 	source ~soft_bio_267/initializes/init_python
 	source ~/dev_py/myvenv/bin/activate
-	#source ~soft_bio_267/initializes/init_R
+	source ~soft_bio_267/initializes/init_R
 	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	echo -e "$annotation_sim" > tracker
 	similarity_path=`pwd`
-	#net_id=`grep -P '^$annotation' $net2custom | cut -f 1`
-	source=`grep -P -w '^$annotation' $net2custom | cut -f 2`
-	format=`grep -P -w '^$annotation' $net2custom | cut -f 3`
-	layers=`grep -P -w '^$annotation' $net2custom | cut -f 4`
-	ontology=`grep -P -w '^$annotation' $net2custom | cut -f 5`
+
+	net2json_parser.py --net_id "$annotation" --json_path $net2custom > net_params
+	source=`grep -P -w '^Source' net_params | cut -f 2`
+	format=`grep -P -w '^Format' net_params | cut -f 2`
+	layers=`grep -P -w '^Layers' net_params | cut -f 2`
+	ontology=`grep -P -w '^Ontology' net_params | cut -f 2`
+	custom_parameters=`grep -P -w '^Custom' net_params | cut -f 2`
+	grep -P -w '^dsl' net_params | cut -f 2 > dsl
+	echo -e "$source\t$format\t$layers\t$ontology" > parametros_prueba
 	?
 	if [ "$layers" == "-" ] ; then
+		# TODO: This section must be remove
+		summInfo_genetic_interaction.py -f $input_path/input_processed/$source > data_list
+	    get_stats.py -d data_list > preproc_metrics
     	build_corNetwork.R -i $input_path/input_processed/$source -s "\t" -O $annotation_similarity_list -m $custom_parameters -t "greater" -f
     	cat $annotation_similarity_list | awk '{if ( $3 != "NA" ) {print $0}}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list 
-    	text2binary_matrix.py -i similarity_list -o similarity_matrix_bin -t pair -s > stats_from_matrix
-    else
-    	head -n1 $net2custom | cut -f 1-11 > custom
-    	grep -P -w '^$annotation' $net2custom | cut -f 1-11 >> custom
-    	custom2dsl.py -i custom -o dsl
+    	netanalyzer.py -i similarity_list -f "pair" -l "gene,HGNC:" --dsl_script dsl
+    	#text2binary_matrix.py -i similarity_list -o similarity_matrix_bin -t pair -s > stats_from_matrix
+    else                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
     	if [ "$ontology" != "-" ] ; then
     		desaggregate_column_data.py -i $input_path/input_processed/$source -x 2 > ont_profs
     		netanalyzer.py -i ont_profs -f $format -l $layers  -O "ont:`semtools.py -d list | grep $ontology`" --dsl_script dsl 
     	else
     		netanalyzer.py -i $input_path/input_processed/$source -f $format -l $layers --dsl_script dsl 
     	fi
+    	cut -f 2,3 preproc_metrics > tmp
+    	mv tmp preproc_metrics
     fi
     mv similarity_matrix_bin_rowIds similarity_matrix_bin.lst
-	if [ -s stats_from_matrix ] ; then 
-    	mv stats_from_matrix similarity_metrics
-		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' similarity_metrics > tmp
-		mv tmp similarity_metrics
+
+
+	if [ -s stats_from_matrix -a preproc_metrics ] ; then 
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' stats_from_matrix > similarity_metrics
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' preproc_metrics > annotations_metrics
 	else
 		exit 1
 	fi
@@ -41,25 +49,26 @@
 
 
 filter_net){
-	resources: -m '60gb' -t '1-00:00:00'
+	resources: -m '20gb' -t '0-00:10:00'
 	source ~soft_bio_267/initializes/init_python
 	source ~/dev_py/myvenv/bin/activate
 	echo -e "$annotation_sim" > tracker
-	cutoff_filter=`grep -P -w '^$annotation' $net2custom | cut -f 12`
-	echo $cutoff_filter > eyy
+	net2json_parser.py --net_id "$annotation" --json_path $net2custom > net_params
+	grep -P -w '^Filter' net_params | cut -f 2 > dsl_filter
 	cp get_similarity)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
-	if [ -s filtered_similarity_metrics ] ;then
-		rm filtered_similarity_metrics
+	if [ -s stats_from_matrix ] ;then
+		rm stats_from_matrix
 	fi
 	?
 	if [ ! $cutoff_filter == "-" -a ! $cutoff_filter == "False" ] ; then
-		head -n1 $net2custom | cut -f 11 > custom
-    	echo $cutoff_filter >> custom
-    	custom2dsl.py -i custom -o dsl
-    	netanalyzer.py -i get_similarity)/similarity_matrix_bin.npy -f "bin" -l "gene" -n similarity_matrix_bin.lst --dsl_script dsl > filtered_metrics
+    	netanalyzer.py -i get_similarity)/similarity_matrix_bin.npy -f "bin" -l "gene" -n similarity_matrix_bin.lst --dsl_script dsl_filter
 	else 
 		ln -s get_similarity)/similarity_matrix_bin.npy ./similarity_matrix_bin.npy
     fi
+
+    if [ -s stats_from_matrix ] ; then 
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' stats_from_matrix > filtered_similarity_metrics
+	fi
 
     if [ ! -s similarity_matrix_bin.npy ] ; then
     	exit 1
@@ -67,53 +76,55 @@ filter_net){
 }
 
 
-# calc_kernel_[$kernels_varflow]){
-# 	resources: -c 16 -m '240gb' -t '2-00:00:00'
-# 	# input: Similarity binary matrix
-# 	# output: binary Kernel from similarity matrix + metrics
-# 	# source ~soft_bio_267/initializes/init_netanalyzer
-# 	source ~soft_bio_267/initializes/init_python
-# 	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
-# 	echo -e "$annotation_(*)\t$annotation\t(*)" > tracker
-# 	cp filter_disparity)/similarity_matrix_bin.lst kernel_matrix_bin.lst # To pass the list of node names.
-# 	kern_net_path=`pwd`
-# 	export OMP_NUM_THREADS=[cpu]
-# 	if [ -s ugot_path ] ; then
-# 		rm ugot_path
-# 	fi
-# 	if [ -s kernel_matrix_bin ] ; then
-# 		rm kernel_matrix_bin
-# 	fi
-# 	?
-# 	if [ "(*)" == "node2vec" ] ; then
-# 		nod2vec.py -i filter_disparity)/similarity_matrix_bin.npy 
-# 		#netanalyzer.py -i filter_disparity)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin --both_repre_formats --embedding_add_options "'window':1,'p':1,'seed':123, 'workers': 8, 'quiet': False, 'walk_length' :30, 'dimensions': 10, 'num_walks' : 10"                                                                
-# 	else
-# 		netanalyzer.py -i filter_disparity)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
-# 	fi
+calc_kernel_[$kernels_varflow]){
+	resources: -c 16 -m '240gb' -t '2-00:00:00'
+	# input: Similarity binary matrix
+	# output: binary Kernel from similarity matrix + metrics
+	# source ~soft_bio_267/initializes/init_netanalyzer
+	source ~soft_bio_267/initializes/init_python
+	source ~/dev_py/myvenv/bin/activate
+	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
+	echo -e "$annotation_(*)\t$annotation\t(*)" > tracker
+	cp filter_net)/similarity_matrix_bin.lst kernel_matrix_bin.lst # To pass the list of node names.
+	kern_net_path=`pwd`
+	export OMP_NUM_THREADS=[cpu]
+	if [ -s ugot_path ] ; then
+		rm ugot_path
+	fi
+	if [ -s kernel_matrix_bin ] ; then
+		rm kernel_matrix_bin
+	fi
+	?
+	if [ "(*)" == "node2vec" ] ; then
+		#nod2vec.py -i filter_net)/similarity_matrix_bin.npy 
+		netanalyzer.py -i filter_net)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin --both_repre_formats                                                                 
+	else
+		netanalyzer.py -i filter_net)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
+	fi
 
-# 	if [ -s kernel_matrix_bin.npy ] ; then
-# 		echo -e "$annotation_(*)\t$annotation\t(*)\t$kern_net_path" > ugot_path 
-# 	else 
-#   		exit 1
-#   	fi
-# }
+	if [ -s kernel_matrix_bin.npy ] ; then
+		echo -e "$annotation_(*)\t$annotation\t(*)\t$kern_net_path" > ugot_path 
+	else 
+  		exit 1
+  	fi
+}
 
-# stats_kernels_[$kernels_varflow]){
-# 	resources: -m '120gb' -t '1-00:00:00'
-# 	source ~soft_bio_267/initializes/init_python
-# 	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
-# 	if [ -s tracker ] ; then
-# 		rm tracker
-# 		# TODO: Remove this part and check
-# 	fi
-# 	ln -s !calc_kernel_*!/tracker
-# 	?
-# 	text2binary_matrix.py -i !calc_kernel_*!/kernel_matrix_bin.npy -o kernel_matrix_undo -t bin -s > kernel_metrics
-# 	if [ -s kernel_matrix_undo.npy ] ; then
-# 		rm kernel_matrix_undo.npy
-# 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' kernel_metrics > uncomb_kernel_metrics
-# 	else 
-#   		exit 1
-#   	fi
-# }
+stats_kernels_[$kernels_varflow]){
+	resources: -m '120gb' -t '1-00:00:00'
+	source ~soft_bio_267/initializes/init_python
+	source ~/dev_py/myvenv/bin/activate
+	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
+	if [ -s tracker ] ; then
+		rm tracker
+		# TODO: Remove this part and check
+	fi
+	ln -s !calc_kernel_*!/tracker
+	?
+	text2binary_matrix.py -i !calc_kernel_*!/kernel_matrix_bin.npy -o kernel_matrix_undo -t bin -s > kernel_metrics
+	if [ -s kernel_matrix_undo.npy ] ; then
+		rm kernel_matrix_undo.npy
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' kernel_metrics > uncomb_kernel_metrics
+	else 
+  		exit 1
+  	fi
+}

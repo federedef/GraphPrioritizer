@@ -16,12 +16,14 @@ report_folder=$output_folder/report
 
 # Custom variables.
 annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway gene_TF gene_hgncGroup genetic_interaction_effect_bicor gene_PS"
-annotations="protein_interaction pathway gene_TF gene_hgncGroup genetic_interaction_effect_bicor gene_PS"
+#annotations="protein_interaction pathway gene_TF gene_hgncGroup genetic_interaction_effect_bicor gene_PS"
+#annotations="pathway disease genetic_interaction_effect_bicor"
+#annotations="genetic_interaction_effect_bicor"
 kernels="ka rf ct el node2vec"
 #kernels="ka rf ct el"
 integration_types="mean integration_mean_by_presence"
 #net2custom=$input_path'/net2custom' 
-net2custom=$input_path'/net2custom_new' 
+net2custom=$input_path'/net2json2' 
 control_pos=$input_path'/control_pos'
 control_neg=$input_path'/control_neg'
 production_seedgens=$input_path'/production_seedgens'
@@ -100,6 +102,9 @@ elif [ "$exec_mode" == "process_download" ] ; then
   tag_filter[function]='GO:'
   tag_filter[pathway]='REACT:'
   tag_filter[interaction]='RO:0002434' # RO:0002434 <=> interacts with
+  tag_filter[molecular_function]='GO:0003674'
+  tag_filter[biological_process]='GO:0008150'
+  tag_filter[cellular_component]='GO:0005575'
 
   # # PROCESS ONTOLOGIES #
   for sample in phenotype disease function ; do
@@ -107,14 +112,23 @@ elif [ "$exec_mode" == "process_download" ] ; then
     aggregate_column_data.py -i - -x 1 -a 5 > ./input/input_processed/$sample # | head -n 230
   done
 
+  ## Creating paco files for hpo.
+  semtools.py -i ./input/input_processed/phenotype -o ./input/input_processed/filtered_phenotype -O HPO -S "," -c -T HP:0000001
+  cat ./input/input_processed/filtered_phenotype | tr -s "|" "," > ./input/input_processed/phenotype
+  rm ./input/input_processed/filtered_phenotype
+  rm rejected_profs
+
   ## Creating paco files for each go branch.
   gene_ontology=( molecular_function cellular_component biological_process )
   for branch in ${gene_ontology[@]} ; do
-    cp ./input/input_processed/function ./input/input_processed/$branch
+    semtools.py -i ./input/input_processed/function -o ./input/input_processed/filtered_$branch -O GO -S "," -c -T ${tag_filter[$branch]}
+    cat ./input/input_processed/filtered_$branch | tr -s "|" "," > ./input/input_processed/$branch
+    rm ./rejected_profs
+    rm ./input/input_processed/filtered_$branch
   done
   rm ./input/input_processed/function
 
-  # # PROCESS REACTIONS # | head -n 230 
+  # PROCESS REACTIONS # | head -n 230 
   zgrep "REACT:" ./input/input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | \
     cut -f 1,5 > ./input/input_processed/pathway
   
@@ -132,7 +146,6 @@ elif [ "$exec_mode" == "process_download" ] ; then
   sed 's/([0-9]*)//1g' ./input/input_raw/CRISPR_gene_exprs | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/input_raw/CRISPR_gene_exprs_symbol
   standard_name_replacer.py -I ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_exprs_symbol -c 1 -u --transposed > ./input/input_processed/genetic_interaction_exprs
   rm ./input/input_raw/CRISPR_gene_exprs_symbol
-  echo "ey"
 
   # # Translating to GENE-TF interaction.ls
 
@@ -251,6 +264,7 @@ elif [ "$exec_mode" == "kernels" ] ; then
   #######################################################
   #STAGE 2.1 PROCESS SIMILARITY AND OBTAIN KERNELS
   mkdir -p $output_folder/similarity_kernels
+  mkdir -p $output_folder/sk
 
 
   for annotation in $annotations ; do 
@@ -262,8 +276,9 @@ elif [ "$exec_mode" == "kernels" ] ; then
       \\$kernels_varflow=$kernels_varflow
       " | tr -d [:space:]`
 
-      process_type=`grep -P -w "^$annotation" $net2custom | cut -f 14`
+      process_type=`net2json_parser.py --net_id $annotation --json_path $net2custom | grep -P -w '^Process' | cut -f 2`
       echo $process_type
+      net2json_parser.py --net_id $annotation --json_path $net2custom
       if [ "$process_type" == "kernel" ] ; then
         echo "Performing kernels without umap $annotation"
         AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/sk/${annotation} $add_opt 
@@ -285,12 +300,13 @@ elif [ "$exec_mode" == "ranking" ] ; then
   mkdir -p $output_folder/rankings
   method=$2
   
-  cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path
-
+  #cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path
+  cat  $output_folder/sk/*/*/ugot_path > $output_folder/sk/ugot_path
   for annotation in $annotations ; do 
     for kernel in $kernels ; do 
 
-      ugot_path="$output_folder/similarity_kernels/ugot_path"
+      #ugot_path="$output_folder/similarity_kernels/ugot_path"
+      ugot_path="$output_folder/sk/ugot_path"
       folder_kernel_path=`awk '{print $0,NR}' $ugot_path | sort -k 5 -r -u | grep "${annotation}_$kernel" | awk '{print $4}'`
       echo ${folder_kernel_path}
       if [ ! -z ${folder_kernel_path} ] ; then # This kernel for this annotation is done? 
@@ -324,13 +340,13 @@ elif [ "$exec_mode" == "integrate" ] ; then
   #cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path # What I got?
   
   echo -e "$annotations" | tr -s " " "\n" > uwant
-  cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path
-  filter_by_whitelist.py -f $output_folder/similarity_kernels/ugot_path -c "1;" -t uwant -o $output_folder/similarity_kernels
+  cat  $output_folder/sk/*/*/ugot_path > $output_folder/sk/ugot_path
+  filter_by_whitelist.py -f $output_folder/sk/ugot_path -c "1" -t uwant -o $output_folder/sk
   rm uwant
 
   for integration_type in ${integration_types} ; do 
 
-      ugot_path="$output_folder/similarity_kernels/filtered_ugot_path"
+      ugot_path="$output_folder/sk/filtered_ugot_path"
 
       autoflow_vars=`echo "
       \\$integration_type=${integration_type},
@@ -393,20 +409,20 @@ elif [ "$exec_mode" == "report" ] ; then
   source ~soft_bio_267/initializes/init_ruby
   source ~soft_bio_267/initializes/init_python
   source ~soft_bio_267/initializes/init_R
-  report_type=$2
-  html_name=$3
+  #report_type=$2
+  html_name=$2
   
-  #################################
-  # Setting up the report section #
-  find $report_folder/ -mindepth 2 -delete
-  find $output_folder/ -maxdepth 1 -type f -delete
+  # #################################
+  # # Setting up the report section #
+  # find $report_folder/ -mindepth 2 -delete
+  # find $output_folder/ -maxdepth 1 -type f -delete
 
   mkdir -p $report_folder/kernel_report
   mkdir -p $report_folder/ranking_report
   mkdir -p $report_folder/img
 
   declare -A original_folders
-  original_folders[annotations_metrics]='input_stats'
+  original_folders[annotations_metrics]='similarity_kernels'
   original_folders[similarity_metrics]='similarity_kernels'
   original_folders[filtered_similarity_metrics]='similarity_kernels'
   original_folders[uncomb_kernel_metrics]='similarity_kernels'
@@ -453,7 +469,6 @@ elif [ "$exec_mode" == "report" ] ; then
   references[integrated_rank_positive_stats]='Sample,Integration,Kernel,group_seed'
 
   references[annotation_grade_metrics]='Gene_seed'
-
 
   for metric in annotations_metrics similarity_metrics filtered_similarity_metrics uncomb_kernel_metrics comb_kernel_metrics ; do
     if [ -s $output_folder/$metric ] ; then

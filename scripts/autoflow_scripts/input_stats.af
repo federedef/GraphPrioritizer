@@ -1,11 +1,60 @@
 statistics_profiles){
 	source ~soft_bio_267/initializes/init_python
 	echo -e "$annotation" > tracker
-	data=`grep -P '^$annotation' $net2custom | cut -f 2`
+
+	net2json_parser.py --net_id "$annotation" --json_path $net2custom > net_params
+	source=`grep -P -w '^Source' net_params | cut -f 2`
+	ontology=`grep -P -w '^Ontology' net_params | cut -f 2`
+	format=`grep -P -w '^Format' net_params | cut -f 2`
+	
+	simil_code=`grep -P -w '^Layers' net_params | cut -f 2`
+
+	#data=`grep -P '^$annotation' $net2custom | cut -f 2`
 	ont_id=`grep -P '^$annotation' $net2custom | cut -f 3`
 	exec_mode=`grep -P '^$annotation' $net2custom | cut -f 4`
 	simil_code=`grep -P '^$annotation' $net2custom | cut -f 5`
 	?
+
+
+	net2json_parser.py --net_id "$annotation" --json_path $net2custom > net_params
+	data=`grep -P -w '^Source' net_params | cut -f 2`
+	format=`grep -P -w '^Format' net_params | cut -f 2`
+	layers=`grep -P -w '^Layers' net_params | cut -f 2`
+	ontology=`grep -P -w '^Ontology' net_params | cut -f 2`
+	grep -o -w "\bterm_filter.*}" net_params | cut -f3 -d "'" > ontology_term
+	?
+	if [ "$layers" == "-" ] ; then
+		summInfo_genetic_interaction.py -f $input_path/input_processed/$data > data_list
+	    get_stats.py -d data_list > annotations_metrics
+    else
+    	if [ "$ontology" != "-" ] ; then
+    		desaggregate_column_data.py -i $input_path/input_processed/$data -x 2 > ont_profs
+    		netanalyzer.py -i ont_profs -f $format -l $layers  -O "ont:`semtools.py -d list | grep $ontology`" -
+    	else
+    		netanalyzer.py -i $input_path/input_processed/$source -f $format -l $layers --dsl_script dsl 
+    	fi
+    fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     if [ "$exec_mode" == "ontology" ] ; then
     	if [ $simil_code == "-" ] ; then 
 			time semtools.py -i $input_path/input_processed/$data -o ./results.txt -O $ont_id -n -S "," > annotations_metrics

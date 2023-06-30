@@ -25,7 +25,7 @@ def filter_by_whitelist(table, terms2filter, column2filter, by_row=False):
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-f", "--files2befiltered", default= None, type = lambda x: x.split(","), required=True, help="The root to the files that has to be filtered, separated by commas")
-parser.add_argument("-c", "--columns2befiltered", default = None, type = lambda	x: [map(int,r.split(",")) for r in x.split(";")] ,help="The columns that need to be filtered for each file, separated by semicolons, with each set of columns separated by commas")
+parser.add_argument("-c", "--columns2befiltered", default = None, type = lambda	x: [list(map(int,r.split(","))) for r in x.split(";")] ,help="The columns that need to be filtered for each file, separated by semicolons, with each set of columns separated by commas")
 parser.add_argument("-r", "--transpose", dest= "by_row", default= False, action="store_true", help="If you want to select by rows")
 parser.add_argument("-t", "--terms2befiltered", default= None, required=True, help="The PATH to the list of terms to be filtered")
 parser.add_argument("-o", "--output_path", default=".", help="The name of the output path")
