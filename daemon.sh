@@ -15,10 +15,11 @@ export output_folder=$SCRATCH/executions/backupgenes
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="disease phenotype molecular_function biological_process cellular_component protein_interaction pathway gene_TF gene_hgncGroup genetic_interaction_effect_bicor gene_PS"
-#annotations="protein_interaction pathway gene_TF gene_hgncGroup genetic_interaction_effect_bicor gene_PS"
+annotations="disease phenotype molecular_function biological_process cellular_component string_ppi hippie_ppi pathway gene_TF gene_hgncGroup genetic_interaction_effect_bicor gene_PS"
+#annotations="string_ppi pathway gene_TF gene_hgncGroup genetic_interaction_effect_bicor gene_PS"
 #annotations="pathway disease genetic_interaction_effect_bicor"
 #annotations="genetic_interaction_effect_bicor"
+annotations="string_ppi"
 kernels="ka rf ct el node2vec"
 #kernels="ka rf ct el"
 integration_types="mean integration_mean_by_presence"
@@ -54,6 +55,10 @@ if [ "$exec_mode" == "download_layers" ] ; then
   wget https://stringdb-static.org/download/protein.links.v11.5/9606.protein.links.v11.5.txt.gz -O ./input/input_raw/string_data.v11.5.txt.gz
   gzip -d ./input/input_raw/string_data.v11.5.txt.gz
 
+  # Downloading PROTEIN INTERACTION form HIPPIE.
+  wget http://cbdm-01.zdv.uni-mainz.de/~mschaefer/hippie/hippie_current.txt -O ./input/input_raw/hippie_data.txt
+
+
   # Downloading GENETIC INTERACTIONS from DEPMAP.
   wget https://ndownloader.figshare.com/files/34990033 -O ./input/input_raw/CRISPR_gene_effect 
   wget https://ndownloader.figshare.com/files/34989919 -O ./input/input_raw/CRISPR_gene_exprs 
@@ -86,13 +91,15 @@ elif [ "$exec_mode" == "download_translators" ] ; then
   # Downloading HGNC_symbol
   wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./translators/HGNC_symbol
   awk '{OFS="\t"}{print $2,$1}' ./translators/HGNC_symbol > ./translators/symbol_HGNC
+  awk '{FS="\t";OFS="\t"}{print $19,$1}' ./translators/HGNC_symbol > ./translators/entrez_HGNC
 
   # The other direction symbol_HGNC
   awk '{OFS="\t"}{print $2,$1}' ./translators/HGNC_symbol > ./translators/symbol_HGNC
 
+
+
 elif [ "$exec_mode" == "process_download" ] ; then
   source ~soft_bio_267/initializes/init_python
-  export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/py_cmdtabs/bin:$PATH
 
   mkdir -p ./input/input_processed
 
@@ -132,31 +139,47 @@ elif [ "$exec_mode" == "process_download" ] ; then
   zgrep "REACT:" ./input/input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | \
     cut -f 1,5 > ./input/input_processed/pathway
   
-  # # PROCESS PROTEIN INTERACTIONS # | head -n 200 
+  # PROCESS PROTEIN INTERACTIONS # | head -n 200 
+  ## STRING
   cat ./input/input_raw/string_data.v11.5.txt | tr -s " " "\t" > string_data.v11.5.txt
   standard_name_replacer.py -i string_data.v11.5.txt -I ./translators/ProtEnsemble_HGNC -c 1,2 -u > ./input/input_raw/interaction_scored && rm string_data.v11.5.txt
-  awk '{OFS="\t"}{print $1,$2,$3}' ./input/input_raw/interaction_scored > ./input/input_processed/protein_interaction
+  awk '{OFS="\t"}{print $1,$2,$3}' ./input/input_raw/interaction_scored > ./input/input_processed/string_ppi
+  ## HIPPO
+  standard_name_replacer.py -i ./input/input_raw/hippie_data.txt -I ./translators/entrez_HGNC -c 2,4 -u  >  ./input/input_processed/tmp 
+  cut -f 2,4,5 ./input/input_processed/tmp  > ./input/input_processed/hippie_ppi 
 
-  # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 100
+
+  # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 
   sed 's/([0-9]*)//1g' ./input/input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/input_raw/CRISPR_gene_effect_symbol
-  standard_name_replacer.py -I ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_effect_symbol -c 1 -u --transposed > ./input/input_processed/genetic_interaction_effect
-  rm ./input/input_raw/CRISPR_gene_effect_symbol
+  cut -f 1 -d "," ./input/input_raw/CRISPR_gene_effect | tr -d "DepMap_ID"  > ./input/input_raw/DepMap_effect_rows
+  standard_name_replacer.py -I ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_effect_symbol -c 1 -u --transposed > ./input/input_processed/genetic_interaction_effect_values
+  head -n 1 ./input/input_processed/genetic_interaction_effect_values >  ./input/input_processed/DepMap_effect_cols
+  sed '1d' ./input/input_processed/genetic_interaction_effect_values > ./input/input_processed/DepMap_effect_values
+  rm ./input/input_raw/CRISPR_gene_effect_symbol ./input/input_processed/genetic_interaction_effect_values
 
-  # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 100
+  # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 
   sed 's/([0-9]*)//1g' ./input/input_raw/CRISPR_gene_exprs | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/input_raw/CRISPR_gene_exprs_symbol
-  standard_name_replacer.py -I ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_exprs_symbol -c 1 -u --transposed > ./input/input_processed/genetic_interaction_exprs
-  rm ./input/input_raw/CRISPR_gene_exprs_symbol
+  cut -f 1 -d "," ./input/input_raw/CRISPR_gene_exprs | tr -d "DepMap_ID"  > ./input/input_raw/DepMap_exprs_rows
+  standard_name_replacer.py -I ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_exprs_symbol -c 1 -u --transposed > ./input/input_processed/genetic_interaction_exprs_values
+  head -n 1 ./input/input_processed/genetic_interaction_exprs_values >  ./input/input_processed/DepMap_exprs_cols
+  sed '1d' ./input/input_processed/genetic_interaction_exprs_values > ./input/input_processed/DepMap_exprs_values
+  rm ./input/input_raw/CRISPR_gene_exprs_symbol ./input/input_processed/genetic_interaction_exprs_values
 
-  # # Translating to GENE-TF interaction.ls
+  # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 
+  sed 's/([0-9]*)//1g' ./input/input_raw/CRISPR_gene_exprs | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/input_raw/CRISPR_gene_exprs_symbol
+  cut -f 1 -d "," ./input/input_raw/CRISPR_gene_exprs | tr -d "DepMap_ID"  > ./input/input_raw/index_column
+  standard_name_replacer.py -I ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_exprs_symbol -c 1 -u --transposed > ./input/input_processed/genetic_interaction_exprs_values
+  paste -d "\t" ./input/input_raw/index_column  ./input/input_processed/genetic_interaction_exprs_values >  ./input/input_processed/DepMap_exprs
+  rm ./input/input_raw/CRISPR_gene_exprs_symbol ./input/input_raw/index_column ./input/input_processed/genetic_interaction_exprs_values
 
+  # Translating to GENE-TF interaction.ls
   standard_name_replacer.py -i ./input/input_raw/gene_TF -I ./translators/symbol_HGNC -c 1,2 -u | sed 's/HGNC:/TF:/2g' > ./input/input_processed/gene_TF
 
   # Formatting data_columns
   cut -f 1,14 ./input/input_raw/gene_hgncGroup | sed "s/\"//g" | tr -s "|" "," | awk '{if( $2 != "") print $0}' \
    | desaggregate_column_data.py -i "-" -x 2 | sed 's/\t/\tGROUP:/1g' | sed 1d > ./input/input_processed/gene_hgncGroup
 
-   # Formatting PS-Genes
-
+  # Formatting PS-Genes
   get_PS_gene_relation.py -i "/mnt/home/users/bio_267_uma/federogc/projects/backupgenes/input/phenotypic_series/series_data" -o "./input/input_processed/PS_genes"
   desaggregate_column_data.py -i ./input/input_processed/PS_genes -x 2 > ./input/input_processed/tmp 
   standard_name_replacer.py -i ./input/input_processed/tmp -I ./translators/symbol_HGNC -c 2 -u | awk 'BEGIN{FS="\t";OFS="\t"}{print $2,$1}' > ./input/input_processed/gene_PS
@@ -172,12 +195,12 @@ elif [ "$exec_mode" == "white_list" ] ; then
 # TODO: Check this to put all layers new.
 
   cd ./input/input_processed
-  filter_by_whitelist.py -f phenotype,disease,biological_process,cellular_component,molecular_function,pathway,protein_interaction \
+  filter_by_whitelist.py -f phenotype,disease,biological_process,cellular_component,molecular_function,pathway,string_ppi \
   -c "0;0;0;0;0;0;0,1" -t ../../white_list/hgnc_white_list
   filter_by_whitelist.py -f genetic_interaction -c "0;" -t ../../white_list/hgnc_white_list -r
 
   echo -e "sample\tprefiltered_rows\tprefiltered_cols\tposfiltered_rows\tposfiltered_cols" > filter_metrics
-  for sample in phenotype disease biological_process cellular_component molecular_function pathway protein_interaction genetic_interaction ; do
+  for sample in phenotype disease biological_process cellular_component molecular_function pathway string_ppi genetic_interaction ; do
     nrows_prefiltered=`wc -l $sample | tr " " "\t" | cut -f1 `
     nrows_posfiltered=`wc -l filtered_$sample | tr " " "\t" | cut -f1 `
     ncols_prefiltered=`head -n 1 $sample | tr '\t' '\n' | wc -l`
@@ -325,7 +348,7 @@ elif [ "$exec_mode" == "ranking" ] ; then
         \\$geneseeds=$input_path/geneseeds
         " | tr -d [:space:]`
 
-        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/rankings/ranking_${kernel}_${annotation} -m 60gb -t 4-00:00:00 $3 -b
+        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/rankings/ranking_${kernel}_${annotation} -m 60gb -t 4-00:00:00 $3
       fi
 
     done
@@ -413,19 +436,19 @@ elif [ "$exec_mode" == "report" ] ; then
   html_name=$2
   
   # #################################
-  # # Setting up the report section #
-  # find $report_folder/ -mindepth 2 -delete
-  # find $output_folder/ -maxdepth 1 -type f -delete
+  # Setting up the report section #
+  find $report_folder/ -mindepth 2 -delete
+  find $output_folder/ -maxdepth 1 -type f -delete
 
   mkdir -p $report_folder/kernel_report
   mkdir -p $report_folder/ranking_report
   mkdir -p $report_folder/img
 
   declare -A original_folders
-  original_folders[annotations_metrics]='similarity_kernels'
-  original_folders[similarity_metrics]='similarity_kernels'
-  original_folders[filtered_similarity_metrics]='similarity_kernels'
-  original_folders[uncomb_kernel_metrics]='similarity_kernels'
+  original_folders[annotations_metrics]='sk'
+  original_folders[similarity_metrics]='sk'
+  original_folders[filtered_similarity_metrics]='sk'
+  original_folders[uncomb_kernel_metrics]='sk'
   original_folders[comb_kernel_metrics]='integrations'
 
   original_folders[non_integrated_rank_summary]='rankings'
@@ -470,6 +493,7 @@ elif [ "$exec_mode" == "report" ] ; then
 
   references[annotation_grade_metrics]='Gene_seed'
 
+  # annotations_metrics similarity_metrics filtered_similarity_metrics uncomb_kernel_metrics comb_kernel_metrics
   for metric in annotations_metrics similarity_metrics filtered_similarity_metrics uncomb_kernel_metrics comb_kernel_metrics ; do
     if [ -s $output_folder/$metric ] ; then
       create_metric_table.py $output_folder/$metric ${references[$metric]} $report_folder/kernel_report/parsed_${metric} 

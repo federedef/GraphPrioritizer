@@ -1,5 +1,5 @@
-get_similarity){
-	resources: -m '60gb' -t '4-00:00:00'
+%get_similarity){
+	resources: -m '200gb' -t '4-00:00:00' -c 4
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
 	source ~soft_bio_267/initializes/init_python
@@ -14,22 +14,17 @@ get_similarity){
 	format=`grep -P -w '^Format' net_params | cut -f 2`
 	layers=`grep -P -w '^Layers' net_params | cut -f 2`
 	ontology=`grep -P -w '^Ontology' net_params | cut -f 2`
+	node_files=`grep -P -w '^Node_list' net_params | cut -f 2 | tr -s '\n' ','`
 	custom_parameters=`grep -P -w '^Custom' net_params | cut -f 2`
-	grep -P -w '^dsl' net_params | cut -f 2 > dsl
-	echo -e "$source\t$format\t$layers\t$ontology" > parametros_prueba
+	grep -P -w '^Build_graph' net_params | cut -f 2 > dsl
+	echo -e "$source" > tracker_annotation
 	?
-	if [ "$layers" == "-" ] ; then
-		# TODO: This section must be remove
-		summInfo_genetic_interaction.py -f $input_path/input_processed/$source > data_list
-	    get_stats.py -d data_list > preproc_metrics
-    	build_corNetwork.R -i $input_path/input_processed/$source -s "\t" -O $annotation_similarity_list -m $custom_parameters -t "greater" -f
-    	cat $annotation_similarity_list | awk '{if ( $3 != "NA" ) {print $0}}' | awk 'BEGIN{FS="\t";OFS="\t"}{if( $1 == $2 ) $3="0"; print $1,$2,$3}' > similarity_list 
-    	netanalyzer.py -i similarity_list -f "pair" -l "gene,HGNC:" --dsl_script dsl
-    	#text2binary_matrix.py -i similarity_list -o similarity_matrix_bin -t pair -s > stats_from_matrix
-    else                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+	if [ "$format" == "matrix" ] ; then
+		netanalyzer.py -i $input_path/input_processed/$source -n $node_files -f $format -l $layers --dsl_script dsl
+    else                                                                                                                                                  
     	if [ "$ontology" != "-" ] ; then
     		desaggregate_column_data.py -i $input_path/input_processed/$source -x 2 > ont_profs
-    		netanalyzer.py -i ont_profs -f $format -l $layers  -O "ont:`semtools.py -d list | grep $ontology`" --dsl_script dsl 
+    		netanalyzer.py -i ont_profs -f $format -l $layers -T [cpu] -O "ont:`semtools.py -d list | grep $ontology`" --dsl_script dsl 
     	else
     		netanalyzer.py -i $input_path/input_processed/$source -f $format -l $layers --dsl_script dsl 
     	fi
@@ -41,7 +36,8 @@ get_similarity){
 
 	if [ -s stats_from_matrix -a preproc_metrics ] ; then 
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' stats_from_matrix > similarity_metrics
-		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' preproc_metrics > annotations_metrics
+		head -n 11 preproc_metrics > tmp && mv tmp preproc_metrics
+		awk -v tracker="`cat tracker_annotation`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' preproc_metrics > annotations_metrics
 	else
 		exit 1
 	fi
@@ -60,7 +56,7 @@ filter_net){
 		rm stats_from_matrix
 	fi
 	?
-	if [ ! $cutoff_filter == "-" -a ! $cutoff_filter == "False" ] ; then
+	if [ ! "$cutoff_filter" == "-" -a ! "$cutoff_filter" == "False" ] ; then
     	netanalyzer.py -i get_similarity)/similarity_matrix_bin.npy -f "bin" -l "gene" -n similarity_matrix_bin.lst --dsl_script dsl_filter
 	else 
 		ln -s get_similarity)/similarity_matrix_bin.npy ./similarity_matrix_bin.npy
@@ -76,7 +72,7 @@ filter_net){
 }
 
 
-calc_kernel_[$kernels_varflow]){
+%calc_kernel_[$kernels_varflow]){
 	resources: -c 16 -m '240gb' -t '2-00:00:00'
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
@@ -109,7 +105,7 @@ calc_kernel_[$kernels_varflow]){
   	fi
 }
 
-stats_kernels_[$kernels_varflow]){
+%stats_kernels_[$kernels_varflow]){
 	resources: -m '120gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_python
 	source ~/dev_py/myvenv/bin/activate
@@ -118,10 +114,13 @@ stats_kernels_[$kernels_varflow]){
 		rm tracker
 		# TODO: Remove this part and check
 	fi
+	if [ -s kernel_metrics ] ; 
+		rm kernel_metrics
+	fi
 	ln -s !calc_kernel_*!/tracker
 	?
-	text2binary_matrix.py -i !calc_kernel_*!/kernel_matrix_bin.npy -o kernel_matrix_undo -t bin -s > kernel_metrics
-	if [ -s kernel_matrix_undo.npy ] ; then
+	text2binary_matrix.py -i !calc_kernel_*!/kernel_matrix_bin.npy -o kernel_matrix_undo -t bin -s kernel_metrics
+	if [ -s kernel_metrics ] ; then
 		rm kernel_matrix_undo.npy
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' kernel_metrics > uncomb_kernel_metrics
 	else 

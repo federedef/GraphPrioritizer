@@ -6,7 +6,8 @@ integrate_kernel_[$kernels_varflow]){
 	resources: -c 16 -m '240gb'
 	echo [cpu]
 	source ~soft_bio_267/initializes/init_python
-	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
+	source ~/dev_py/myvenv/bin/activate
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	echo -e "$integration_type_(*)\t$integration_type\t(*)" > tracker
 	folder_kernel_paths=`grep -w '\(*)' $ugot_path | awk '{ print $4 }' | tr "\n" " "`
 	echo -e "$folder_kernel_paths"
@@ -20,7 +21,7 @@ integrate_kernel_[$kernels_varflow]){
 	fi
 	?
 	integrate_kernels.py -i $integration_type -t " $path_kernels " -n " $path_nodes " -o general_matrix --cpu 16
-	text2binary_matrix.py -i general_matrix.npy -o general_matrix_undo -t bin -s > generalkernel_metrics
+	text2binary_matrix.py -i general_matrix.npy -o general_matrix_undo -t bin -s generalkernel_metrics
 	if [ -s general_matrix_undo.npy ] ; then
 		rm general_matrix_undo.npy
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' \ 

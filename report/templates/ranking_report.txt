@@ -24,37 +24,10 @@
         
 %>
 <div style="width:90%; background-color:#FFFFFF; margin:50 auto; align-content: center;">
-        <h1 style="text-align:center; background-color:#ecf0f1, color: powderblue; "> Analysis of the algorithm: From rankings to backup genes.</h1>
+
+    <h1 style="text-align:center; background-color:#ecf0f1, color: powderblue; "> Analysis of the algorithm: From rankings to backup genes.</h1>
 
         <h2 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Ranking section </h2>
-
-        <div style="overflow: hidden";>
-                <p style="text-align:center;"><b>Table 1.</b> Performance summary for every kernel and net before integration.</p> 
-                % if plotter.hash_vars.get('parsed_non_integrated_rank_summary') is not None:
-                                ${plotter.table(id='parsed_non_integrated_rank_summary', text= True, header=True,
-                                 fields = [1,2,3,4,5,6,12],
-                                 cell_align = ['left', 'center', 'center', 'center','center','center','center'],
-                                 border = 2,
-                                 attrib = {
-                                        'style' : 'margin-left: auto; margin-right:auto;',
-                                        'cellspacing' : 0,
-                                        'cellpadding' : 2})}
-                % endif
-        </div>
-
-        <div style="overflow: hidden; margin: 0 auto;">
-                <p style="text-align:center;"><b>Table 2.</b> Performance summary for every kernel after integration</p> 
-                % if plotter.hash_vars.get('parsed_integrated_rank_summary') is not None:
-                                ${plotter.table(id='parsed_integrated_rank_summary', text= True, header=True,
-                                 fields = [1,2,3,4,5,6,12],
-                                 cell_align = ['left', 'center', 'center', 'center','center','center','center'],
-                                 border = 2,
-                                 attrib = {
-                                        'style' : 'margin-left: auto; margin-right:auto;',
-                                        'cellspacing' : 0,
-                                        'cellpadding' : 2})}
-                % endif
-        </div>
 
         <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
                 <div style="margin-right: 10px;">
@@ -63,7 +36,7 @@
                                  fields = [1,3],
                                  x_label = 'Number of Backup pairs present',
                                  height = '400px', width= '400px',
-                                 smp_attr = [1,2],
+                                 var_attr = [1,2],
                                  title = "Backup Pairs Coverage By Layer Non Integrated",
                                  config = {
                                         'showLegend' : True,
@@ -75,7 +48,7 @@
                 <div style="margin-left: 10px;"> 
                         % if plotter.hash_vars.get('parsed_integrated_rank_pos_cov') is not None: 
                                 ${plotter.barplot(id= "parsed_integrated_rank_pos_cov", fields= [1,3] , header= True, responsive= False,
-                                        height= '400px', width= '400px', x_label= 'Number of Backup pairs present', smp_attr= [1,2],
+                                        height= '400px', width= '400px', x_label= 'Number of Backup pairs present', var_attr= [1,2],
                                         title = "Backup Pairs Coverage By Layer Integrated",
                                         config = {
                                                 'showLegend' : True,
@@ -86,13 +59,12 @@
                 </div>
         </div>
 
-
         <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
                 <div style="margin-right: 10px;">
                                 % if plotter.hash_vars.get('non_integrated_rank_cdf') is not None: 
-                                        ${plotter.boxplot(id= 'non_integrated_rank_cdf', header= True, row_names= False, default= False, fields= [5],  smp_attr= [0,1,2,3,4,6,7], group = "kernel",
+                                        ${plotter.boxplot(id= 'non_integrated_rank_cdf', header= True, row_names= False, default= False, fields= [5],  var_attr= [0,1,2], group = "kernel",
                                            title= "Distribution of non zero ranks in dataset by Non Integrated kernels",
-                                                xlabel= "Ranks",
+                                                x_label= "Percentile",
                                                 config= {
                                                         "graphOrientation": "vertical",
                                                         "colorBy" : "kernel",
@@ -103,11 +75,12 @@
                 </div>
                 <div style="margin-left: 10px;">
                                 % if plotter.hash_vars.get('integrated_rank_cdf') is not None: 
-                                        ${plotter.boxplot(id= 'integrated_rank_cdf', header= True, row_names= False, default= False, smp_attr= [0,1,2,3,4,6,7], group= "kernel", 
+                                        ${plotter.boxplot(id= 'integrated_rank_cdf', header= True, row_names= False, default= False, fields = [5], var_attr= [0,1,2], group= "kernel", 
                                                 title= "Distribution of non zero ranks in dataset by Integrated kernels",
-                                                xlabel= "Ranks",
+                                                xlabel= "Percentile",
                                                 config= {
                                                         "graphOrientation": "vertical",
+                                                        "xAxisTitle": "Percentile",
                                                         "colorBy" : "kernel",
                                                         "groupingFactors" :
                                                         ["kernel"],
@@ -149,7 +122,7 @@
         <div style="overflow: hidden; display: flex; flex-direction: column; align-items: center;">
                 % if plotter.hash_vars.get("non_integrated_rank_cdf") is not None: 
                         ${plotter.scatter2D(id=  "non_integrated_rank_cdf", fields=  [5,6] , header=  True, row_names=  False, responsive=  False,
-                                height=  '400px', width=  '400px', x_label=  'percentiles', smp_attr=  [0,1,2],
+                                height=  '400px', width=  '400px', x_label=  'percentiles', var_attr=  [0,1,2], y_label= "Cummulative frequency",
                                 title=  "CDF plot of non zero scores from non integrated kernels",
                                 config=  {
                                         'showLegend' : True,
@@ -168,7 +141,7 @@
         <div style="overflow: hidden; display: flex; flex-direction: column; align-items: center;">
                 % if plotter.hash_vars.get("integrated_rank_cdf") is not None: 
                         ${plotter.scatter2D(id=  "integrated_rank_cdf", fields=  [5,6] , header=  True, row_names=  False, responsive=  False,
-                                height=  '400px', width=  '400px', x_label=  'percentiles', smp_attr=  [0,1,2],
+                                height=  '400px', width=  '400px', x_label=  'percentiles', var_attr=  [0,1,2], y_label= "Cummulative frequency",
                                 title=  "CDF plot of non zero scores from integrated kernels",
                                 config=  {
                                         'showLegend' : True,

@@ -1,0 +1,188 @@
+disease phenotype molecular_function biological_process cellular_component protein_interaction pathway gene_TF gene_hgncGroup genetic_interaction_effect_bicor gene_PS
+biological_process
++--------+----------------------------+----------------------+------+------------------------+
+| Status | Folder                     | Time                 | Size | Job Name               |
++--------+----------------------------+----------------------+------+------------------------+
+| [0;32;49mSUCC[0m   | if_0002                    | 6.433333333333334 m  | 2.2G | calc_kernel_ka         |
+| [0;32;49mSUCC[0m   | if_0003                    | 36 s                 | 2.2G | calc_kernel_rf         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0003 | 8.416666666666666 m  | 5.5K | stats_kernels_el       |
+| [0;34;49mNOT[0m    | text2binary_matrix.py_0004 | -                    | 1.5K | stats_kernels_node2vec |
+| [0;31;49mABORT[0m  | if_0006                    | -                    | 2.2M | calc_kernel_node2vec   |
+| [0;32;49mSUCC[0m   | if_0001                    | 1 s                  | 182K | filter_net             |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0002 | 8.6 m                | 5.5K | stats_kernels_ct       |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0000 | 8.516666666666667 m  | 5.5K | stats_kernels_ka       |
+| [0;32;49mSUCC[0m   | if_0004                    | 3.45 m               | 2.2G | calc_kernel_ct         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0001 | 8.483333333333333 m  | 5.5K | stats_kernels_rf       |
+| [0;32;49mSUCC[0m   | if_0005                    | 3.5833333333333335 m | 2.2G | calc_kernel_el         |
+| [0;32;49mSUCC[0m   | if_0000                    | 6.702777777777778 h  | 2.2G | get_similarity         |
++--------+----------------------------+----------------------+------+------------------------+
+cellular_component
++--------+----------------------------+----------------------+------+------------------------+
+| Status | Folder                     | Time                 | Size | Job Name               |
++--------+----------------------------+----------------------+------+------------------------+
+| [0;32;49mSUCC[0m   | if_0002                    | 34.083333333333336 m | 2.5G | calc_kernel_ka         |
+| [0;32;49mSUCC[0m   | if_0003                    | 39 s                 | 2.5G | calc_kernel_rf         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0003 | 9.583333333333334 m  | 5.5K | stats_kernels_el       |
+| [0;34;49mNOT[0m    | text2binary_matrix.py_0004 | -                    | 1.5K | stats_kernels_node2vec |
+| [0;31;49mABORT[0m  | if_0006                    | -                    | 204K | calc_kernel_node2vec   |
+| [0;32;49mSUCC[0m   | if_0001                    | 1 s                  | 198K | filter_net             |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0002 | 9.55 m               | 5.5K | stats_kernels_ct       |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0000 | 9.916666666666666 m  | 5.5K | stats_kernels_ka       |
+| [0;32;49mSUCC[0m   | if_0004                    | 3.966666666666667 m  | 2.5G | calc_kernel_ct         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0001 | 9.533333333333333 m  | 5.5K | stats_kernels_rf       |
+| [0;32;49mSUCC[0m   | if_0005                    | 4.35 m               | 2.5G | calc_kernel_el         |
+| [0;32;49mSUCC[0m   | if_0000                    | 2.1744444444444446 h | 2.5G | get_similarity         |
++--------+----------------------------+----------------------+------+------------------------+
+disease
++--------+----------------------------+--------+------+------------------------+
+| Status | Folder                     | Time   | Size | Job Name               |
++--------+----------------------------+--------+------+------------------------+
+| [0;32;49mSUCC[0m   | if_0002                    | 21 s   | 133M | calc_kernel_ka         |
+| [0;32;49mSUCC[0m   | if_0003                    | 12 s   | 133M | calc_kernel_rf         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0003 | 34 s   | 6.5K | stats_kernels_el       |
+| [0;34;49mNOT[0m    | text2binary_matrix.py_0004 | -      | 1.5K | stats_kernels_node2vec |
+| [0;31;49mABORT[0m  | if_0006                    | -      | 2.3M | calc_kernel_node2vec   |
+| [0;32;49mSUCC[0m   | if_0001                    | 2 s    | 55K  | filter_net             |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0002 | 35 s   | 6.5K | stats_kernels_ct       |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0000 | 53 s   | 6.5K | stats_kernels_ka       |
+| [0;32;49mSUCC[0m   | if_0004                    | 17 s   | 133M | calc_kernel_ct         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0001 | 35 s   | 6.5K | stats_kernels_rf       |
+| [0;32;49mSUCC[0m   | if_0005                    | 15 s   | 133M | calc_kernel_el         |
+| [0;32;49mSUCC[0m   | if_0000                    | 7.15 m | 133M | get_similarity         |
++--------+----------------------------+--------+------+------------------------+
+gene_hgncGroup
++--------+----------------------------+----------------------+------+------------------------+
+| Status | Folder                     | Time                 | Size | Job Name               |
++--------+----------------------------+----------------------+------+------------------------+
+| [0;32;49mSUCC[0m   | if_0002                    | 17.166666666666668 m | 4.8G | calc_kernel_ka         |
+| [0;32;49mSUCC[0m   | if_0003                    | 2.1 m                | 4.8G | calc_kernel_rf         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0003 | 16.75 m              | 5.5K | stats_kernels_el       |
+| [0;34;49mNOT[0m    | text2binary_matrix.py_0004 | -                    | 1.5K | stats_kernels_node2vec |
+| [0;31;49mABORT[0m  | if_0006                    | -                    | 3.4M | calc_kernel_node2vec   |
+| [0;32;49mSUCC[0m   | if_0001                    | 1 s                  | 270K | filter_net             |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0002 | 18.55 m              | 5.5K | stats_kernels_ct       |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0000 | 14.25 m              | 5.5K | stats_kernels_ka       |
+| [0;32;49mSUCC[0m   | if_0004                    | 9.8 m                | 4.8G | calc_kernel_ct         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0001 | 16.516666666666666 m | 5.5K | stats_kernels_rf       |
+| [0;32;49mSUCC[0m   | if_0005                    | 10.55 m              | 4.8G | calc_kernel_el         |
+| [0;32;49mSUCC[0m   | if_0000                    | 21.916666666666668 m | 4.8G | get_similarity         |
++--------+----------------------------+----------------------+------+------------------------+
+gene_PS
++--------+----------------------------+--------+------+------------------------+
+| Status | Folder                     | Time   | Size | Job Name               |
++--------+----------------------------+--------+------+------------------------+
+| [0;32;49mSUCC[0m   | if_0002                    | 11 s   | 70M  | calc_kernel_ka         |
+| [0;32;49mSUCC[0m   | if_0003                    | 9 s    | 70M  | calc_kernel_rf         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0003 | 15 s   | 5.5K | stats_kernels_el       |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0004 | 2.05 m | 5.5K | stats_kernels_node2vec |
+| [0;32;49mSUCC[0m   | if_0006                    | 2.85 m | 35M  | calc_kernel_node2vec   |
+| [0;32;49mSUCC[0m   | if_0001                    | -      | 38K  | filter_net             |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0002 | 39 s   | 5.5K | stats_kernels_ct       |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0000 | 17 s   | 5.5K | stats_kernels_ka       |
+| [0;32;49mSUCC[0m   | if_0004                    | 11 s   | 70M  | calc_kernel_ct         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0001 | 17 s   | 5.5K | stats_kernels_rf       |
+| [0;32;49mSUCC[0m   | if_0005                    | 11 s   | 70M  | calc_kernel_el         |
+| [0;32;49mSUCC[0m   | if_0000                    | 36 s   | 70M  | get_similarity         |
++--------+----------------------------+--------+------+------------------------+
+gene_TF
++--------+----------------------------+----------------------+------+------------------------+
+| Status | Folder                     | Time                 | Size | Job Name               |
++--------+----------------------------+----------------------+------+------------------------+
+| [0;32;49mSUCC[0m   | if_0002                    | 10 s                 | 797M | calc_kernel_ka         |
+| [0;32;49mSUCC[0m   | if_0003                    | 12 s                 | 797M | calc_kernel_rf         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0003 | 2.4 m                | 5.5K | stats_kernels_el       |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0004 | 23.15 m              | 5.5K | stats_kernels_node2vec |
+| [0;32;49mSUCC[0m   | if_0006                    | 20.85 m              | 399M | calc_kernel_node2vec   |
+| [0;32;49mSUCC[0m   | if_0001                    | 1 s                  | 118K | filter_net             |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0002 | 2.566666666666667 m  | 5.5K | stats_kernels_ct       |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0000 | 2.4166666666666665 m | 5.5K | stats_kernels_ka       |
+| [0;32;49mSUCC[0m   | if_0004                    | 52 s                 | 797M | calc_kernel_ct         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0001 | 2.433333333333333 m  | 5.5K | stats_kernels_rf       |
+| [0;32;49mSUCC[0m   | if_0005                    | 45 s                 | 797M | calc_kernel_el         |
+| [0;32;49mSUCC[0m   | if_0000                    | 8.083333333333334 m  | 797M | get_similarity         |
++--------+----------------------------+----------------------+------+------------------------+
+genetic_interaction_effect_bicor
++--------+----------------------------+----------------------+------+------------------------+
+| Status | Folder                     | Time                 | Size | Job Name               |
++--------+----------------------------+----------------------+------+------------------------+
+| [0;32;49mSUCC[0m   | if_0002                    | 8.0 m                | 2.3G | calc_kernel_ka         |
+| [0;32;49mSUCC[0m   | if_0003                    | 30 s                 | 2.3G | calc_kernel_rf         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0003 | 8.716666666666667 m  | 6.5K | stats_kernels_el       |
+| [0;34;49mNOT[0m    | text2binary_matrix.py_0004 | -                    | 12K  | stats_kernels_node2vec |
+| [0;31;49mABORT[0m  | if_0006                    | -                    | 21M  | calc_kernel_node2vec   |
+| [0;32;49mSUCC[0m   | if_0001                    | -                    | 192K | filter_net             |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0002 | 8.9 m                | 6.5K | stats_kernels_ct       |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0000 | 8.566666666666666 m  | 6.5K | stats_kernels_ka       |
+| [0;32;49mSUCC[0m   | if_0004                    | 3.5833333333333335 m | 2.3G | calc_kernel_ct         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0001 | 8.8 m                | 6.5K | stats_kernels_rf       |
+| [0;32;49mSUCC[0m   | if_0005                    | 5.85 m               | 2.3G | calc_kernel_el         |
+| [0;32;49mSUCC[0m   | if_0000                    | 1.766388888888889 h  | 36G  | get_similarity         |
++--------+----------------------------+----------------------+------+------------------------+
+molecular_function
++--------+----------------------------+----------------------+------+------------------------+
+| Status | Folder                     | Time                 | Size | Job Name               |
++--------+----------------------------+----------------------+------+------------------------+
+| [0;32;49mSUCC[0m   | if_0002                    | 18.816666666666666 m | 2.3G | calc_kernel_ka         |
+| [0;32;49mSUCC[0m   | if_0003                    | 39 s                 | 2.3G | calc_kernel_rf         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0003 | 8.9 m                | 5.5K | stats_kernels_el       |
+| [0;34;49mNOT[0m    | text2binary_matrix.py_0004 | -                    | 1.5K | stats_kernels_node2vec |
+| [0;31;49mABORT[0m  | if_0006                    | -                    | 196K | calc_kernel_node2vec   |
+| [0;32;49mSUCC[0m   | if_0001                    | -                    | 190K | filter_net             |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0002 | 8.85 m               | 5.5K | stats_kernels_ct       |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0000 | 8.783333333333333 m  | 5.5K | stats_kernels_ka       |
+| [0;32;49mSUCC[0m   | if_0004                    | 3.6333333333333333 m | 2.3G | calc_kernel_ct         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0001 | 8.933333333333334 m  | 5.5K | stats_kernels_rf       |
+| [0;32;49mSUCC[0m   | if_0005                    | 3.9166666666666665 m | 2.3G | calc_kernel_el         |
+| [0;32;49mSUCC[0m   | if_0000                    | 1.7594444444444444 h | 2.3G | get_similarity         |
++--------+----------------------------+----------------------+------+------------------------+
+pathway
++--------+----------------------------+----------------------+------+------------------------+
+| Status | Folder                     | Time                 | Size | Job Name               |
++--------+----------------------------+----------------------+------+------------------------+
+| [0;32;49mSUCC[0m   | if_0002                    | 1.7833333333333334 m | 918M | calc_kernel_ka         |
+| [0;32;49mSUCC[0m   | if_0003                    | 13 s                 | 918M | calc_kernel_rf         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0003 | 2.8666666666666667 m | 5.5K | stats_kernels_el       |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0004 | 26.3 m               | 5.5K | stats_kernels_node2vec |
+| [0;32;49mSUCC[0m   | if_0006                    | 23.7 m               | 460M | calc_kernel_node2vec   |
+| [0;32;49mSUCC[0m   | if_0001                    | -                    | 126K | filter_net             |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0002 | 3.316666666666667 m  | 5.5K | stats_kernels_ct       |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0000 | 2.8833333333333333 m | 5.5K | stats_kernels_ka       |
+| [0;32;49mSUCC[0m   | if_0004                    | 1.05 m               | 918M | calc_kernel_ct         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0001 | 2.8833333333333333 m | 5.5K | stats_kernels_rf       |
+| [0;32;49mSUCC[0m   | if_0005                    | 55 s                 | 918M | calc_kernel_el         |
+| [0;32;49mSUCC[0m   | if_0000                    | 5.133333333333334 m  | 918M | get_similarity         |
++--------+----------------------------+----------------------+------+------------------------+
+phenotype
++--------+----------------------------+----------------------+------+------------------------+
+| Status | Folder                     | Time                 | Size | Job Name               |
++--------+----------------------------+----------------------+------+------------------------+
+| [0;32;49mSUCC[0m   | if_0002                    | 24 s                 | 197M | calc_kernel_ka         |
+| [0;32;49mSUCC[0m   | if_0003                    | 35 s                 | 197M | calc_kernel_rf         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0003 | 52 s                 | 6.5K | stats_kernels_el       |
+| [0;34;49mNOT[0m    | text2binary_matrix.py_0004 | -                    | 1.5K | stats_kernels_node2vec |
+| [0;31;49mABORT[0m  | if_0006                    | -                    | 2.2M | calc_kernel_node2vec   |
+| [0;32;49mSUCC[0m   | if_0001                    | -                    | 63K  | filter_net             |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0002 | 49 s                 | 6.5K | stats_kernels_ct       |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0000 | 51 s                 | 6.5K | stats_kernels_ka       |
+| [0;32;49mSUCC[0m   | if_0004                    | 12 s                 | 197M | calc_kernel_ct         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0001 | 50 s                 | 6.5K | stats_kernels_rf       |
+| [0;32;49mSUCC[0m   | if_0005                    | 15 s                 | 197M | calc_kernel_el         |
+| [0;32;49mSUCC[0m   | if_0000                    | 10.296944444444446 h | 201M | get_similarity         |
++--------+----------------------------+----------------------+------+------------------------+
+protein_interaction
++--------+----------------------------+----------------------+------+------------------------+
+| Status | Folder                     | Time                 | Size | Job Name               |
++--------+----------------------------+----------------------+------+------------------------+
+| [0;32;49mSUCC[0m   | if_0002                    | 9.483333333333333 m  | 2.6G | calc_kernel_ka         |
+| [0;32;49mSUCC[0m   | if_0003                    | 43 s                 | 2.6G | calc_kernel_rf         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0003 | 9.916666666666666 m  | 5.5K | stats_kernels_el       |
+| [0;34;49mNOT[0m    | text2binary_matrix.py_0004 | -                    | 4.5K | stats_kernels_node2vec |
+| [0;31;49mABORT[0m  | if_0006                    | -                    | 1.3G | calc_kernel_node2vec   |
+| [0;32;49mSUCC[0m   | if_0001                    | 1 s                  | 206K | filter_net             |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0002 | 10.033333333333333 m | 5.5K | stats_kernels_ct       |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0000 | 8.1 m                | 5.5K | stats_kernels_ka       |
+| [0;32;49mSUCC[0m   | if_0004                    | 4.433333333333334 m  | 2.6G | calc_kernel_ct         |
+| [0;32;49mSUCC[0m   | text2binary_matrix.py_0001 | 10.266666666666667 m | 5.5K | stats_kernels_rf       |
+| [0;32;49mSUCC[0m   | if_0005                    | 6.6 m                | 2.6G | calc_kernel_el         |
+| [0;32;49mSUCC[0m   | if_0000                    | 10.15 m              | 2.6G | get_similarity         |
++--------+----------------------------+----------------------+------+------------------------+

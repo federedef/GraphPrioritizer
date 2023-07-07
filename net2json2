@@ -8,7 +8,7 @@
 		"Ontology": "GO",
 		"Process": "kernel",
 		"Source ": "biological_process",
-		"dsl": [
+		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
 			"get_similarity ['gene'] 'ont' sim_type='lin' add_to_object=True",
 			"write_matrix ('semantic_sims',('gene','gene'),'lin') 'similarity_matrix_bin'",
@@ -24,7 +24,7 @@
 		"Ontology": "GO",
 		"Process": "kernel",
 		"Source ": "cellular_component",
-		"dsl": [
+		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
 			"get_similarity ['gene'] 'ont' sim_type='lin' add_to_object=True",
 			"write_matrix ('semantic_sims',('gene','gene'),'lin') 'similarity_matrix_bin'",
@@ -40,7 +40,7 @@
 		"Ontology": "MONDO",
 		"Process": "kernel",
 		"Source ": "disease",
-		"dsl": [
+		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
 			"get_similarity ['gene'] 'ont' sim_type='lin' add_to_object=True",
 			"write_matrix ('semantic_sims',('gene','gene'),'lin') 'similarity_matrix_bin'",
@@ -55,7 +55,7 @@
 		"Ontology": "-",
 		"Process": "kernel",
 		"Source ": "gene_PS",
-		"dsl": [
+		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
 			"get_association_values ['gene'] 'ps' 'jaccard' add_to_object=True",
 			"get_association_values ['gene'] 'ps' 'counts' add_to_object=True",
@@ -72,7 +72,7 @@
 		"Ontology": "-",
 		"Process": "kernel",
 		"Source ": "gene_TF",
-		"dsl": [
+		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
 			"get_association_values ['gene'] 'TF' 'jaccard' add_to_object=True",
 			"get_association_values ['gene'] 'TF' 'counts' add_to_object=True",
@@ -89,7 +89,7 @@
 		"Ontology": "-",
 		"Process": "kernel",
 		"Source ": "gene_hgncGroup",
-		"dsl": [
+		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
 			"get_association_values ['gene'] 'group' 'jaccard' add_to_object=True",
 			"write_matrix ('associations',('gene','gene'),'jaccard') output_filename='similarity_matrix_bin'",
@@ -105,7 +105,7 @@
 		"Ontology": "GO",
 		"Process": "kernel",
 		"Source ": "molecular_function",
-		"dsl": [
+		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
 			"get_similarity ['gene'] 'ont' sim_type='lin' add_to_object=True",
 			"write_matrix ('semantic_sims',('gene','gene'),'lin') 'similarity_matrix_bin'",
@@ -120,7 +120,7 @@
 		"Ontology": "-",
 		"Process": "kernel",
 		"Source ": "pathway",
-		"dsl": [
+		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
 			"get_association_values ['gene'] 'pathway' 'jaccard' add_to_object=True",
 			"get_association_values ['gene'] 'pathway' 'counts' add_to_object=True",
@@ -138,26 +138,45 @@
 		"Ontology": "HPO",
 		"Process": "kernel",
 		"Source ": "phenotype",
-		"dsl": [
+		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
 			"get_similarity ['gene'] 'ont' sim_type='lin' add_to_object=True",
 			"write_matrix ('semantic_sims',('gene','gene'),'lin') 'similarity_matrix_bin'",
 			"write_stats_from_matrix ('semantic_sims',('gene','gene'),'lin')"
 		]
 	},
-	"protein_interaction": {
+	"string_ppi": {
 		"Filter": [
 			"filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_cutoff' options={'cutoff':700} add_to_object=True",
-			"write_matrix mat_keys=('modified_mats',('gene','gene'),'filtered') output_filename='similarity_matrix_bin'",
-			"write_stats_from_matrix mat_keys=('modified_mats',('gene','gene'),'filtered') output_filename='stats_from_matrix'"
+			"write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+			"write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix'"
 		],
 		"Format": "pair",
 		"Layers": "gene,HGNC:",
 		"Node_list": "-",
 		"Ontology": "-",
 		"Process": "kernel",
-		"Source ": "protein_interaction",
-		"dsl": [
+		"Source ": "string_ppi",
+		"Build_graph": [
+			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+			"generate_adjacency_matrix 'gene' 'gene'",
+			"write_matrix ('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"
+		]
+	},
+	"hippie_ppi": {
+		"Filter": [
+			"filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold': 0.1} add_to_object=True",
+			"write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+			"write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix'"
+		],
+		"Format": "pair",
+		"Layers": "gene,HGNC:",
+		"Node_list": "-",
+		"Ontology": "-",
+		"Process": "kernel",
+		"Source ": "hippie_ppi",
+		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
 			"generate_adjacency_matrix 'gene' 'gene'",
 			"write_matrix ('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
@@ -165,18 +184,16 @@
 		]
 	},
 	"genetic_interaction_effect_bicor": {
-		"Custom": "bicor",
 		"Filter": [],
-		"Format": "pair",
-		"Layers": "gene,HGNC:",
-		"Node_list": "-",
-		"Ontology": "-",
-		"Process": "kernel",
-		"Source ": "genetic_interaction_effect",
-		"dsl": [
-			"generate_adjacency_matrix 'gene' 'gene'",
-			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
-			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
+		"Format": "matrix",
+		"Layers": "gene,HGNC:;cell_line,ACH-",
+		"Node_list": ["DepMap_effect_rows", "DepMap_effect_cols"],
+		"Source ": "DepMap_effect",
+		"Build_graph": [
+			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+			"get_association_values ['gene'] 'ps' 'correlation' add_to_object=True",
+			"write_matrix ('associations',('gene','gene'),'correlation') output_filename='similarity_matrix_bin'",
+			"write_stats_from_matrix ('associations',('gene','gene'),'correlation')"]
 	},
 	"genetic_interaction_exprs_bicor": {
 		"Custom": "bicor",
@@ -187,7 +204,7 @@
 		"Ontology": "-",
 		"Process": "kernel",
 		"Source ": "genetic_interaction_exprs",
-		"dsl": [
+		"Build_graph": [
 			"generate_adjacency_matrix 'gene' 'gene'",
 			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
 			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
@@ -201,7 +218,7 @@
 		"Ontology": "-",
 		"Process": "kernel",
 		"Source ": "genetic_interaction_effect",
-		"dsl": [
+		"Build_graph": [
 			"generate_adjacency_matrix 'gene' 'gene'",
 			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
 			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
@@ -215,7 +232,7 @@
 		"Ontology": "-",
 		"Process": "kernel",
 		"Source ": "genetic_interaction_exprs",
-		"dsl": [
+		"Build_graph": [
 			"generate_adjacency_matrix 'gene' 'gene'",
 			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
 			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
@@ -229,7 +246,7 @@
 		"Ontology": "-",
 		"Process": "kernel",
 		"Source ": "genetic_interaction_effect",
-		"dsl": [
+		"Build_graph": [
 			"generate_adjacency_matrix 'gene' 'gene'",
 			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
 			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
@@ -243,7 +260,7 @@
 		"Ontology": "-",
 		"Process": "kernel",
 		"Source ": "genetic_interaction_exprs",
-		"dsl": [
+		"Build_graph": [
 			"generate_adjacency_matrix 'gene' 'gene'",
 			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
 			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
@@ -257,7 +274,7 @@
 		"Ontology": "-",
 		"Process": "umap",
 		"Source ": "genetic_interaction_effect",
-		"dsl": [
+		"Build_graph": [
 			"generate_adjacency_matrix 'gene' 'gene'",
 			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
 			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
@@ -271,7 +288,7 @@
 		"Ontology": "-",
 		"Process": "umap",
 		"Source ": "genetic_interaction_exprs",
-		"dsl": [
+		"Build_graph": [
 			"generate_adjacency_matrix 'gene' 'gene'",
 			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
 			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
@@ -285,7 +302,7 @@
 		"Ontology": "-",
 		"Process": "kernel",
 		"Source ": "paper_coDep",
-		"dsl": [
+		"build_graph": [
 			"generate_adjacency_matrix 'gene' 'gene'",
 			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
 			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
