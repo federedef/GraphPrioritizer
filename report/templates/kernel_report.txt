@@ -94,7 +94,8 @@
                                                 'showLegend' : True,
                                                 'graphOrientation' : 'horizontal',
                                                 'colorBy' : 'Kernel',
-                                                "segregateSamplesBy": ["Net"]
+                                                "segregateSamplesBy": ["Net"],
+                                                "axisTickScaleFontFactor": 0.2
                                                 })}
                 % endif
         </div>
