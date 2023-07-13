@@ -27,7 +27,6 @@ get_similarity){
     		netanalyzer.py -i ont_profs -f $format -l $layers -T [cpu] -O "ont:`semtools.py -d list | grep $ontology`" --dsl_script dsl 
     	else
     		netanalyzer.py -i $input_path/input_processed/$source -f $format -l $layers --dsl_script dsl
-    		cp preproc_metrics eyyyyyyyyyyyyyyyy 
     	fi
     fi
     cut -f 2,3 preproc_metrics > tmp
@@ -46,7 +45,7 @@ get_similarity){
 }
 
 
-%filter_net){
+filter_net){
 	resources: -m '20gb' -t '0-00:10:00'
 	source ~soft_bio_267/initializes/init_python
 	source ~/dev_py/myvenv/bin/activate
@@ -77,7 +76,7 @@ get_similarity){
 }
 
 
-%calc_kernel_[$kernels_varflow]){
+calc_kernel_[$kernels_varflow]){
 	resources: -c 16 -m '240gb' -t '2-00:00:00'
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
@@ -110,7 +109,7 @@ get_similarity){
   	fi
 }
 
-%stats_kernels_[$kernels_varflow]){
+stats_kernels_[$kernels_varflow]){
 	resources: -m '120gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_python
 	source ~/dev_py/myvenv/bin/activate

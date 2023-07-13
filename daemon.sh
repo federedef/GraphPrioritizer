@@ -11,22 +11,14 @@ export PATH=/mnt/home/users/bio_267_uma/federogc/sys_bio_lab_scripts:$input_path
 export autoflow_scripts=$input_path/scripts/autoflow_scripts
 daemon_scripts=$input_path/scripts/daemon_scripts
 export control_genes_folder=$input_path/control_genes
-export output_folder=$SCRATCH/executions/backupgenes
+export output_folder=$SCRATCH/executions/GraphPrioritizer
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="disease phenotype molecular_function biological_process cellular_component string_ppi hippie_ppi pathway gene_TF gene_hgncGroup genetic_interaction_effect_bicor gene_PS"
-#annotations="string_ppi pathway gene_TF gene_hgncGroup genetic_interaction_effect_bicor gene_PS"
-#annotations="pathway disease genetic_interaction_effect_bicor"
-#annotations="genetic_interaction_effect_bicor"
-#annotations="DepMap_effect_bicor"
-annotations="DepMap_effect_bicor hippie_ppi molecular_function"
-annotations="hippie_ppi"
+annotations="disease phenotype molecular_function biological_process cellular_component string_ppi hippie_ppi pathway gene_TF gene_hgncGroup DepMap_effect_bicor gene_PS"
 kernels="ka rf ct el node2vec"
-#kernels="ka rf ct el"
 integration_types="mean integration_mean_by_presence"
-#net2custom=$input_path'/net2custom' 
-net2custom=$input_path'/net2json2' 
+net2custom=$input_path'/net2json' 
 control_pos=$input_path'/control_pos'
 control_neg=$input_path'/control_neg'
 production_seedgens=$input_path'/production_seedgens'
@@ -208,31 +200,16 @@ elif [ "$exec_mode" == "white_list" ] ; then
   echo "Annotation files filtered"
   cd ../..
 
-elif [ "$exec_mode" == "control_preparation" ] ; then 
+elif [ "$exec_mode" == "process_control" ] ; then 
 
   $daemon_scripts/control_preparation.sh
 
-elif [ "$exec_mode" == "control_type" ] ; then 
 
-##################################################################
-# OPTIONAL STAGE : SEE IF THE RELATION BACKUP-GENSEED IS SYMMETRIC
-##################################################################
-  filter_feature=$3 # Paralogs, Not_Paralogs, ".*"
+elif [ "$exec_mode" == "get_control" ] ; then 
 
-  echo "$filter_feature"
+  cp $control_genes_folder/diseasegens/disease_gens ./control_pos
+  cp $control_genes_folder/diseasegens/non_disease_gens ./control_neg
 
-  if [ $add_opt == "reverse" ] ; then 
-      awk '{OFS="\t"}{print $2,$1,$3}' $control_genes_folder/backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.py -i - -x 1 -a 2 > ./control_pos
-      awk '{OFS="\t"}{print $2,$1,$3}' $control_genes_folder/backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.py -i - -x 1 -a 2 > ./control_neg   
-  elif [ $add_opt == "right" ] ; then 
-      awk '{OFS="\t"}{print $1,$2,$3}' $control_genes_folder/backupgens/backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.py -i - -x 1 -a 2 > ./control_pos
-      awk '{OFS="\t"}{print $1,$2,$3}' $control_genes_folder/backupgens/non_backup_gens | grep -w "$filter_feature" | cut -f 1,2 | aggregate_column_data.py -i - -x 1 -a 2 > ./control_neg
-  fi
-
-  if [ $add_opt == "disease" ] ; then
-    cp $control_genes_folder/diseasegens/disease_gens ./control_pos
-    cp $control_genes_folder/diseasegens/non_disease_gens ./control_neg
-  fi
 
 elif [ "$exec_mode" == "get_production_seedgenes" ] ; then 
 
@@ -257,7 +234,6 @@ elif [ "$exec_mode" == "kernels" ] ; then
   #######################################################
   #STAGE 2.1 PROCESS SIMILARITY AND OBTAIN KERNELS
   mkdir -p $output_folder/similarity_kernels
-  mkdir -p $output_folder/sk
 
 
   for annotation in $annotations ; do 
@@ -272,15 +248,8 @@ elif [ "$exec_mode" == "kernels" ] ; then
       process_type=`net2json_parser.py --net_id $annotation --json_path $net2custom | grep -P -w '^Process' | cut -f 2`
       echo $process_type
       net2json_parser.py --net_id $annotation --json_path $net2custom
-      if [ "$process_type" == "kernel" ] ; then
-        echo "Performing kernels without umap $annotation"
-        AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/sk/${annotation} $add_opt 
-        #AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt 
-      elif [ "$process_type" == "umap" ]; then
-        echo "Performing umap for $annotation"
-        AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/sk/${annotation} $add_opt 
-        #AutoFlow -w $autoflow_scripts/sim_umap.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt 
-      fi
+      echo "Performing kernels without umap $annotation"
+      AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt 
 
   done
 
@@ -293,13 +262,12 @@ elif [ "$exec_mode" == "ranking" ] ; then
   mkdir -p $output_folder/rankings
   method=$2
   
-  #cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path
-  cat  $output_folder/sk/*/*/ugot_path > $output_folder/sk/ugot_path
+  cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path
   for annotation in $annotations ; do 
     for kernel in $kernels ; do 
 
       #ugot_path="$output_folder/similarity_kernels/ugot_path"
-      ugot_path="$output_folder/sk/ugot_path"
+      ugot_path="$output_folder/similarity_kernels/ugot_path"
       folder_kernel_path=`awk '{print $0,NR}' $ugot_path | sort -k 5 -r -u | grep "${annotation}_$kernel" | awk '{print $4}'`
       echo ${folder_kernel_path}
       if [ ! -z ${folder_kernel_path} ] ; then # This kernel for this annotation is done? 
@@ -333,13 +301,13 @@ elif [ "$exec_mode" == "integrate" ] ; then
   #cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path # What I got?
   
   echo -e "$annotations" | tr -s " " "\n" > uwant
-  cat  $output_folder/sk/*/*/ugot_path > $output_folder/sk/ugot_path
-  filter_by_whitelist.py -f $output_folder/sk/ugot_path -c "1" -t uwant -o $output_folder/sk
+  cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path
+  filter_by_whitelist.py -f $output_folder/similarity_kernels/ugot_path -c "1" -t uwant -o $output_folder/similarity_kernels
   rm uwant
 
   for integration_type in ${integration_types} ; do 
 
-      ugot_path="$output_folder/sk/filtered_ugot_path"
+      ugot_path="$output_folder/similarity_kernels/filtered_ugot_path"
 
       autoflow_vars=`echo "
       \\$integration_type=${integration_type},
@@ -415,10 +383,10 @@ elif [ "$exec_mode" == "report" ] ; then
   mkdir -p $report_folder/img
 
   declare -A original_folders
-  original_folders[annotations_metrics]='sk'
-  original_folders[similarity_metrics]='sk'
-  original_folders[filtered_similarity_metrics]='sk'
-  original_folders[uncomb_kernel_metrics]='sk'
+  original_folders[annotations_metrics]='similarity_kernels'
+  original_folders[similarity_metrics]='similarity_kernels'
+  original_folders[filtered_similarity_metrics]='similarity_kernels'
+  original_folders[uncomb_kernel_metrics]='similarity_kernels'
   original_folders[comb_kernel_metrics]='integrations'
 
   original_folders[non_integrated_rank_summary]='rankings'
