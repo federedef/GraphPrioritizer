@@ -1,4 +1,4 @@
-%get_similarity){
+get_similarity){
 	resources: -m '200gb' -t '4-00:00:00' -c 4
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
@@ -14,23 +14,25 @@
 	format=`grep -P -w '^Format' net_params | cut -f 2`
 	layers=`grep -P -w '^Layers' net_params | cut -f 2`
 	ontology=`grep -P -w '^Ontology' net_params | cut -f 2`
-	node_files=`grep -P -w '^Node_list' net_params | cut -f 2 | tr -s '\n' ','`
+	node_files=`grep -P -w '^Node_list' net_params | cut -f 2 | awk -v prefix="$input_path/input_processed/" '{print prefix $0}' | tr -s '\n' ','`
 	custom_parameters=`grep -P -w '^Custom' net_params | cut -f 2`
 	grep -P -w '^Build_graph' net_params | cut -f 2 > dsl
 	echo -e "$source" > tracker_annotation
 	?
 	if [ "$format" == "matrix" ] ; then
-		netanalyzer.py -i $input_path/input_processed/$source -n $node_files -f $format -l $layers --dsl_script dsl
+		netanalyzer.py -i $input_path/input_processed/$source -n $node_files -f $format -l $layers --both_repre_formats --dsl_script dsl
     else                                                                                                                                                  
     	if [ "$ontology" != "-" ] ; then
     		desaggregate_column_data.py -i $input_path/input_processed/$source -x 2 > ont_profs
     		netanalyzer.py -i ont_profs -f $format -l $layers -T [cpu] -O "ont:`semtools.py -d list | grep $ontology`" --dsl_script dsl 
     	else
-    		netanalyzer.py -i $input_path/input_processed/$source -f $format -l $layers --dsl_script dsl 
+    		netanalyzer.py -i $input_path/input_processed/$source -f $format -l $layers --dsl_script dsl
+    		cp preproc_metrics eyyyyyyyyyyyyyyyy 
     	fi
-    	cut -f 2,3 preproc_metrics > tmp
-    	mv tmp preproc_metrics
     fi
+    cut -f 2,3 preproc_metrics > tmp
+    cp preproc_metrics original_preproc_metrics
+    mv tmp preproc_metrics
     mv similarity_matrix_bin_rowIds similarity_matrix_bin.lst
 
 
@@ -44,7 +46,7 @@
 }
 
 
-filter_net){
+%filter_net){
 	resources: -m '20gb' -t '0-00:10:00'
 	source ~soft_bio_267/initializes/init_python
 	source ~/dev_py/myvenv/bin/activate
@@ -56,10 +58,13 @@ filter_net){
 		rm stats_from_matrix
 	fi
 	?
-	if [ ! "$cutoff_filter" == "-" -a ! "$cutoff_filter" == "False" ] ; then
+	if [ -s dsl_filter ] ; then
+		echo "filtering matrix"
     	netanalyzer.py -i get_similarity)/similarity_matrix_bin.npy -f "bin" -l "gene" -n similarity_matrix_bin.lst --dsl_script dsl_filter
+		mv similarity_matrix_bin_rowIds similarity_matrix_bin.lst
 	else 
-		ln -s get_similarity)/similarity_matrix_bin.npy ./similarity_matrix_bin.npy
+		echo "Not filtering matrix"
+		ln -sf get_similarity)/similarity_matrix_bin.npy ./similarity_matrix_bin.npy
     fi
 
     if [ -s stats_from_matrix ] ; then 
@@ -93,7 +98,7 @@ filter_net){
 	?
 	if [ "(*)" == "node2vec" ] ; then
 		#nod2vec.py -i filter_net)/similarity_matrix_bin.npy 
-		netanalyzer.py -i filter_net)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin --both_repre_formats                                                                 
+		netanalyzer.py -i filter_net)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin --both_repre_formats                                                           
 	else
 		netanalyzer.py -i filter_net)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
 	fi
@@ -114,7 +119,7 @@ filter_net){
 		rm tracker
 		# TODO: Remove this part and check
 	fi
-	if [ -s kernel_metrics ] ; 
+	if [ -s kernel_metrics ] ; then
 		rm kernel_metrics
 	fi
 	ln -s !calc_kernel_*!/tracker

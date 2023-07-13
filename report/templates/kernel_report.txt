@@ -23,7 +23,7 @@
 
 
 <div style="width:90%; background-color:#FFFFFF; margin:50 auto; align-content: center;">
-        <h1 style="text-align:center; background-color:#ecf0f1, color: powderblue; ">Analysis of the algorithm: From kernels to backup genes.</h1>
+        <h1 style="text-align:center; background-color:#ecf0f1, color: powderblue; ">Analysis of the algorithm: From kernels to prioritized genes.</h1>
 
         <h2 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Kernelization section </h2>
 

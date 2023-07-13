@@ -165,11 +165,7 @@
 		]
 	},
 	"hippie_ppi": {
-		"Filter": [
-			"filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold': 0.1} add_to_object=True",
-			"write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
-			"write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix'"
-		],
+		"Filter": [],
 		"Format": "pair",
 		"Layers": "gene,HGNC:",
 		"Node_list": "-",
@@ -183,19 +179,20 @@
 			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"
 		]
 	},
-	"genetic_interaction_effect_bicor": {
+	"DepMap_effect_bicor": {
 		"Filter": [],
 		"Format": "matrix",
-		"Layers": "gene,HGNC:;cell_line,ACH-",
+		"Layers": "cell_line,ACH-;gene,HGNC:",
 		"Node_list": ["DepMap_effect_rows", "DepMap_effect_cols"],
 		"Source ": "DepMap_effect",
+		"Process": "kernel",
 		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
-			"get_association_values ['gene'] 'ps' 'correlation' add_to_object=True",
+			"get_association_values ['gene'] 'cell_line' 'correlation' add_to_object=True pvalue=0.1",
 			"write_matrix ('associations',('gene','gene'),'correlation') output_filename='similarity_matrix_bin'",
 			"write_stats_from_matrix ('associations',('gene','gene'),'correlation')"]
 	},
-	"genetic_interaction_exprs_bicor": {
+	"DepMap_exprs_bicor": {
 		"Custom": "bicor",
 		"Filter": [],
 		"Format": "-",
@@ -203,13 +200,13 @@
 		"Node_list": "-",
 		"Ontology": "-",
 		"Process": "kernel",
-		"Source ": "genetic_interaction_exprs",
+		"Source ": "DepMap_exprs",
 		"Build_graph": [
 			"generate_adjacency_matrix 'gene' 'gene'",
 			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
 			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
 	},
-	"genetic_interaction_effect": {
+	"DepMap_effect": {
 		"Custom": "pearson",
 		"Filter": [],
 		"Format": "-",
@@ -217,13 +214,13 @@
 		"Node_list": "-",
 		"Ontology": "-",
 		"Process": "kernel",
-		"Source ": "genetic_interaction_effect",
+		"Source ": "DepMap_effect",
 		"Build_graph": [
 			"generate_adjacency_matrix 'gene' 'gene'",
 			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
 			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
 	},
-	"genetic_interaction_exprs": {
+	"DepMap_exprs": {
 		"Custom": "pearson",
 		"Filter": [],
 		"Format": "-",
@@ -231,13 +228,13 @@
 		"Node_list": "-",
 		"Ontology": "-",
 		"Process": "kernel",
-		"Source ": "genetic_interaction_exprs",
+		"Source ": "DepMap_exprs",
 		"Build_graph": [
 			"generate_adjacency_matrix 'gene' 'gene'",
 			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
 			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
 	},
-	"genetic_interaction_effect_spearman": {
+	"DepMap_effect_spearman": {
 		"Custom": "spearman",
 		"Filter": [],
 		"Format": "-",
@@ -245,13 +242,13 @@
 		"Node_list": "-",
 		"Ontology": "-",
 		"Process": "kernel",
-		"Source ": "genetic_interaction_effect",
+		"Source ": "DepMap_effect",
 		"Build_graph": [
 			"generate_adjacency_matrix 'gene' 'gene'",
 			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
 			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
 	},
-	"genetic_interaction_exprs_spearman": {
+	"DepMap_exprs_spearman": {
 		"Custom": "spearman",
 		"Filter": [],
 		"Format": "-",
@@ -259,13 +256,13 @@
 		"Node_list": "-",
 		"Ontology": "-",
 		"Process": "kernel",
-		"Source ": "genetic_interaction_exprs",
+		"Source ": "DepMap_exprs",
 		"Build_graph": [
 			"generate_adjacency_matrix 'gene' 'gene'",
 			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
 			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
 	},
-	"genetic_interaction_effect_umap": {
+	"DepMap_effect_umap": {
 		"Custom": "-",
 		"Filter": [],
 		"Format": "-",
@@ -273,13 +270,13 @@
 		"Node_list": "-",
 		"Ontology": "-",
 		"Process": "umap",
-		"Source ": "genetic_interaction_effect",
+		"Source ": "DepMap_effect",
 		"Build_graph": [
 			"generate_adjacency_matrix 'gene' 'gene'",
 			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
 			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
 	},
-	"genetic_interaction_exprs_umap": {
+	"DepMap_exprs_umap": {
 		"Custom": "spearman",
 		"Filter": [],
 		"Format": "-",
@@ -287,7 +284,7 @@
 		"Node_list": "-",
 		"Ontology": "-",
 		"Process": "umap",
-		"Source ": "genetic_interaction_exprs",
+		"Source ": "DepMap_exprs",
 		"Build_graph": [
 			"generate_adjacency_matrix 'gene' 'gene'",
 			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",

@@ -19,7 +19,9 @@ annotations="disease phenotype molecular_function biological_process cellular_co
 #annotations="string_ppi pathway gene_TF gene_hgncGroup genetic_interaction_effect_bicor gene_PS"
 #annotations="pathway disease genetic_interaction_effect_bicor"
 #annotations="genetic_interaction_effect_bicor"
-annotations="string_ppi"
+#annotations="DepMap_effect_bicor"
+annotations="DepMap_effect_bicor hippie_ppi molecular_function"
+annotations="hippie_ppi"
 kernels="ka rf ct el node2vec"
 #kernels="ka rf ct el"
 integration_types="mean integration_mean_by_presence"
@@ -151,26 +153,19 @@ elif [ "$exec_mode" == "process_download" ] ; then
 
   # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 
   sed 's/([0-9]*)//1g' ./input/input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/input_raw/CRISPR_gene_effect_symbol
-  cut -f 1 -d "," ./input/input_raw/CRISPR_gene_effect | tr -d "DepMap_ID"  > ./input/input_raw/DepMap_effect_rows
+  cut -f 1 -d "," ./input/input_raw/CRISPR_gene_effect | tr -d "DepMap_ID"  | tr -s "\t" "\n" | sed '1d' >  ./input/input_processed/DepMap_effect_rows
   standard_name_replacer.py -I ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_effect_symbol -c 1 -u --transposed > ./input/input_processed/genetic_interaction_effect_values
-  head -n 1 ./input/input_processed/genetic_interaction_effect_values >  ./input/input_processed/DepMap_effect_cols
-  sed '1d' ./input/input_processed/genetic_interaction_effect_values > ./input/input_processed/DepMap_effect_values
+  head -n 1 ./input/input_processed/genetic_interaction_effect_values | tr -s "\t" "\n" >  ./input/input_processed/DepMap_effect_cols
+  sed '1d' ./input/input_processed/genetic_interaction_effect_values > ./input/input_processed/DepMap_effect
   rm ./input/input_raw/CRISPR_gene_effect_symbol ./input/input_processed/genetic_interaction_effect_values
 
   # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 
   sed 's/([0-9]*)//1g' ./input/input_raw/CRISPR_gene_exprs | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/input_raw/CRISPR_gene_exprs_symbol
-  cut -f 1 -d "," ./input/input_raw/CRISPR_gene_exprs | tr -d "DepMap_ID"  > ./input/input_raw/DepMap_exprs_rows
+  cut -f 1 -d "," ./input/input_raw/CRISPR_gene_exprs | tr -d "DepMap_ID"  | tr -s "\t" "\n" | sed '1d' >  ./input/input_processed/DepMap_exprs_rows
   standard_name_replacer.py -I ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_exprs_symbol -c 1 -u --transposed > ./input/input_processed/genetic_interaction_exprs_values
-  head -n 1 ./input/input_processed/genetic_interaction_exprs_values >  ./input/input_processed/DepMap_exprs_cols
-  sed '1d' ./input/input_processed/genetic_interaction_exprs_values > ./input/input_processed/DepMap_exprs_values
+  head -n 1 ./input/input_processed/genetic_interaction_exprs_values | tr -s "\t" "\n" >   ./input/input_processed/DepMap_exprs_cols
+  sed '1d' ./input/input_processed/genetic_interaction_exprs_values > ./input/input_processed/DepMap_exprs
   rm ./input/input_raw/CRISPR_gene_exprs_symbol ./input/input_processed/genetic_interaction_exprs_values
-
-  # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 
-  sed 's/([0-9]*)//1g' ./input/input_raw/CRISPR_gene_exprs | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/input_raw/CRISPR_gene_exprs_symbol
-  cut -f 1 -d "," ./input/input_raw/CRISPR_gene_exprs | tr -d "DepMap_ID"  > ./input/input_raw/index_column
-  standard_name_replacer.py -I ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_exprs_symbol -c 1 -u --transposed > ./input/input_processed/genetic_interaction_exprs_values
-  paste -d "\t" ./input/input_raw/index_column  ./input/input_processed/genetic_interaction_exprs_values >  ./input/input_processed/DepMap_exprs
-  rm ./input/input_raw/CRISPR_gene_exprs_symbol ./input/input_raw/index_column ./input/input_processed/genetic_interaction_exprs_values
 
   # Translating to GENE-TF interaction.ls
   standard_name_replacer.py -i ./input/input_raw/gene_TF -I ./translators/symbol_HGNC -c 1,2 -u | sed 's/HGNC:/TF:/2g' > ./input/input_processed/gene_TF
@@ -253,31 +248,6 @@ elif [ "$exec_mode" == "get_production_seedgenes" ] ; then
     standard_name_replacer.py -I ./translators/Ensemble_HGNC -i disaggregated_production_seedgens -c 2 -u | aggregate_column_data.py -i - -x 1 -a 2 > production_seedgens
     rm disaggregated_production_seedgens
   fi
-
-elif [ "$exec_mode" == "input_stats" ] ; then 
-
-##################################################################
-# OPTIONAL STAGE : STABLISH THE STATS FOR EACH LAYER
-##################################################################
-  
-  #if [ -s $output_folder/input_stats ] ; then
-  #  rm -r $output_folder/input_stats
-  #fi
-  #mkdir -p $output_folder/input_stats
-
-  for annotation in $annotations ; do 
-
-      autoflow_vars=`echo " 
-      \\$annotation=${annotation},
-      \\$input_path=$input_path/input,
-      \\$net2custom=$net2custom
-      " | tr -d [:space:]`
-
-      sleep 2
-
-      AutoFlow -w $autoflow_scripts/input_stats.af -V $autoflow_vars -o $output_folder/input_stats/${annotation} $add_opt -b
-
-  done
 
 #########################################################
 # STAGE 2 AUTOFLOW EXECUTION
