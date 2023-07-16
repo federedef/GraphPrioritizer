@@ -1,7 +1,6 @@
 {
 	"biological_process": {
-		"Custom": "-",
-		"Filter": "-",
+		"Filter": [],
 		"Format": "pair",
 		"Layers": "ont,GO:;gene,HGNC:",
 		"Node_list": "-",
@@ -15,7 +14,6 @@
 		]
 	},
 	"cellular_component": {
-		"Custom": "-",
 		"Filter": [],
 		"Format": "pair",
 		"Layers": "ont,GO:;gene,HGNC:",
@@ -30,7 +28,6 @@
 		]
 	},
 	"disease": {
-		"Custom": "-",
 		"Filter": [],
 		"Format": "pair",
 		"Layers": "ont,MONDO:;gene,HGNC:",
@@ -55,7 +52,7 @@
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
 			"get_association_values ['gene'] 'ps' 'jaccard' add_to_object=True",
 			"get_association_values ['gene'] 'ps' 'counts' add_to_object=True",
-			"mat_vs_mat_operation ('associations',('gene','gene'),'jaccard') ('associations',('gene','gene'),'counts') operation='filter' options={'cutoff':2} add_to_object=True",
+			"mat_vs_mat_operation ('associations',('gene','gene'),'jaccard') ('associations',('gene','gene'),'counts') operation='filter' options={'cutoff':2,'cutoff_type':'greater'} add_to_object=True",
 			"write_matrix ('associations',('gene','gene'),'jaccard') output_filename='similarity_matrix_bin'",
 			"write_stats_from_matrix ('associations',('gene','gene'),'jaccard')"
 		]
@@ -71,7 +68,7 @@
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
 			"get_association_values ['gene'] 'TF' 'jaccard' add_to_object=True",
 			"get_association_values ['gene'] 'TF' 'counts' add_to_object=True",
-			"mat_vs_mat_operation ('associations',('gene','gene'),'jaccard') ('associations',('gene','gene'),'counts') operation='filter' options={'cutoff':3} add_to_object=True",
+			"mat_vs_mat_operation ('associations',('gene','gene'),'jaccard') ('associations',('gene','gene'),'counts') operation='filter' options={'cutoff':3,'cutoff_type':'greater'} add_to_object=True",
 			"write_matrix ('associations',('gene','gene'),'jaccard') output_filename='similarity_matrix_bin'",
 			"write_stats_from_matrix ('associations',('gene','gene'),'jaccard')"
 		]
@@ -91,7 +88,6 @@
 		]
 	},
 	"molecular_function": {
-		"Custom": "-",
 		"Filter": [],
 		"Format": "pair",
 		"Layers": "ont,GO:;gene,HGNC:",
@@ -116,13 +112,12 @@
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
 			"get_association_values ['gene'] 'pathway' 'jaccard' add_to_object=True",
 			"get_association_values ['gene'] 'pathway' 'counts' add_to_object=True",
-			"mat_vs_mat_operation ('associations',('gene','gene'),'jaccard') ('associations',('gene','gene'),'counts') operation='filter' options={'cutoff':3} add_to_object=True",
+			"mat_vs_mat_operation ('associations',('gene','gene'),'jaccard') ('associations',('gene','gene'),'counts') operation='filter' options={'cutoff':3,'cutoff_type':'greater'} add_to_object=True",
 			"write_matrix ('associations',('gene','gene'),'jaccard') output_filename='similarity_matrix_bin'",
 			"write_stats_from_matrix ('associations',('gene','gene'),'jaccard')"
 		]
 	},
 	"phenotype": {
-		"Custom": "-",
 		"Filter": [],
 		"Format": "pair",
 		"Layers": "ont,HP:;gene,HGNC:",
@@ -168,7 +163,7 @@
 			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"
 		]
 	},
-	"DepMap_effect_bicor": {
+	"DepMap_effect_pearson": {
 		"Filter": [],
 		"Format": "matrix",
 		"Layers": "cell_line,ACH-;gene,HGNC:",
@@ -180,8 +175,7 @@
 			"write_matrix ('associations',('gene','gene'),'correlation') output_filename='similarity_matrix_bin'",
 			"write_stats_from_matrix ('associations',('gene','gene'),'correlation')"]
 	},
-	"DepMap_exprs_bicor": {
-		"Custom": "bicor",
+	"DepMap_exprs_pearson": {
 		"Filter": [],
 		"Format": "-",
 		"Layers": "-",
@@ -189,38 +183,12 @@
 		"Ontology": "-",
 		"Source ": "DepMap_exprs",
 		"Build_graph": [
-			"generate_adjacency_matrix 'gene' 'gene'",
-			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
-			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
-	},
-	"DepMap_effect": {
-		"Custom": "pearson",
-		"Filter": [],
-		"Format": "-",
-		"Layers": "-",
-		"Node_list": "-",
-		"Ontology": "-",
-		"Source ": "DepMap_effect",
-		"Build_graph": [
-			"generate_adjacency_matrix 'gene' 'gene'",
-			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
-			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
-	},
-	"DepMap_exprs": {
-		"Custom": "pearson",
-		"Filter": [],
-		"Format": "-",
-		"Layers": "-",
-		"Node_list": "-",
-		"Ontology": "-",
-		"Source ": "DepMap_exprs",
-		"Build_graph": [
-			"generate_adjacency_matrix 'gene' 'gene'",
-			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
-			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
+			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+			"get_association_values ['gene'] 'cell_line' 'correlation' add_to_object=True pvalue=0.1",
+			"write_matrix ('associations',('gene','gene'),'correlation') output_filename='similarity_matrix_bin'",
+			"write_stats_from_matrix ('associations',('gene','gene'),'correlation')"]
 	},
 	"DepMap_effect_spearman": {
-		"Custom": "spearman",
 		"Filter": [],
 		"Format": "-",
 		"Layers": "-",
@@ -228,12 +196,12 @@
 		"Ontology": "-",
 		"Source ": "DepMap_effect",
 		"Build_graph": [
-			"generate_adjacency_matrix 'gene' 'gene'",
-			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
-			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
+			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+			"get_association_values ['gene'] 'cell_line' 'correlation' add_to_object=True pvalue=0.1 corr_type='spearman'",
+			"write_matrix ('associations',('gene','gene'),'correlation') output_filename='similarity_matrix_bin'",
+			"write_stats_from_matrix ('associations',('gene','gene'),'correlation')"]
 	},
 	"DepMap_exprs_spearman": {
-		"Custom": "spearman",
 		"Filter": [],
 		"Format": "-",
 		"Layers": "-",
@@ -241,12 +209,38 @@
 		"Ontology": "-",
 		"Source ": "DepMap_exprs",
 		"Build_graph": [
-			"generate_adjacency_matrix 'gene' 'gene'",
-			"write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
-			"write_stats_from_matrix ('adjacency_matrices',('gene','gene'))"]
+			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+			"get_association_values ['gene'] 'cell_line' 'correlation' add_to_object=True pvalue=0.1 corr_type='spearman'",
+			"write_matrix ('associations',('gene','gene'),'correlation') output_filename='similarity_matrix_bin'",
+			"write_stats_from_matrix ('associations',('gene','gene'),'correlation')"]
+	},
+	"DepMap_effect_bicor": {
+		"Filter": [],
+		"Format": "-",
+		"Layers": "-",
+		"Node_list": "-",
+		"Ontology": "-",
+		"Source ": "DepMap_effect",
+		"Build_graph": [
+			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+			"get_association_values ['gene'] 'cell_line' 'correlation' add_to_object=True pvalue=0.1",
+			"write_matrix ('associations',('gene','gene'),'correlation') output_filename='similarity_matrix_bin'",
+			"write_stats_from_matrix ('associations',('gene','gene'),'correlation')"]
+	},
+	"DepMap_exprs_bicor": {
+		"Filter": [],
+		"Format": "-",
+		"Layers": "-",
+		"Node_list": "-",
+		"Ontology": "-",
+		"Source ": "DepMap_exprs",
+		"Build_graph": [
+			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+			"get_association_values ['gene'] 'cell_line' 'correlation' add_to_object=True pvalue=0.1",
+			"write_matrix ('associations',('gene','gene'),'correlation') output_filename='similarity_matrix_bin'",
+			"write_stats_from_matrix ('associations',('gene','gene'),'correlation')"]
 	},
 	"genetic_interaction_paper": {
-		"Custom": "-",
 		"Filter": [],
 		"Format": "-",
 		"Layers": "-",

@@ -16,7 +16,8 @@ report_folder=$output_folder/report
 
 # Custom variables.
 annotations="disease phenotype molecular_function biological_process cellular_component string_ppi hippie_ppi pathway gene_TF gene_hgncGroup DepMap_effect_bicor gene_PS"
-kernels="ka rf ct el node2vec"
+#annotations="molecular_function"
+kernels="ka rf ct el node2vec raw_sim"
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2json' 
 control_pos=$input_path'/control_pos'
@@ -167,7 +168,7 @@ elif [ "$exec_mode" == "process_download" ] ; then
    | desaggregate_column_data.py -i "-" -x 2 | sed 's/\t/\tGROUP:/1g' | sed 1d > ./input/input_processed/gene_hgncGroup
 
   # Formatting PS-Genes
-  get_PS_gene_relation.py -i "/mnt/home/users/bio_267_uma/federogc/projects/backupgenes/input/phenotypic_series/series_data" -o "./input/input_processed/PS_genes"
+  get_PS_gene_relation.py -i "/mnt/home/users/bio_267_uma/federogc/projects/GraphPrioritizer/input/phenotypic_series/series_data" -o "./input/input_processed/PS_genes"
   desaggregate_column_data.py -i ./input/input_processed/PS_genes -x 2 > ./input/input_processed/tmp 
   standard_name_replacer.py -i ./input/input_processed/tmp -I ./translators/symbol_HGNC -c 2 -u | awk 'BEGIN{FS="\t";OFS="\t"}{print $2,$1}' > ./input/input_processed/gene_PS
   rm ./input/input_processed/PS_genes ./input/input_processed/tmp 

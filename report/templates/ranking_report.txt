@@ -20,7 +20,7 @@
         if plotter.hash_vars.get('parsed_annotation_grade_metrics') is not None:
                 order_columns('parsed_annotation_grade_metrics',0)
 
-        img_path="/mnt/scratch/users/bio_267_uma/federogc/executions/backupgenes/report/img/"
+        img_path="/mnt/scratch/users/bio_267_uma/federogc/executions/GraphPrioritizer/report/img/"
         
 %>
 <div style="width:90%; background-color:#FFFFFF; margin:50 auto; align-content: center;">
@@ -37,7 +37,7 @@
                                  x_label = 'Number of Backup pairs present',
                                  height = '400px', width= '400px',
                                  var_attr = [1,2],
-                                 title = "Backup Pairs Coverage By Layer Non Integrated",
+                                 title = "Backup Pairs Coverage by Layers before Integration",
                                  config = {
                                         'showLegend' : True,
                                         'graphOrientation' : 'horizontal',
@@ -49,7 +49,7 @@
                         % if plotter.hash_vars.get('parsed_integrated_rank_pos_cov') is not None: 
                                 ${plotter.barplot(id= "parsed_integrated_rank_pos_cov", fields= [1,3] , header= True, responsive= False,
                                         height= '400px', width= '400px', x_label= 'Number of Backup pairs present', var_attr= [1,2],
-                                        title = "Backup Pairs Coverage By Layer Integrated",
+                                        title = "Backup Pairs Coverage by Layers after Integration",
                                         config = {
                                                 'showLegend' : True,
                                                 'graphOrientation' : 'horizontal',
@@ -63,8 +63,8 @@
                 <div style="margin-right: 10px;">
                                 % if plotter.hash_vars.get('non_integrated_rank_cdf') is not None: 
                                         ${plotter.boxplot(id= 'non_integrated_rank_cdf', header= True, row_names= False, default= False, fields= [5],  var_attr= [0,1,2], group = "kernel",
-                                           title= "Distribution of non zero ranks in dataset by Non Integrated kernels",
-                                                x_label= "Percentile",
+                                           title= "Distribution of Non-Zero Ranks in Dataset by Kernels before Integration",
+                                                x_label= "Percentile/100",
                                                 config= {
                                                         "graphOrientation": "vertical",
                                                         "colorBy" : "kernel",
@@ -76,12 +76,12 @@
                 <div style="margin-left: 10px;">
                                 % if plotter.hash_vars.get('integrated_rank_cdf') is not None: 
                                         ${plotter.boxplot(id= 'integrated_rank_cdf', header= True, row_names= False, default= False, fields = [5], var_attr= [0,1,2], group= "kernel", 
-                                                title= "Distribution of non zero ranks in dataset by Integrated kernels",
-                                                xlabel= "Percentile",
+                                                title= "Distribution of Non-Zero Ranks in Dataset by Kernels after Integration",
+                                                xlabel= "Percentile/100",
                                                 config= {
                                                         "graphOrientation": "vertical",
-                                                        "xAxisTitle": "Percentile",
                                                         "colorBy" : "kernel",
+                                                        "xAxisTitle": "Percentile/100",
                                                         "groupingFactors" :
                                                         ["kernel"],
                                                         "segregateSamplesBy": "integration"})}
@@ -97,8 +97,8 @@
                         % if plotter.hash_vars.get("parsed_non_integrated_rank_summary") is not None: 
                                 ${plotter.line(id= "parsed_non_integrated_rank_summary", fields= [0, 7, 13, 8], header= True, row_names= True,
                                         responsive= False,
-                                        height= '400px', width= '400px', x_label= 'Percentile',
-                                        title= "Distribution of ROC-AUC in bootstrap for non integrated kernels",
+                                        height= '400px', width= '400px', x_label= 'AUC',
+                                        title= "Bootstrap Distribution of ROC-AUC for Kernels before Integration",
                                         config= {
                                                 'showLegend' : True,
                                                 'graphOrientation' : 'vertical',
@@ -109,8 +109,8 @@
                         % if plotter.hash_vars.get('parsed_integrated_rank_summary') is not None: 
                                 ${plotter.line(id= "parsed_integrated_rank_summary", fields=  [0, 7, 13, 8], header= True, row_names= True,
                                         responsive= False,
-                                        height= '400px', width= '400px', x_label= 'Percentile',
-                                        title= "Distribution of ROC-AUC in bootstrap for integrated kernels",
+                                        height= '400px', width= '400px', x_label= 'AUC',
+                                        title= "Bootstrap Distribution of ROC-AUC for Kernels after Integration",
                                         config= {
                                                 'showLegend' : True,
                                                 'graphOrientation' : 'vertical',
@@ -122,8 +122,8 @@
         <div style="overflow: hidden; display: flex; flex-direction: column; align-items: center;">
                 % if plotter.hash_vars.get("non_integrated_rank_cdf") is not None: 
                         ${plotter.scatter2D(id=  "non_integrated_rank_cdf", fields=  [5,6] , header=  True, row_names=  False, responsive=  False,
-                                height=  '400px', width=  '400px', x_label=  'percentiles', var_attr=  [0,1,2], y_label= "Cummulative frequency",
-                                title=  "CDF plot of non zero scores from non integrated kernels",
+                                height=  '400px', width=  '400px', x_label=  'Percentile/100', var_attr=  [0,1,2], y_label= "Cumulative frequency",
+                                title=  "CDF for Non-Zero Scores Generated by Kernels before Integration",
                                 config=  {
                                         'showLegend' : True,
                                         'lineBy' : 'kernel',
@@ -134,15 +134,15 @@
         </div>
 
         <div style="overflow: hidden; text-align:center">
-                <p style="text-align:center;"> ROC plots of non integrated kernels </p> 
+                <p style="text-align:center;"> ROC Curves for Kernels before Integration </p> 
                 ${ plotter.embed_img(img_path+"non_integrated_ROC.png","width='700' height='700'")}
         </div>
 
         <div style="overflow: hidden; display: flex; flex-direction: column; align-items: center;">
                 % if plotter.hash_vars.get("integrated_rank_cdf") is not None: 
                         ${plotter.scatter2D(id=  "integrated_rank_cdf", fields=  [5,6] , header=  True, row_names=  False, responsive=  False,
-                                height=  '400px', width=  '400px', x_label=  'percentiles', var_attr=  [0,1,2], y_label= "Cummulative frequency",
-                                title=  "CDF plot of non zero scores from integrated kernels",
+                                height=  '400px', width=  '400px', x_label=  'Percentile/100', var_attr=  [0,1,2], y_label= "Cumulative frequency",
+                                title=  "CDF for Non-Zero Scores Generated by Kernels after Integration",
                                 config=  {
                                         'showLegend' : True,
                                         'lineBy' : 'kernel',
@@ -154,7 +154,7 @@
 
 
         <div style="overflow: hidden; text-align:center">
-                <p style="text-align:center;"> ROC plots of integrated kernels </p> 
+                <p style="text-align:center;"> ROC Curves for Kernels after Integration </p> 
                  % if os.path.exists(img_path+"integrated_ROC.png"): 
                         ${ plotter.embed_img(img_path+"integrated_ROC.png","width='700' height='700'")}
                  % endif

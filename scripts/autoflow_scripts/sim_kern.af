@@ -1,4 +1,4 @@
-get_similarity){
+%get_similarity){
 	resources: -m '200gb' -t '4-00:00:00' -c 4
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
@@ -45,7 +45,7 @@ get_similarity){
 }
 
 
-filter_net){
+%filter_net){
 	resources: -m '20gb' -t '0-00:10:00'
 	source ~soft_bio_267/initializes/init_python
 	source ~/dev_py/myvenv/bin/activate
@@ -76,7 +76,7 @@ filter_net){
 }
 
 
-calc_kernel_[$kernels_varflow]){
+%calc_kernel_[$kernels_varflow]){
 	resources: -c 16 -m '240gb' -t '2-00:00:00'
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
@@ -98,6 +98,8 @@ calc_kernel_[$kernels_varflow]){
 	if [ "(*)" == "node2vec" ] ; then
 		#nod2vec.py -i filter_net)/similarity_matrix_bin.npy 
 		netanalyzer.py -i filter_net)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin --both_repre_formats                                                           
+	elif [ "(*)" == "raw_sim" ] ; then
+		ln -s filter_net)/similarity_matrix_bin.npy kernel_matrix_bin.npy
 	else
 		netanalyzer.py -i filter_net)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
 	fi
