@@ -9,15 +9,18 @@ def write_file(output_name, data):
 		for row in data:
 			f.write("\t".join(str(el) for el in row) + "\n")
 
-def add_tags(file2tag, tags, group_column=0, cases_column=1):
+def add_tags(file2tag, tags, group_column=0, cases_column=1, negative_background = False):
 	tagged_file=[]
 	for row in file2tag: 
 		group = str(row[group_column])
 		case_for_group = row[cases_column]
 		if tags.get(group) is not None:
-			if tags[group][case_for_group] is not None:
+			if tags[group].get(case_for_group) is not None:
 				row.append(tags[group][case_for_group])
-			tagged_file.append(row)
+				tagged_file.append(row)
+			elif negative_background:
+				row.append(0)
+				tagged_file.append(row)
 	return tagged_file
 
 def load_file(file):
@@ -51,6 +54,7 @@ parser.add_argument("-g", "--group_column", type=int, default=0, help="The index
 parser.add_argument("-c", "--cases_column", type=int, default=1, help="The index to the column of cases")
 parser.add_argument("-t", "--tag_file", default=None, help="The root to the file to add the tags")
 parser.add_argument("-o", "--output_name", default="added_tags", help="The name of the ranked file")
+parser.add_argument("-n", "--negative_background", default=False, action="store_true", help="add it if negative background wanted")
 
 options = parser.parse_args()
 
@@ -61,7 +65,7 @@ options = parser.parse_args()
 file2tag = load_file(options.input_file)
 tags_file = load_file(options.tag_file)
 tags = tagfile2hash(tags_file)
-file_with_tags = add_tags(file2tag, tags, options.group_column, options.cases_column)
+file_with_tags = add_tags(file2tag, tags, options.group_column, options.cases_column, options.negative_background)
 
 
 if file_with_tags is not None:

@@ -15,9 +15,19 @@ export output_folder=$SCRATCH/executions/GraphPrioritizer
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="disease phenotype molecular_function biological_process cellular_component string_ppi hippie_ppi pathway gene_TF gene_hgncGroup DepMap_effect_bicor gene_PS"
-#annotations="molecular_function"
+annotations="disease phenotype molecular_function biological_process cellular_component string_ppi hippie_ppi pathway gene_TF gene_hgncGroup DepMap_effect_pearson DepMap_effect_spearman gene_PS"
+annotations="disease phenotype molecular_function biological_process cellular_component"
+#annotations="phenotype molecular_function cellular_component biological_process hippie_ppi DepMap_effect_pearson DepMap_effect_spearman"
+#annotations="DepMap_effect_pearson DepMap_effect_spearman"
+#annotations="gene_PS string_ppi"
+#annotations="gene_hgncGroup"
+#nnotations="disease phenotype molecular_function biological_process cellular_component string_ppi hippie_ppi pathway gene_TF gene_hgncGroup DepMap_effect_pearson gene_PS"
+#annotations="disease phenotype molecular_function biological_process cellular_component string_ppi hippie_ppi pathway gene_hgncGroup DepMap_effect_pearson gene_PS"
+#annotations="gene_TF"
+#annotations="string_ppi gene_TF gene_PS"
+#annotations="string_ppi hippie_ppi pathway gene_TF gene_hgncGroup disease"
 kernels="ka rf ct el node2vec raw_sim"
+#kernels="ka rf ct el node2vec"
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2json' 
 control_pos=$input_path'/control_pos'
@@ -27,6 +37,7 @@ production_seedgens=$input_path'/production_seedgens'
 echo "$annotations"
 
 kernels_varflow=`echo $kernels | tr " " ";"`
+annotations_varflow=`echo $annotations | tr " " ";"`
 
 if [ "$exec_mode" == "download_layers" ] ; then
   #########################################################
@@ -201,16 +212,38 @@ elif [ "$exec_mode" == "white_list" ] ; then
   echo "Annotation files filtered"
   cd ../..
 
+elif [ "$exec_mode" == "download_control" ] ; then
+  # All this section must be fixed
+  mkdir $control_genes_folder/zampieri
+  # mkdir $control_genes_folder/zampieri/data
+  # mkdir $control_genes_folder/menche
+  # mkdir $control_genes_folder/menche/data
+
+  # wget https://github.com/seoanezonjic/kernels_testing/blob/master/initial_data/diseasome_from_paper.tsv -o $control_genes_folder/zampieri/data/zampieri_bench.tsv
+  # wget https://github.com/menchelab/MultiOme/blob/main/data/table_disease_gene_assoc_orphanet_genetic.tsv -o $control_genes_folder/menche/data/menche_bench.tsv
+
 elif [ "$exec_mode" == "process_control" ] ; then 
 
   $daemon_scripts/control_preparation.sh
 
-
 elif [ "$exec_mode" == "get_control" ] ; then 
 
-  cp $control_genes_folder/diseasegens/disease_gens ./control_pos
-  cp $control_genes_folder/diseasegens/non_disease_gens ./control_neg
+  benchmark=$2
 
+  if [ -s ./control_pos ] ; then
+    rm ./control_pos
+  fi
+
+  if [ -s ./control_neg ] ; then
+    rm ./control_neg
+  fi
+
+  if [ $benchmark == "zampieri" ] ; then
+    cp $control_genes_folder/zampieri/disease_gens ./control_pos
+    cp $control_genes_folder/zampieri/non_disease_gens ./control_neg
+  elif [ $benchmark == "menche" ] ; then
+    cp $control_genes_folder/menche/disease_gens ./control_pos
+  fi
 
 elif [ "$exec_mode" == "get_production_seedgenes" ] ; then 
 
@@ -250,9 +283,24 @@ elif [ "$exec_mode" == "kernels" ] ; then
       echo $process_type
       net2json_parser.py --net_id $annotation --json_path $net2custom
       echo "Performing kernels without umap $annotation"
-      AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} $add_opt 
+      AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} -A "exclude:sr133,sr014,sr030" $add_opt 
 
   done
+
+elif [ "$exec_mode" == "plot_sims" ] ; then
+  # Plotting the graphs in the correct manner.
+  mkdir -p plot_sims
+
+  cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path
+  ugot_path="$output_folder/similarity_kernels/ugot_path"
+  rawSim_paths=`awk '{print $0,NR}' $ugot_path | sort -k 5 -r -u | grep "raw_sim" | awk '{OFS="\t"}{print $2,$4}'`
+  filter_sims=`echo $annotations | sed 's/ /\n/g'`
+  rawSim_paths=`grep -F -f <(echo "$filter_sims") <(echo "$rawSim_paths")`
+  echo -e "$rawSim_paths" >  $output_folder/similarity_kernels/rawSim_paths
+
+  autoflow_vars=`echo "\\$rawSim_paths=$output_folder/similarity_kernels/rawSim_paths,\\$annotations_varflow=$annotations_varflow"`
+  echo -e "$autoflow_vars"
+  AutoFlow -w $autoflow_scripts/plot_sims.af -V $autoflow_vars -o $output_folder/plot_sims $add_opt
 
 elif [ "$exec_mode" == "ranking" ] ; then
   #########################################################
@@ -261,7 +309,7 @@ elif [ "$exec_mode" == "ranking" ] ; then
     rm -r $output_folder/rankings 
   fi
   mkdir -p $output_folder/rankings
-  method=$2
+  benchmark=$2 # menche or zampieri
   
   cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path
   for annotation in $annotations ; do 
@@ -283,11 +331,11 @@ elif [ "$exec_mode" == "ranking" ] ; then
         \\$control_pos=$control_pos,
         \\$control_neg=$control_neg,
         \\$output_name='non_integrated_rank',
-        \\$method=$method,
+        \\$benchmark=$benchmark,
         \\$geneseeds=$input_path/geneseeds
         " | tr -d [:space:]`
 
-        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/rankings/ranking_${kernel}_${annotation} -m 60gb -t 4-00:00:00 $3
+        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/rankings/ranking_${kernel}_${annotation} -m 60gb -t 4-00:00:00 $3 #-A "exclude:sr060" 
       fi
 
     done
@@ -333,7 +381,7 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
   #cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path
   #filter_by_whitelist.rb -f $output_folder/similarity_kernels/ugot_path -c "1;" -t uwant -o $output_folder/similarity_kernels
 
-  method=$2
+  benchmark=$2 # menche or zampieri
 
   for integration_type in ${integration_types} ; do 
     for kernel in $kernels ; do 
@@ -353,7 +401,7 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
         \\$control_pos=$control_pos,
         \\$control_neg=$control_neg,
         \\$output_name='integrated_rank',
-        \\$method=$method,
+        \\$benchmark=$benchmark,
         \\$geneseeds=$input_path/geneseeds
         " | tr -d [:space:]`
 
@@ -385,8 +433,7 @@ elif [ "$exec_mode" == "report" ] ; then
 
   declare -A original_folders
   original_folders[annotations_metrics]='similarity_kernels'
-  original_folders[similarity_metrics]='similarity_kernels'
-  original_folders[filtered_similarity_metrics]='similarity_kernels'
+  original_folders[final_stats_by_steps]='similarity_kernels'
   original_folders[uncomb_kernel_metrics]='similarity_kernels'
   original_folders[comb_kernel_metrics]='integrations'
 
@@ -395,12 +442,14 @@ elif [ "$exec_mode" == "report" ] ; then
   original_folders[non_integrated_rank_cdf]='rankings'
   original_folders[non_integrated_rank_pos_cov]='rankings'
   original_folders[non_integrated_rank_positive_stats]='rankings'
+  original_folders[non_integrated_rank_size_auc_by_group]='rankings'
 
   original_folders[integrated_rank_summary]='integrated_rankings'
   original_folders[integrated_rank_measures]='integrated_rankings'
   original_folders[integrated_rank_cdf]='integrated_rankings'
   original_folders[integrated_rank_pos_cov]='integrated_rankings'
   original_folders[integrated_rank_positive_stats]='integrated_rankings'
+  original_folders[integrated_rank_size_auc_by_group]='integrated_rankings'
   
   # Here the data is collected from executed folders.
   for file in "${!original_folders[@]}" ; do
@@ -417,8 +466,7 @@ elif [ "$exec_mode" == "report" ] ; then
   # Processing all metrics #
   declare -A references
   references[annotations_metrics]='Net'
-  references[similarity_metrics]='Net'
-  references[filtered_similarity_metrics]='Net'
+  references[final_stats_by_steps]='Net_Step,Net,Step'
   references[uncomb_kernel_metrics]='Sample,Net,Kernel'
   references[comb_kernel_metrics]='Sample,Integration,Kernel'
 
@@ -432,12 +480,22 @@ elif [ "$exec_mode" == "report" ] ; then
 
   references[annotation_grade_metrics]='Gene_seed'
 
-  # annotations_metrics similarity_metrics filtered_similarity_metrics uncomb_kernel_metrics comb_kernel_metrics
-  for metric in annotations_metrics similarity_metrics filtered_similarity_metrics uncomb_kernel_metrics comb_kernel_metrics ; do
+  # annotations_metrics uncomb_kernel_metrics comb_kernel_metrics
+  for metric in annotations_metrics final_stats_by_steps uncomb_kernel_metrics comb_kernel_metrics ; do
     if [ -s $output_folder/$metric ] ; then
       create_metric_table.py $output_folder/$metric ${references[$metric]} $report_folder/kernel_report/parsed_${metric} 
     fi
   done
+
+  if [ -s $output_folder/non_integrated_rank_size_auc_by_group ] ; then 
+    echo -e "sample\tannot\tkernel\tseed\tpos_cov\tauc" | \
+     cat - $output_folder/non_integrated_rank_size_auc_by_group > $report_folder/ranking_report/non_integrated_rank_size_auc_by_group
+  fi
+
+  if [ -s $output_folder/integrated_rank_size_auc_by_group ] ; then 
+    echo -e "sample\tannot\tmethod\tseed\tpos_cov\tauc" | \
+     cat - $output_folder/integrated_rank_size_auc_by_group > $report_folder/ranking_report/integrated_rank_size_auc_by_group
+  fi
 
   for metric in non_integrated_rank_summary integrated_rank_summary non_integrated_rank_pos_cov integrated_rank_pos_cov non_integrated_rank_positive_stats integrated_rank_positive_stats ; do
     if [ -s $output_folder/$metric ] ; then
@@ -491,5 +549,14 @@ elif [ "$exec_mode" == "check" ] ; then
       echo "$folder"
       flow_logger -w -e $output_folder/$add_opt/$folder -r all
     fi
-  done  
+  done
+
+elif [ "$exec_mode" == "recover" ]; then 
+  #STAGE 3 CHECK EXECUTION
+  for folder in `ls $output_folder/$add_opt/` ; do 
+    if [ -d $output_folder/$add_opt/$folder ] ; then
+      echo "$folder"
+      flow_logger -w -e $output_folder/$add_opt/$folder --sleep 0.1 -l -p  
+    fi
+  done
 fi

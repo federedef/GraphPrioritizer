@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 import argparse
+import numpy as np 
 
 ########################### FUNCTIONS #######################
 #############################################################
@@ -10,11 +11,16 @@ def write_negatives(file, negatives):
 			f.write(group + "\t" + ",".join(nodes) + "\n")
 
 
-def get_negatives2groups(disgroup_genes):
+def get_negatives2groups(disgroup_genes, pickrandom = True):
 	all_genes = set([el for row in disgroup_genes.values() for el in row])
 	negatives = {}
 	for k, v in disgroup_genes.items():
-		negatives[k] = list(all_genes - set(v))
+		smpl_negatives = list(all_genes - set(v))
+		if pickrandom: 
+			number_of_positives = len(set(v))
+			number_of_negatives = int(np.floor(number_of_positives / 2))
+			smpl_negatives = list(np.random.choice(smpl_negatives, number_of_negatives, replace=False))
+		negatives[k] = smpl_negatives
 	return negatives
 
 def get_negatives2disease(diseases_disgroup,disgroup_negatives):
@@ -47,6 +53,8 @@ parser.add_argument('-i', '--input_positives', required=True,
 
 parser.add_argument('-o', '--output_name', default='negatives',
 					help='The name of the ranked file')
+
+parser.add_argument("--subset_randomly_negatives", default=True, action= "store_false", help=" Select this to choos all background as negatives")
 
 options = parser.parse_args()
 

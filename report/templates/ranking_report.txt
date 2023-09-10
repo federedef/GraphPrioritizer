@@ -25,7 +25,7 @@
 %>
 <div style="width:90%; background-color:#FFFFFF; margin:50 auto; align-content: center;">
 
-    <h1 style="text-align:center; background-color:#ecf0f1, color: powderblue; "> Analysis of the algorithm: From rankings to backup genes.</h1>
+    <h1 style="text-align:center; background-color:#ecf0f1, color: powderblue; "> Analysis of the algorithm: From rankings to prioritized genes.</h1>
 
         <h2 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Ranking section </h2>
 
@@ -34,26 +34,28 @@
                         % if plotter.hash_vars.get('parsed_non_integrated_rank_pos_cov') is not None:
                                 ${plotter.barplot(id='parsed_non_integrated_rank_pos_cov', responsive= False, header=True,
                                  fields = [1,3],
-                                 x_label = 'Number of Backup pairs present',
+                                 x_label = 'Number of control candidate genes present',
                                  height = '400px', width= '400px',
                                  var_attr = [1,2],
-                                 title = "Backup Pairs Coverage by Layers before Integration",
+                                 title = "Control Coverage by Layers before Integration",
                                  config = {
                                         'showLegend' : True,
                                         'graphOrientation' : 'horizontal',
-                                        'colorBy' : 'Kernel'
+                                        'colorBy' : 'Kernel',
+                                        'setMinX': 0
                                         })}
                 % endif
                 </div>
                 <div style="margin-left: 10px;"> 
                         % if plotter.hash_vars.get('parsed_integrated_rank_pos_cov') is not None: 
                                 ${plotter.barplot(id= "parsed_integrated_rank_pos_cov", fields= [1,3] , header= True, responsive= False,
-                                        height= '400px', width= '400px', x_label= 'Number of Backup pairs present', var_attr= [1,2],
-                                        title = "Backup Pairs Coverage by Layers after Integration",
+                                        height= '400px', width= '400px', x_label= 'Number of control candidate genes present' , var_attr= [1,2],
+                                        title = "Control Coverage by Layers after Integration",
                                         config = {
                                                 'showLegend' : True,
                                                 'graphOrientation' : 'horizontal',
-                                                'colorBy' : 'Kernel'
+                                                'colorBy' : 'Kernel',
+                                                'setMinX': 0
                                                 })}
                         % endif
                 </div>
@@ -61,9 +63,48 @@
 
         <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
                 <div style="margin-right: 10px;">
+                                 % if plotter.hash_vars.get('non_integrated_rank_size_auc_by_group') is not None: 
+                                        ${plotter.boxplot(id= 'non_integrated_rank_size_auc_by_group', header= True, row_names= False, default= False, fields= [5],  var_attr= [0,1,2], group = "kernel",
+                                           title= "Distribution of AUCs in Dataset by Embeddings and seeds before Integration",
+                                                x_label= "AUCs",
+                                                config= {
+                                                        "graphOrientation": "vertical",
+                                                        "colorBy" : "kernel",
+                                                        "groupingFactors" :
+                                                        ["kernel"],
+                                                        "segregateSamplesBy": "annot",
+                                                        "jitter": True,
+                                                        "showBoxplotIfViolin": True,
+                                                        "showBoxplotOriginalData": True,
+                                                        "showLegend":False,
+                                                        "showViolinBoxplot":True"})}
+                                % endif
+                </div>
+                <div style="margin-left: 10px;">
+                                 % if plotter.hash_vars.get('integrated_rank_size_auc_by_group') is not None: 
+                                        ${plotter.boxplot(id= 'integrated_rank_size_auc_by_group', header= True, row_names= False, default= False, fields= [5],  var_attr= [0,1,2], group = "kernel",
+                                           title= "Distribution of AUCs in Dataset by Embeddings and seeds before Integration",
+                                                x_label= "AUCs",
+                                                config= {
+                                                        "graphOrientation": "vertical",
+                                                        "colorBy" : "kernel",
+                                                        "groupingFactors" :
+                                                        ["kernel"],
+                                                        "segregateSamplesBy": "annot",
+                                                        "jitter": True,
+                                                        "showBoxplotIfViolin": True,
+                                                        "showBoxplotOriginalData": True,
+                                                        "showLegend":False,
+                                                        "showViolinBoxplot":True"})}
+                                % endif
+                </div>
+        </div>
+
+        <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
+                <div style="margin-right: 10px;">
                                 % if plotter.hash_vars.get('non_integrated_rank_cdf') is not None: 
                                         ${plotter.boxplot(id= 'non_integrated_rank_cdf', header= True, row_names= False, default= False, fields= [5],  var_attr= [0,1,2], group = "kernel",
-                                           title= "Distribution of Non-Zero Ranks in Dataset by Kernels before Integration",
+                                           title= "Distribution of Non-Zero Ranks in Dataset by Embeddings before Integration",
                                                 x_label= "Percentile/100",
                                                 config= {
                                                         "graphOrientation": "vertical",
@@ -76,7 +117,7 @@
                 <div style="margin-left: 10px;">
                                 % if plotter.hash_vars.get('integrated_rank_cdf') is not None: 
                                         ${plotter.boxplot(id= 'integrated_rank_cdf', header= True, row_names= False, default= False, fields = [5], var_attr= [0,1,2], group= "kernel", 
-                                                title= "Distribution of Non-Zero Ranks in Dataset by Kernels after Integration",
+                                                title= "Distribution of Non-Zero Ranks in Dataset by Embeddings after Integration",
                                                 xlabel= "Percentile/100",
                                                 config= {
                                                         "graphOrientation": "vertical",
@@ -98,7 +139,7 @@
                                 ${plotter.line(id= "parsed_non_integrated_rank_summary", fields= [0, 7, 13, 8], header= True, row_names= True,
                                         responsive= False,
                                         height= '400px', width= '400px', x_label= 'AUC',
-                                        title= "Bootstrap Distribution of ROC-AUC for Kernels before Integration",
+                                        title= "Bootstrap Distribution of ROC-AUC for Embeddings before Integration",
                                         config= {
                                                 'showLegend' : True,
                                                 'graphOrientation' : 'vertical',
@@ -110,7 +151,7 @@
                                 ${plotter.line(id= "parsed_integrated_rank_summary", fields=  [0, 7, 13, 8], header= True, row_names= True,
                                         responsive= False,
                                         height= '400px', width= '400px', x_label= 'AUC',
-                                        title= "Bootstrap Distribution of ROC-AUC for Kernels after Integration",
+                                        title= "Bootstrap Distribution of ROC-AUC for Embeddings after Integration",
                                         config= {
                                                 'showLegend' : True,
                                                 'graphOrientation' : 'vertical',
@@ -123,7 +164,7 @@
                 % if plotter.hash_vars.get("non_integrated_rank_cdf") is not None: 
                         ${plotter.scatter2D(id=  "non_integrated_rank_cdf", fields=  [5,6] , header=  True, row_names=  False, responsive=  False,
                                 height=  '400px', width=  '400px', x_label=  'Percentile/100', var_attr=  [0,1,2], y_label= "Cumulative frequency",
-                                title=  "CDF for Non-Zero Scores Generated by Kernels before Integration",
+                                title=  "CDF for Non-Zero Scores Generated by Embeddings before Integration",
                                 config=  {
                                         'showLegend' : True,
                                         'lineBy' : 'kernel',
@@ -134,7 +175,7 @@
         </div>
 
         <div style="overflow: hidden; text-align:center">
-                <p style="text-align:center;"> ROC Curves for Kernels before Integration </p> 
+                <p style="text-align:center;"> ROC Curves for Embeddings before Integration </p> 
                 ${ plotter.embed_img(img_path+"non_integrated_ROC.png","width='700' height='700'")}
         </div>
 
@@ -142,7 +183,7 @@
                 % if plotter.hash_vars.get("integrated_rank_cdf") is not None: 
                         ${plotter.scatter2D(id=  "integrated_rank_cdf", fields=  [5,6] , header=  True, row_names=  False, responsive=  False,
                                 height=  '400px', width=  '400px', x_label=  'Percentile/100', var_attr=  [0,1,2], y_label= "Cumulative frequency",
-                                title=  "CDF for Non-Zero Scores Generated by Kernels after Integration",
+                                title=  "CDF for Non-Zero Scores Generated by Embeddings after Integration",
                                 config=  {
                                         'showLegend' : True,
                                         'lineBy' : 'kernel',
@@ -154,7 +195,7 @@
 
 
         <div style="overflow: hidden; text-align:center">
-                <p style="text-align:center;"> ROC Curves for Kernels after Integration </p> 
+                <p style="text-align:center;"> ROC Curves for Embeddings after Integration </p> 
                  % if os.path.exists(img_path+"integrated_ROC.png"): 
                         ${ plotter.embed_img(img_path+"integrated_ROC.png","width='700' height='700'")}
                  % endif

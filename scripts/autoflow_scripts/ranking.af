@@ -2,8 +2,12 @@ rank_genes_with_leave_one_out){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_python
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
-	. ~soft_bio_267/initializes/init_R
+	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
+	source ~soft_bio_267/initializes/init_R
+	if [ $benchmark != "zampieri" ] ; then
+		exit 0
+	fi
+	#----------------------------------------------------------------------#
 	echo -e "$param1_$kernel\t$param1\t$kernel" > tracker
 	ranking_path=`pwd`
 	## Defining seed genes
@@ -61,6 +65,88 @@ rank_genes_with_leave_one_out){
 			echo -e "positive_coverage\t0" > prerank_list
 			exit 0
 		fi
+
+	else 
+		exit 0
+	fi
+}
+
+
+rank_genes_with_kfold_cv){
+	# Input: seed_gens + kernel.
+	# Output: rank genes for every gen.
+	source ~soft_bio_267/initializes/init_python
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
+	source ~soft_bio_267/initializes/init_R
+	if [ $benchmark != "menche" ] ; then
+		exit 0
+	fi
+	#----------------------------------------------------------------------#
+	echo -e "$param1_$kernel\t$param1\t$kernel" > tracker
+	ranking_path=`pwd`
+	## Defining seed genes
+    cat $control_pos > seed_by_group
+	## Obtaining tags for group-case
+	desaggregate_column_data.py -i $control_pos -x 2 |& awk '{OFS="\t"}{print $1,$2,1}' > tags
+	?
+	ranker.py -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -l -K 10
+	awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/_iteration_[0-9]+$/,"",$6); print $0}' ranked_genes_all_candidates > processed_ranked_genes
+	# Add tags to ranked_genes_all_candidates.
+	add_tags2ranks.py -i processed_ranked_genes -g 5 -c 0 -t tags -o tagged_ranks.txt -n
+	number_of_genes=`wc -l tagged_ranks.txt | cut -f1 -d " "`
+
+	# Obtaining Metrics And statistical summary
+    if [ $number_of_genes -ge 1 ] ; then 
+    	# Obtaining measures for graphs
+    	number_of_types_of_labels=`cut -f7 tagged_ranks.txt | sort | uniq | wc -l`
+    	if [ $number_of_types_of_labels -ge 2 ] ; then
+    		ROCanalysis.R -i tagged_ranks.txt -s 3 -t 7 -S backupgenes -o "preobserved_all_genes" -m "ROC" -M "acc:tpr:fpr:prec:rec" -e -R
+			sed '1d' preobserved_all_genes_measures |  cut -f 2- > all_genes_measures
+			if [ -s all_genes_measures ] ; then
+				awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' all_genes_measures > $output_name_measures
+			else 
+			  	exit 0
+			fi
+
+			# Obtaining summary of performance for all groups at onces
+			ROCanalysis.R -i tagged_ranks.txt -s 3 -t 7 -b 1000 -S backupgenes -o "preobserved_all_genes" -z -m "ROC" -M "acc:tpr:fpr:auc:f" -R
+			sed '1d' preobserved_all_genes_summary | cut -f 3,4 > all_genes_summary
+			if [ -s all_genes_summary ] ; then
+				number_of_positives=`awk '{if($7==1 && $3!=1) print $0}' tagged_ranks.txt | wc -l`
+				echo -e "positive_coverage\t${number_of_positives}" >> all_genes_summary
+				awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' \ 
+				  all_genes_summary > $output_name_summary
+			else 
+			  	exit 0
+			fi
+
+    	fi
+
+		# Extracting positive values
+		awk '{if($7==1 && $3!=1) print $0}' tagged_ranks.txt | cut -f 1-6 > positive_genes
+		number_of_positive_genes=`wc -l positive_genes | cut -f1 -d " "`
+
+		echo -e "positive_coverage\t${number_of_positive_genes}" > pos_cov
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' pos_cov > $output_name_pos_cov
+
+	    if [ $number_of_positive_genes -ge 1 ] ; then 
+			rank_metrics.py -r positive_genes -e "ranks" > prerank_list
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' prerank_list > $output_name_cdf
+		else 
+			echo -e "positive_coverage\t0" > prerank_list
+			exit 0
+		fi
+
+		# Obtaining auc list
+		touch auc_by_group
+		for group in `cut -f1 seed_by_group`; do
+			grep $group tagged_ranks.txt > tmp_tagged.txt
+			ROCanalysis.R -i tmp_tagged.txt -s 3 -t 7 -S $group -o "tmp_measure" -z -M "auc" -R
+			cat tmp_measure_summary | tail -n1 | cut -f 1,4 >> auc_by_group
+		done
+		cut -f6 positive_genes | sort | uniq -c | awk '{FS=" ";OFS="\t"}{print $2, $1}' > realSize_by_group
+		merge_tabular.py realSize_by_group auc_by_group > size_auc_by_group
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2,$3}' size_auc_by_group > $output_name_size_auc_by_group
 
 	else 
 		exit 0
