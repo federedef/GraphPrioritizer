@@ -11,37 +11,42 @@ def write_negatives(file, negatives):
 			f.write(group + "\t" + ",".join(nodes) + "\n")
 
 
-def get_negatives2groups(disgroup_genes, pickrandom = True):
+def get_negatives2groups(disgroup_genes):
 	all_genes = set([el for row in disgroup_genes.values() for el in row])
 	negatives = {}
 	for k, v in disgroup_genes.items():
 		smpl_negatives = list(all_genes - set(v))
-		if pickrandom: 
-			number_of_positives = len(set(v))
-			number_of_negatives = int(np.floor(number_of_positives / 2))
-			smpl_negatives = list(np.random.choice(smpl_negatives, number_of_negatives, replace=False))
 		negatives[k] = smpl_negatives
 	return negatives
 
-def get_negatives2disease(diseases_disgroup,disgroup_negatives):
+def get_negatives2disease(diseases_disgroup, disgroup_negatives, diseases_genes, pickrandom = True):
 	negatives = {}
 	for disease, disgroup in diseases_disgroup.items():
-		negatives[disease] = disgroup_negatives[disgroup]
+		smpl_negatives = disgroup_negatives[disgroup]
+		genes = diseases_genes[disease]
+		if pickrandom: 
+			number_of_positives = len(set(genes))
+			number_of_negatives = int(np.floor(number_of_positives / 2))
+			smpl_negatives = list(np.random.choice(smpl_negatives, number_of_negatives, replace=False))
+		negatives[disease] = smpl_negatives
 	return negatives
 
 
 def load_node_groups_from_file(file, sep= ','):
 	diseases = {}
 	disgroup_genes = {}
+	diseases_genes = {}
 	with open(file) as f:
 		for line in f:
 			disease_name, disgroup, genes = line.strip().split("\t")
 			diseases[disease_name] = disgroup
+			diseases_genes[disease_name] = genes.split(sep)
 			if disgroup_genes.get(disgroup) is None:
 				disgroup_genes[disgroup] = genes.split(sep)
 			else:
 				disgroup_genes[disgroup].extend(genes.split(sep))
-	return diseases, disgroup_genes
+	return diseases, disgroup_genes, diseases_genes
+
 
 ########################### OPTPARSE ########################
 #############################################################
@@ -64,9 +69,9 @@ options = parser.parse_args()
 positive_file = options.input_positives
 output_name = options.output_name
 
-diseases_disgroup, disgroup_genes = load_node_groups_from_file(positive_file)
+diseases_disgroup, disgroup_genes, diseases_genes = load_node_groups_from_file(positive_file)
 disgroup_negatives = get_negatives2groups(disgroup_genes)
-diseases_negatives = get_negatives2disease(diseases_disgroup, disgroup_negatives)
+diseases_negatives = get_negatives2disease(diseases_disgroup, disgroup_negatives, diseases_genes)
 
 if diseases_negatives is not None:
 	write_negatives(output_name, diseases_negatives)

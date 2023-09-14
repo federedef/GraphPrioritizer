@@ -2,7 +2,7 @@ rank_genes_with_leave_one_out){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_python
-	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
+	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	source ~soft_bio_267/initializes/init_R
 	if [ $benchmark != "zampieri" ] ; then
 		exit 0
@@ -18,8 +18,11 @@ rank_genes_with_leave_one_out){
 	desaggregate_column_data.py -i $control_pos -x 2 |& awk '{OFS="\t"}{print $1,$2,1}' > tags
 	desaggregate_column_data.py -i $control_neg -x 2 |& awk '{OFS="\t"}{print $1,$2,0}' >> tags
 	?
-	ranker.py -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -l -f filter
+	ranker.py -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -l -f seed_by_group
 	awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/_iteration_[0-9]+$/,"",$6); print $0}' ranked_genes_all_candidates > processed_ranked_genes
+	ranker.py -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -f filter
+	cat ranked_genes_all_candidates >> processed_ranked_genes
+
 	# Add tags to ranked_genes_all_candidates.
 	add_tags2ranks.py -i processed_ranked_genes -g 5 -c 0 -t tags -o tagged_ranks.txt
 	number_of_genes=`wc -l tagged_ranks.txt | cut -f1 -d " "`
@@ -129,15 +132,31 @@ rank_genes_with_kfold_cv){
 		echo -e "positive_coverage\t${number_of_positive_genes}" > pos_cov
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' pos_cov > $output_name_pos_cov
 
-	    if [ $number_of_positive_genes -ge 1 ] ; then 
-			rank_metrics.py -r positive_genes -e "ranks" > prerank_list
-			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' prerank_list > $output_name_cdf
-		else 
+	    # if [ $number_of_positive_genes -ge 1 ] ; then 
+		# 	rank_metrics.py -r positive_genes -e "ranks" > prerank_list
+		# 	awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' prerank_list > $output_name_cdf
+		# else 
+		# 	echo -e "positive_coverage\t0" > prerank_list
+		# 	exit 0
+		# fi
+		if [ $number_of_positive_genes -lt 1 ] ; then
 			echo -e "positive_coverage\t0" > prerank_list
 			exit 0
 		fi
 
-		# Obtaining auc list
+		# Obtaining auc-by-fold list
+		touch auc_by_groupIteration
+		cut -f6 ranked_genes_all_candidates > groups_iterations
+		merge_tabular.py processed_ranked_genes groups_iterations > processed_ranked_genes_iterations
+		add_tags2ranks.py -i processed_ranked_genes_iterations -g 5 -c 0 -t tags -o tagged_ranked_genes_all_candidates -n
+		for groupIteration in `cat groups_iterations | uniq` ; do
+			grep $groupIteration tagged_ranked_genes_all_candidates > tmp_tagged.txt
+			ROCanalysis.R -i tmp_tagged.txt -s 3 -t 8 -S $groupIteration -o "tmp_measure" -z -M "auc" -R
+			cat tmp_measure_summary | tail -n1 | cut -f 1,4 | awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/_iteration_[0-9]+$/,"",$1); print $0}' >> auc_by_groupIteration
+		done
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' auc_by_groupIteration > $output_name_auc_by_groupIteration
+
+		# Obtaining auc-total list
 		touch auc_by_group
 		for group in `cut -f1 seed_by_group`; do
 			grep $group tagged_ranks.txt > tmp_tagged.txt
