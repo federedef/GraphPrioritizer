@@ -3,9 +3,9 @@ get_similarity){
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
 	source ~soft_bio_267/initializes/init_python
-	source ~/dev_py/myvenv/bin/activate
+	#source ~/dev_py/myvenv/bin/activate
 	source ~soft_bio_267/initializes/init_R
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
+	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	echo -e "$annotation_sim" > tracker
 	similarity_path=`pwd`
 
@@ -14,7 +14,14 @@ get_similarity){
 	format=`grep -P -w '^Format' net_params | cut -f 2`
 	layers=`grep -P -w '^Layers' net_params | cut -f 2`
 	ontology=`grep -P -w '^Ontology' net_params | cut -f 2`
-	node_files=`grep -P -w '^Node_list' net_params | cut -f 2 | awk -v prefix="$input_path/input_processed/" '{print prefix $0}' | tr -s '\n' ','`
+	if [ -z $whitelist ] ; then
+		node_files=`grep -P -w '^Node_list' net_params | cut -f 2 | awk -v prefix="$input_path/input_processed/" '{print prefix $0}' | tr -s '\n' ','`
+		network_file=$input_path/input_processed/$source
+	else 
+		node_files=`grep -P -w '^Node_list' net_params | cut -f 2 | awk -v prefix="$input_path/input_processed/whitelist/" '{print prefix $0}' | tr -s '\n' ','`
+		network_file=$input_path/input_processed/whitelist/$source
+	fi
+
 	custom_parameters=`grep -P -w '^Custom' net_params | cut -f 2`
 	grep -P -w '^Build_graph' net_params | cut -f 2 > dsl
 	echo -e "$source" > tracker_annotation
@@ -22,25 +29,25 @@ get_similarity){
 	rm stats_from_matrix*
 	?
 	if [ "$format" == "matrix" ] ; then
-		netanalyzer.py -i $input_path/input_processed/$source -n $node_files -f $format -l $layers --both_repre_formats --dsl_script dsl
-    else                                                                                                                                                  
-    	if [ "$ontology" != "-" ] ; then
-    		desaggregate_column_data.py -i $input_path/input_processed/$source -x 2 > ont_profs
-    		netanalyzer.py -i ont_profs -f $format -l $layers -T [cpu] -O "ont:`semtools.py -d list | grep $ontology`" --dsl_script dsl 
-    	else
-    		netanalyzer.py -i $input_path/input_processed/$source -f $format -l $layers --dsl_script dsl
-    	fi
-    fi
-    cut -f 2,3 preproc_metrics > tmp
-    cp preproc_metrics original_preproc_metrics
-    mv tmp preproc_metrics
-    mv similarity_matrix_bin_rowIds similarity_matrix_bin.lst
+		netanalyzer.py -i $network_file -n $node_files -f $format -l $layers --both_repre_formats --dsl_script dsl
+  else                                                                                                                                                  
+  	if [ "$ontology" != "-" ] ; then
+  		desaggregate_column_data.py -i $network_file -x 2 > ont_profs
+  		netanalyzer.py -i ont_profs -f $format -l $layers -T [cpu] -O "ont:`semtools.py -d list | grep $ontology`" --dsl_script dsl 
+  	else
+  		netanalyzer.py -i $network_file -f $format -l $layers --dsl_script dsl
+  	fi
+  fi
+  cut -f 2,3 preproc_metrics > tmp
+  cp preproc_metrics original_preproc_metrics
+  mv tmp preproc_metrics
+  mv similarity_matrix_bin_rowIds similarity_matrix_bin.lst
 
-    for file in `ls | grep "stats_from_matrix" | sort -k 5 -t "_" -n` ; do
-      var=`echo -e "$file" | sed 's/stats_from_matrix_//' | sed 's/_[0-9]//'`
-      tag_table.py -i $file -t $var >> tmp_stats_matrix 
-    done
-    mv tmp_stats_matrix stats_from_matrix
+  for file in `ls | grep "stats_from_matrix" | sort -k 5 -t "_" -n` ; do
+    var=`echo -e "$file" | sed 's/stats_from_matrix_//' | sed 's/_[0-9]//'`
+    tag_table.py -i $file -t $var >> tmp_stats_matrix 
+  done
+  mv tmp_stats_matrix stats_from_matrix
 
 	if [ -s stats_from_matrix -a preproc_metrics ] ; then 
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$2); gsub(/ /,"_",$0); print tracker,$1,$2,$3}' stats_from_matrix > stats_by_steps
@@ -55,8 +62,8 @@ get_similarity){
 filter_net){
 	resources: -m '20gb' -t '0-00:10:00'
 	source ~soft_bio_267/initializes/init_python
-	source ~/dev_py/myvenv/bin/activate
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
+	#source ~/dev_py/myvenv/bin/activate
+	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	echo -e "$annotation_sim" > tracker
 	net2json_parser.py --net_id "$annotation" --json_path $net2custom > net_params
 	grep -P -w '^Filter' net_params | cut -f 2 > dsl_filter
@@ -93,8 +100,8 @@ filter_net){
 normalize_adjMatrix){
 	resources: -m '60gb' -t '0-02:30:00'
 	source ~soft_bio_267/initializes/init_python
-	source ~/dev_py/myvenv/bin/activate
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
+	#source ~/dev_py/myvenv/bin/activate
+	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	echo -e "$annotation_sim" > tracker
 	echo -e "normalize_matrix ('adjacency_matrices',('gene','gene')) by='rows_cols'" > dsl
 	#echo -e "normalize_matrix ('adjacency_matrices',('gene','gene')) by='min_max'" > dsl
@@ -120,8 +127,8 @@ calc_kernel_[$kernels_varflow]){
 	# output: binary Kernel from similarity matrix + metrics
 	# source ~soft_bio_267/initializes/init_netanalyzer
 	source ~soft_bio_267/initializes/init_python
-	source ~/dev_py/myvenv/bin/activate
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
+	#source ~/dev_py/myvenv/bin/activate
+	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
 	echo -e "$annotation_(*)\t$annotation\t(*)" > tracker
 	cp normalize_adjMatrix)/similarity_matrix_bin.lst kernel_matrix_bin.lst # To pass the list of node names.
 	kern_net_path=`pwd`
@@ -152,8 +159,8 @@ calc_kernel_[$kernels_varflow]){
 stats_kernels_[$kernels_varflow]){
 	resources: -m '120gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_python
-	source ~/dev_py/myvenv/bin/activate
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
+	#source ~/dev_py/myvenv/bin/activate
+	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_gems/NetAnalyzer/bin:$PATH
 	if [ -s tracker ] ; then
 		rm tracker
 		# TODO: Remove this part and check

@@ -103,35 +103,16 @@
         </div>
 
         <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
-                <div style="margin-right: 10px;">
-                                 % if plotter.hash_vars.get('non_integrated_rank_size_auc_by_group') is not None: 
-                                        ${plotter.boxplot(id= 'non_integrated_rank_size_auc_by_group', header= True, row_names= False, default= False, fields= [5],  var_attr= [0,1,2,3], group = ["kernel"],
-                                           title= "Distribution of ROC-AUCs in Dataset by Embeddings and seeds before Integration",
-                                                x_label= "ROC-AUCs",
-                                                config= {
-                                                        "graphOrientation": "vertical",
-                                                        "colorBy" : "kernel",
-                                                        "groupingFactors" :
-                                                        ["kernel"],
-                                                        "segregateSamplesBy": "annot",
-                                                        "jitter": True,
-                                                        "showBoxplotIfViolin": True,
-                                                        "showBoxplotOriginalData": True,
-                                                        "showLegend":False,
-                                                        "showViolinBoxplot":True,
-                                                        "setMinX": 0})}
-                                % endif
-                </div>
                 <div style="margin-left: 10px;">
-                                 % if plotter.hash_vars.get('integrated_rank_size_auc_by_group') is not None: 
-                                        ${plotter.boxplot(id= 'integrated_rank_size_auc_by_group', header= True, row_names= False, default= False, group=["sample"], fields= [5],  var_attr= [0,1,2,3], 
+                                 % if plotter.hash_vars.get('non_integrated_rank_auc_by_groupIteration') is not None: 
+                                        ${plotter.boxplot(id= 'non_integrated_rank_auc_by_groupIteration', header= True, group = "kernel",row_names= False, default= False, fields= [4],  var_attr= [0,1,2,3], 
                                            title= "Distribution of ROC-AUCs in Dataset by Embeddings and seeds after Integration",
                                                 x_label= "ROC-AUCs",
                                                 config= {
                                                         "graphOrientation": "vertical",
                                                         "colorBy" : "seed",
                                                         "groupingFactors" :
-                                                        ["seed", "method"],
+                                                        ["annot", "seed"],
                                                         "jitter": True,
                                                         "showBoxplotIfViolin": True,
                                                         "showBoxplotOriginalData": True,
@@ -145,13 +126,13 @@
 
         <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
                 <div style="margin-right: 10px;">
-                                 % if plotter.hash_vars.get('non_integrated_rank_size_auc_by_group') is not None: 
-                                  ${ plotter.scatter2D(id= 'non_integrated_rank_size_auc_by_group', header= True, title= "ROC-AUCs vs Group Size for Non integrated embeddings", fields = [4,5], x_label = 'Real Group Size', y_label = 'ROC-AUC', var_attr= [0,1,2,3], add_densities = True)}
+                                % if plotter.hash_vars.get('non_integrated_rank_size_auc_by_group') is not None: 
+                                  ${ plotter.scatter2D(id= 'non_integrated_rank_size_auc_by_group', header= True, title= "ROC-AUCs vs Group Size for Non integrated embeddings", fields = [4,5], x_label = 'Real Group Size', y_label = 'ROC-AUC', var_attr= [0,1,2,3])}
                                 % endif
                 </div>
                 <div style="margin-left: 10px;">
-                                 % if plotter.hash_vars.get('integrated_rank_size_auc_by_group') is not None: 
-                                 ${plotter.scatter2D(id= 'integrated_rank_size_auc_by_group', header= True, fields = [4,5], x_label = 'Real Group Size', y_label = 'ROC-AUC', title= "ROC-AUCs vs Group Size for integrated embeddings", var_attr= [0,1,2,3], add_densities = True)}
+                                % if plotter.hash_vars.get('integrated_rank_size_auc_by_group') is not None: 
+                                  ${plotter.scatter2D(id= 'integrated_rank_size_auc_by_group', header= True, fields = [4,5], x_label = 'Real Group Size', y_label = 'ROC-AUC', title= "ROC-AUCs vs Group Size for integrated embeddings", var_attr= [0,1,2,3], add_densities = True)}
                                 % endif
                 </div>
         </div>
@@ -198,12 +179,7 @@
                                         title= "Bootstrap Distribution of ROC-AUC for Embeddings before Integration",
                                         config= {
                                                 'showLegend' : True,
-                                                'graphOrientation' : 'vertical',
-                                                "ribbonBy":[
-                                                        "auc_down_ci_0.95",
-                                                        "auc_up_ci_0.95"
-                                                        ],
-                                                "yAxis": ["auc"]
+                                                'graphOrientation' : 'vertical'
                                                 })}
                         % endif
                 </div>
@@ -215,7 +191,7 @@
                                         title= "Bootstrap Distribution of ROC-AUC for Embeddings after Integration",
                                         config= {
                                                 'showLegend' : True,
-                                                'graphOrientation' : 'vertical',
+                                                'graphOrientation' : 'vertical'
                                                 })}
                         % endif
                 </div>

@@ -134,11 +134,7 @@
 		]
 	},
 	"string_ppi": {
-		"Filter": [
-			"filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_cutoff' options={'cutoff':700} add_to_object=True",
-			"write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
-			"write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_filterCutoff_1'"
-		],
+		"Filter": [],
 		"Format": "pair",
 		"Layers": "gene,HGNC:",
 		"Node_list": "-",
