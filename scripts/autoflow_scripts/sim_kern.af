@@ -21,6 +21,8 @@ get_similarity){
 		node_files=`grep -P -w '^Node_list' net_params | cut -f 2 | awk -v prefix="$input_path/input_processed/whitelist/" '{print prefix $0}' | tr -s '\n' ','`
 		network_file=$input_path/input_processed/whitelist/$source
 	fi
+	echo $node_files
+	echo $network_file
 
 	custom_parameters=`grep -P -w '^Custom' net_params | cut -f 2`
 	grep -P -w '^Build_graph' net_params | cut -f 2 > dsl

@@ -445,125 +445,118 @@ elif [ "$exec_mode" == "report" ] ; then
   #report_type=$2
   html_name=$2
   
-  # # #################################
-  # # Setting up the report section #
-  # find $report_folder/ -mindepth 2 -delete
-  # find $output_folder/ -maxdepth 1 -type f -delete
+  # #################################
+  # Setting up the report section #
+  find $report_folder/ -mindepth 2 -delete
+  find $output_folder/ -maxdepth 1 -type f -delete
 
-  # mkdir -p $report_folder/kernel_report
-  # mkdir -p $report_folder/ranking_report
-  # mkdir -p $report_folder/img
+  mkdir -p $report_folder/kernel_report
+  mkdir -p $report_folder/ranking_report
+  mkdir -p $report_folder/img
 
-  # declare -A original_folders
-  # original_folders[annotations_metrics]='similarity_kernels'
-  # original_folders[final_stats_by_steps]='similarity_kernels'
-  # original_folders[uncomb_kernel_metrics]='similarity_kernels'
-  # original_folders[comb_kernel_metrics]='integrations'
+  declare -A original_folders
+  original_folders[annotations_metrics]='similarity_kernels'
+  original_folders[final_stats_by_steps]='similarity_kernels'
+  original_folders[uncomb_kernel_metrics]='similarity_kernels'
+  original_folders[comb_kernel_metrics]='integrations'
 
-  # original_folders[non_integrated_rank_summary]='rankings'
-  # original_folders[non_integrated_rank_measures]='rankings'
-  # original_folders[non_integrated_rank_cdf]='rankings'
-  # original_folders[non_integrated_rank_pos_cov]='rankings'
-  # original_folders[non_integrated_rank_positive_stats]='rankings'
-  # original_folders[non_integrated_rank_size_auc_by_group]='rankings'
-  # original_folders[non_integrated_rank_auc_by_groupIteration]='rankings'
+  original_folders[non_integrated_rank_summary]='rankings'
+  original_folders[non_integrated_rank_measures]='rankings'
+  original_folders[non_integrated_rank_cdf]='rankings'
+  original_folders[non_integrated_rank_pos_cov]='rankings'
+  original_folders[non_integrated_rank_positive_stats]='rankings'
+  original_folders[non_integrated_rank_size_auc_by_group]='rankings'
+  original_folders[non_integrated_rank_auc_by_groupIteration]='rankings'
 
-  # original_folders[integrated_rank_summary]='integrated_rankings'
-  # original_folders[integrated_rank_measures]='integrated_rankings'
-  # original_folders[integrated_rank_cdf]='integrated_rankings'
-  # original_folders[integrated_rank_pos_cov]='integrated_rankings'
-  # original_folders[integrated_rank_positive_stats]='integrated_rankings'
-  # original_folders[integrated_rank_size_auc_by_group]='integrated_rankings'
+  original_folders[integrated_rank_summary]='integrated_rankings'
+  original_folders[integrated_rank_measures]='integrated_rankings'
+  original_folders[integrated_rank_cdf]='integrated_rankings'
+  original_folders[integrated_rank_pos_cov]='integrated_rankings'
+  original_folders[integrated_rank_positive_stats]='integrated_rankings'
+  original_folders[integrated_rank_size_auc_by_group]='integrated_rankings'
   
-  # # Here the data is collected from executed folders.
-  # for file in "${!original_folders[@]}" ; do
-  #   original_folder=${original_folders[$file]}
-  #   count=`find $output_folder/$original_folder -maxdepth 3 -mindepth 3 -name $file | wc -l`
-  #   if [ "$count" -gt "0" ] ; then
-  #     echo "$file"
-  #     cat $output_folder/$original_folder/*/*/$file > $output_folder/$file
-  #   fi
-  # done 
+  # Here the data is collected from executed folders.
+  for file in "${!original_folders[@]}" ; do
+    original_folder=${original_folders[$file]}
+    count=`find $output_folder/$original_folder -maxdepth 3 -mindepth 3 -name $file | wc -l`
+    if [ "$count" -gt "0" ] ; then
+      echo "$file"
+      cat $output_folder/$original_folder/*/*/$file > $output_folder/$file
+    fi
+  done 
 
 
-  # ##########################
-  # # Processing all metrics #
-  # declare -A references
-  # references[annotations_metrics]='Net'
-  # references[final_stats_by_steps]='Net_Step,Net,Step'
-  # references[uncomb_kernel_metrics]='Sample,Net,Kernel'
-  # references[comb_kernel_metrics]='Sample,Integration,Kernel'
+  ##########################
+  # Processing all metrics #
+  declare -A references
+  references[annotations_metrics]='Net'
+  references[final_stats_by_steps]='Net_Step,Net,Step'
+  references[uncomb_kernel_metrics]='Sample,Net,Kernel'
+  references[comb_kernel_metrics]='Sample,Integration,Kernel'
 
-  # references[non_integrated_rank_summary]='Sample,Net,Kernel'
-  # references[non_integrated_rank_pos_cov]='Sample,Net,Kernel'
-  # references[non_integrated_rank_positive_stats]='Sample,Net,Kernel,group_seed'
+  references[non_integrated_rank_summary]='Sample,Net,Kernel'
+  references[non_integrated_rank_pos_cov]='Sample,Net,Kernel'
+  references[non_integrated_rank_positive_stats]='Sample,Net,Kernel,group_seed'
 
-  # references[integrated_rank_summary]='Sample,Integration,Kernel'
-  # references[integrated_rank_pos_cov]='Sample,Integration,Kernel'
-  # references[integrated_rank_positive_stats]='Sample,Integration,Kernel,group_seed'
+  references[integrated_rank_summary]='Sample,Integration,Kernel'
+  references[integrated_rank_pos_cov]='Sample,Integration,Kernel'
+  references[integrated_rank_positive_stats]='Sample,Integration,Kernel,group_seed'
 
-  # references[annotation_grade_metrics]='Gene_seed'
+  references[annotation_grade_metrics]='Gene_seed'
 
-  # # annotations_metrics uncomb_kernel_metrics comb_kernel_metrics
-  # for metric in annotations_metrics final_stats_by_steps uncomb_kernel_metrics comb_kernel_metrics ; do
-  #   if [ -s $output_folder/$metric ] ; then
-  #     create_metric_table.py $output_folder/$metric ${references[$metric]} $report_folder/kernel_report/parsed_${metric} 
-  #   fi
-  # done
+  # annotations_metrics uncomb_kernel_metrics comb_kernel_metrics
+  for metric in annotations_metrics final_stats_by_steps uncomb_kernel_metrics comb_kernel_metrics ; do
+    if [ -s $output_folder/$metric ] ; then
+      create_metric_table.py $output_folder/$metric ${references[$metric]} $report_folder/kernel_report/parsed_${metric} 
+    fi
+  done
 
-  # if [ -s $output_folder/non_integrated_rank_auc_by_groupIteration ] ; then 
-  #   echo -e "sample\tannot\tkernel\tseed\tauc" | \
-  #    cat - $output_folder/non_integrated_rank_auc_by_groupIteration > $report_folder/ranking_report/non_integrated_rank_auc_by_groupIteration
-  # fi
+  if [ -s $output_folder/non_integrated_rank_auc_by_groupIteration ] ; then 
+    echo -e "sample\tannot\tkernel\tseed\tauc" | \
+     cat - $output_folder/non_integrated_rank_auc_by_groupIteration > $report_folder/ranking_report/non_integrated_rank_auc_by_groupIteration
+  fi
 
-  # if [ -s $output_folder/non_integrated_rank_size_auc_by_group ] ; then 
-  #   echo -e "sample\tannot\tkernel\tseed\tpos_cov\tauc" | \
-  #    cat - $output_folder/non_integrated_rank_size_auc_by_group > $report_folder/ranking_report/non_integrated_rank_size_auc_by_group
-  # fi
+  if [ -s $output_folder/non_integrated_rank_size_auc_by_group ] ; then 
+    echo -e "sample\tannot\tkernel\tseed\tpos_cov\tauc" | \
+     cat - $output_folder/non_integrated_rank_size_auc_by_group > $report_folder/ranking_report/non_integrated_rank_size_auc_by_group
+  fi
 
-  # if [ -s $output_folder/integrated_rank_size_auc_by_group ] ; then 
-  #   echo -e "sample\tmethod\tkernel\tseed\tpos_cov\tauc" | \
-  #    cat - $output_folder/integrated_rank_size_auc_by_group > $report_folder/ranking_report/integrated_rank_size_auc_by_group
-  # fi
+  if [ -s $output_folder/integrated_rank_size_auc_by_group ] ; then 
+    echo -e "sample\tmethod\tkernel\tseed\tpos_cov\tauc" | \
+     cat - $output_folder/integrated_rank_size_auc_by_group > $report_folder/ranking_report/integrated_rank_size_auc_by_group
+  fi
 
-  # for metric in non_integrated_rank_summary integrated_rank_summary non_integrated_rank_pos_cov integrated_rank_pos_cov non_integrated_rank_positive_stats integrated_rank_positive_stats ; do
-  #   if [ -s $output_folder/$metric ] ; then
-  #     echo "$output_folder/$metric"
-  #     create_metric_table.py $output_folder/$metric ${references[$metric]} $report_folder/ranking_report/parsed_${metric} 
-  #   fi
-  # done
+  for metric in non_integrated_rank_summary integrated_rank_summary non_integrated_rank_pos_cov integrated_rank_pos_cov non_integrated_rank_positive_stats integrated_rank_positive_stats ; do
+    if [ -s $output_folder/$metric ] ; then
+      echo "$output_folder/$metric"
+      create_metric_table.py $output_folder/$metric ${references[$metric]} $report_folder/ranking_report/parsed_${metric} 
+    fi
+  done
 
-  # if [ -s $output_folder/non_integrated_rank_measures ] ; then
-  #    echo -e "annot_kernel\tannot\tkernel\trank\tacc\ttpr\tfpr\tprec\trec" | \
-  #    cat - $output_folder/non_integrated_rank_measures > $report_folder/ranking_report/non_integrated_rank_measures
-  # fi
+  if [ -s $output_folder/non_integrated_rank_measures ] ; then
+     echo -e "annot_kernel\tannot\tkernel\trank\tacc\ttpr\tfpr\tprec\trec" | \
+     cat - $output_folder/non_integrated_rank_measures > $report_folder/ranking_report/non_integrated_rank_measures
+  fi
 
-  #   if [ -s $output_folder/integrated_rank_measures ] ; then
-  #   echo -e "integration_kernel\tintegration\tkernel\trank\tacc\ttpr\tfpr\tprec\trec" | \
-  #    cat - $output_folder/integrated_rank_measures > $report_folder/ranking_report/integrated_rank_measures
-  # fi
+    if [ -s $output_folder/integrated_rank_measures ] ; then
+    echo -e "integration_kernel\tintegration\tkernel\trank\tacc\ttpr\tfpr\tprec\trec" | \
+     cat - $output_folder/integrated_rank_measures > $report_folder/ranking_report/integrated_rank_measures
+  fi
 
-  # if [ -s $output_folder/non_integrated_rank_cdf ] ; then
-  #    echo -e "annot_kernel\tannot\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"| \
-  #    cat - $output_folder/non_integrated_rank_cdf > $report_folder/ranking_report/non_integrated_rank_cdf
-  # fi
+  if [ -s $output_folder/non_integrated_rank_cdf ] ; then
+     echo -e "annot_kernel\tannot\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"| \
+     cat - $output_folder/non_integrated_rank_cdf > $report_folder/ranking_report/non_integrated_rank_cdf
+  fi
 
-  # if [ -s $output_folder/integrated_rank_cdf ] ; then
-  #    echo -e "integration_kernel\tintegration\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"| \
-  #    cat - $output_folder/integrated_rank_cdf > $report_folder/ranking_report/integrated_rank_cdf
-  # fi
- ###################
+  if [ -s $output_folder/integrated_rank_cdf ] ; then
+     echo -e "integration_kernel\tintegration\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"| \
+     cat - $output_folder/integrated_rank_cdf > $report_folder/ranking_report/integrated_rank_cdf
+  fi
+  
+  ##################
   # Obtaining HTMLS #
 
-  # report_html.py -t ./report/templates/kernel_report.py -d `ls $report_folder/kernel_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_kernel$html_name"
-
-  # if [ -s $output_folder/non_integrated_rank_measures ] ; then
-  #   get_graph.R -d $report_folder/ranking_report/non_integrated_rank_measures -x "fpr" -y "tpr" -g "kernel" -w "annot" -O "non_integrated_ROC" -o "$report_folder/img"
-  # fi
-
-  # if [ -s $output_folder/integrated_rank_measures ] ; then
-  #   get_graph.R -d $report_folder/ranking_report/integrated_rank_measures -x "fpr" -y "tpr" -g "kernel" -w "integration" -O "integrated_ROC" -o "$report_folder/img"
-  # fi
+  report_html.py -t ./report/templates/kernel_report.py -d `ls $report_folder/kernel_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_kernel$html_name"
 
   report_html.py -t ./report/templates/ranking_report.py -d `ls $report_folder/ranking_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_algQuality$html_name"
 
