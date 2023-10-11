@@ -1,5 +1,7 @@
 <%
         import os.path
+        import warnings
+        warnings.simplefilter(action='ignore', category=FutureWarning)
         def order_columns(name, column):
                 tab_header = plotter.hash_vars[name].pop(0)
                 plotter.hash_vars[name].sort(key=lambda x: x[column])
@@ -50,12 +52,14 @@
 
 
         def plot_with_facet(data, plotter_list, plot_type="", x='fpr', y='tpr', col=None, hue=None, col_wrap=4, suptitle=None, top=0.7, labels = None, x_label=None, y_label=None):
-                if plot_type == "jointplot":
-                        g = plotter_list["sns"].FacetGrid(data, col_wrap=col_wrap, col=col, hue=hue, aspect=1).map(plotter_list["sns"].jointplot, x, y)
+                if plot_type == "scatterplot":
+                        g = plotter_list["sns"].FacetGrid(data, col_wrap=col_wrap, col=col, hue=hue, aspect=1).map(plotter_list["sns"].scatterplot, x, y)
                 elif plot_type == "lineplot":
                         g = plotter_list["sns"].FacetGrid(data, col_wrap=col_wrap, col=col, hue=hue, aspect=1).map(plotter_list["sns"].lineplot, x, y)
                 elif plot_type == "ecdf":   
                         g = plotter_list["sns"].FacetGrid(data, col_wrap=col_wrap, col=col, hue=hue, aspect=1).map(plotter_list["sns"].ecdfplot, x)
+                elif plot_type == "lmplot":
+                        g = plotter_list["sns"].lmplot(data=data, x=x, y=y, hue=hue, col=col, col_wrap=col_wrap)
 
                 if x_label: g.set_xlabels(x_label)
                 if y_label: g.set_ylabels(y_label)
@@ -63,7 +67,7 @@
                 g.set_titles(col_template="{col_name}")
                 if suptitle is not None:
                         g.fig.subplots_adjust(top=top)
-                        g.fig.suptitle(suptitle)
+                        g.fig.suptitle(suptitle,fontsize=20)
         
 %>
 <div style="width:90%; background-color:#FFFFFF; margin:50 auto; align-content: center;">
@@ -168,19 +172,19 @@
 
 
         <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
-                <div style="margin-right: 10px;">
-                                % if plotter.hash_vars.get('non_integrated_rank_size_auc_by_group') is not None: 
-                                   ${ plotter.static_plot_main( id="non_integrated_rank_size_auc_by_group", header=True, row_names=False, var_attr=[0,1,2,3], 
-                                        plotting_function= lambda data, plotter_list: plot_with_facet(data=data, plotter_list=plotter_list, plot_type="jointplot", x='pos_cov', y='auc', col="annot", hue="kernel",
-                                         col_wrap=4, suptitle="Rank vs Real Group Size", top=0.7, x_label="Real Group Size", y_label="Median AUC"))}
-                                % endif
-                </div>
-                <div style="margin-left: 10px;">
-                                % if plotter.hash_vars.get('integrated_rank_size_auc_by_group') is not None: 
-                                 ${ plotter.static_plot_main( id="integrated_rank_size_auc_by_group", header=True, row_names=False, var_attr=[0,1,2,3], 
-                                        plotting_function= lambda data, plotter_list: plotter_list["sns"].jointplot(data=data, x='pos_cov', y = 'auc', kind="reg") )}
-                                % endif
-                </div>
+                % if plotter.hash_vars.get('non_integrated_rank_size_auc_by_group') is not None: 
+                   ${ plotter.static_plot_main( id="non_integrated_rank_size_auc_by_group", header=True, row_names=False, var_attr=[0,1,2,3], 
+                        plotting_function= lambda data, plotter_list: plot_with_facet(data=data, plotter_list=plotter_list, plot_type="lmplot", x='pos_cov', y='auc', col="annot",
+                         hue="kernel", col_wrap=4, suptitle="Rank vs Real Group Size before Integration", top=0.9, labels = None, x_label="Real Group Size", y_label="AUC"))}
+                % endif 
+        </div>
+
+        <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
+                % if plotter.hash_vars.get('integrated_rank_size_auc_by_group') is not None: 
+                   ${ plotter.static_plot_main( id="integrated_rank_size_auc_by_group", header=True, row_names=False, var_attr=[0,1,2,3], 
+                        plotting_function= lambda data, plotter_list: plot_with_facet(data=data, plotter_list=plotter_list, plot_type="lmplot", x='pos_cov', y='auc', col="method",
+                         hue="kernel", col_wrap=2, suptitle="Rank vs Real Group Size after Integration", top=0.8, labels = None, x_label="Real Group Size", y_label="AUC"))}
+                % endif 
         </div>
 
         <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
@@ -247,8 +251,10 @@
         <div style="overflow: hidden; text-align:center">
                 % if plotter.hash_vars.get("non_integrated_rank_cdf") is not None: 
                         ${ plotter.static_plot_main( id="non_integrated_rank_cdf", header=True, row_names=False, var_attr=[0,1,2,3], fields =[4,5,6],
-                                        plotting_function= lambda data, plotter_list: plot_with_facet(plot_type="ecdf",data=data, plotter_list=plotter_list, x="rank", col="annot", 
-                                                hue="kernel", col_wrap=4, suptitle="CDF for Non-Zero Scores Generated by Embeddings before Integration",x_label="Rank"))}
+                                        plotting_function= lambda data, plotter_list: plot_with_facet(plot_type="ecdf",data=data, 
+                                                plotter_list=plotter_list, x="rank", col="annot", 
+                                                hue="kernel", col_wrap=4, 
+                                                suptitle="CDF for Non-Zero Scores Generated by Embeddings before Integration",x_label="Rank", top=0.9))}
                 % endif
         </div>
 
@@ -267,7 +273,7 @@
                 % if plotter.hash_vars.get("integrated_rank_cdf") is not None: 
                         ${ plotter.static_plot_main( id="integrated_rank_cdf", header=True, row_names=False, var_attr=[0,1,2,3], fields =[4,5,6],
                                         plotting_function= lambda data, plotter_list: plot_with_facet(plot_type="ecdf",data=data, plotter_list=plotter_list, x="rank", 
-                                                col="integration", hue="kernel", title="CDF for Non-Zero Scores Generated by Embeddings after Integration", top=0.3))}
+                                                col="integration", hue="kernel", title="CDF for Non-Zero Scores Generated by Embeddings after Integration", top=0.8))}
                 % endif
         </div>
 

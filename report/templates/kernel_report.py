@@ -50,8 +50,6 @@
             % for elem in ids:
                 <% key = "parsed_final_stats_by_steps_" + elem %>
                 <% subtable = [row for i, row in enumerate(table) if i == 0 or row[1] == elem] %>
-                <% print("-"*100) %>
-                <% print(subtable) %>
                 <% plotter.hash_vars[key] = subtable %>
                 <<div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
                 ${plotter.barplot(id=key, fields= [2,6] , header= True, height= '400px', width= '400px', x_label= 'Density Element Not None', var_attr= [2],

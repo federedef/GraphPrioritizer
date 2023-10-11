@@ -29,6 +29,7 @@ annotations="disease phenotype molecular_function biological_process cellular_co
 #annotations="gene_TF"
 #annotations="string_ppi gene_TF gene_PS"
 #annotations="string_ppi hippie_ppi pathway gene_TF gene_hgncGroup disease"
+#annotations="string_ppi hippie_ppi"
 kernels="ka rf ct el node2vec"
 #kernels="ka rf ct el node2vec"
 integration_types="mean integration_mean_by_presence"
@@ -199,8 +200,8 @@ elif [ "$exec_mode" == "process_download" ] ; then
   # rm ./input/input_processed/PS_genes ./input/input_processed/tmp 
 
   # Updating info process file
-  echo "String version:\t$string_version" > ./input/input_processed/info_process_file
-  echo "Hippie version:\t$hippie_version" >> ./input/input_processed/info_process_file
+  echo -e "String version:\t$string_version" > ./input/input_processed/info_process_file
+  echo -e "Hippie version:\t$hippie_version" >> ./input/input_processed/info_process_file
 
 
 elif [ "$exec_mode" == "whitelist" ] ; then
@@ -530,54 +531,54 @@ elif [ "$exec_mode" == "report" ] ; then
     fi
   done
 
-  if [ -s $output_folder/non_integrated_rank_auc_by_groupIteration ] ; then 
-    echo -e "sample\tannot\tkernel\tseed\tauc" | \
-     cat - $output_folder/non_integrated_rank_auc_by_groupIteration > $report_folder/ranking_report/non_integrated_rank_auc_by_groupIteration
-  fi
+  # if [ -s $output_folder/non_integrated_rank_auc_by_groupIteration ] ; then 
+  #   echo -e "sample\tannot\tkernel\tseed\tauc" | \
+  #    cat - $output_folder/non_integrated_rank_auc_by_groupIteration > $report_folder/ranking_report/non_integrated_rank_auc_by_groupIteration
+  # fi
 
-  if [ -s $output_folder/non_integrated_rank_size_auc_by_group ] ; then 
-    echo -e "sample\tannot\tkernel\tseed\tpos_cov\tauc" | \
-     cat - $output_folder/non_integrated_rank_size_auc_by_group > $report_folder/ranking_report/non_integrated_rank_size_auc_by_group
-  fi
+  # if [ -s $output_folder/non_integrated_rank_size_auc_by_group ] ; then 
+  #   echo -e "sample\tannot\tkernel\tseed\tpos_cov\tauc" | \
+  #    cat - $output_folder/non_integrated_rank_size_auc_by_group > $report_folder/ranking_report/non_integrated_rank_size_auc_by_group
+  # fi
 
-  if [ -s $output_folder/integrated_rank_size_auc_by_group ] ; then 
-    echo -e "sample\tmethod\tkernel\tseed\tpos_cov\tauc" | \
-     cat - $output_folder/integrated_rank_size_auc_by_group > $report_folder/ranking_report/integrated_rank_size_auc_by_group
-  fi
+  # if [ -s $output_folder/integrated_rank_size_auc_by_group ] ; then 
+  #   echo -e "sample\tmethod\tkernel\tseed\tpos_cov\tauc" | \
+  #    cat - $output_folder/integrated_rank_size_auc_by_group > $report_folder/ranking_report/integrated_rank_size_auc_by_group
+  # fi
 
-  for metric in non_integrated_rank_summary integrated_rank_summary non_integrated_rank_pos_cov integrated_rank_pos_cov non_integrated_rank_positive_stats integrated_rank_positive_stats ; do
-    if [ -s $output_folder/$metric ] ; then
-      echo "$output_folder/$metric"
-      create_metric_table.py $output_folder/$metric ${references[$metric]} $report_folder/ranking_report/parsed_${metric} 
-    fi
-  done
+  # for metric in non_integrated_rank_summary integrated_rank_summary non_integrated_rank_pos_cov integrated_rank_pos_cov non_integrated_rank_positive_stats integrated_rank_positive_stats ; do
+  #   if [ -s $output_folder/$metric ] ; then
+  #     echo "$output_folder/$metric"
+  #     create_metric_table.py $output_folder/$metric ${references[$metric]} $report_folder/ranking_report/parsed_${metric} 
+  #   fi
+  # done
 
-  if [ -s $output_folder/non_integrated_rank_measures ] ; then
-     echo -e "annot_kernel\tannot\tkernel\trank\tacc\ttpr\tfpr\tprec\trec" | \
-     cat - $output_folder/non_integrated_rank_measures > $report_folder/ranking_report/non_integrated_rank_measures
-  fi
+  # if [ -s $output_folder/non_integrated_rank_measures ] ; then
+  #    echo -e "annot_kernel\tannot\tkernel\trank\tacc\ttpr\tfpr\tprec\trec" | \
+  #    cat - $output_folder/non_integrated_rank_measures > $report_folder/ranking_report/non_integrated_rank_measures
+  # fi
 
-    if [ -s $output_folder/integrated_rank_measures ] ; then
-    echo -e "integration_kernel\tintegration\tkernel\trank\tacc\ttpr\tfpr\tprec\trec" | \
-     cat - $output_folder/integrated_rank_measures > $report_folder/ranking_report/integrated_rank_measures
-  fi
+  #   if [ -s $output_folder/integrated_rank_measures ] ; then
+  #   echo -e "integration_kernel\tintegration\tkernel\trank\tacc\ttpr\tfpr\tprec\trec" | \
+  #    cat - $output_folder/integrated_rank_measures > $report_folder/ranking_report/integrated_rank_measures
+  # fi
 
-  if [ -s $output_folder/non_integrated_rank_cdf ] ; then
-     echo -e "annot_kernel\tannot\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"| \
-     cat - $output_folder/non_integrated_rank_cdf > $report_folder/ranking_report/non_integrated_rank_cdf
-  fi
+  # if [ -s $output_folder/non_integrated_rank_cdf ] ; then
+  #    echo -e "annot_kernel\tannot\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"| \
+  #    cat - $output_folder/non_integrated_rank_cdf > $report_folder/ranking_report/non_integrated_rank_cdf
+  # fi
 
-  if [ -s $output_folder/integrated_rank_cdf ] ; then
-     echo -e "integration_kernel\tintegration\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"| \
-     cat - $output_folder/integrated_rank_cdf > $report_folder/ranking_report/integrated_rank_cdf
-  fi
+  # if [ -s $output_folder/integrated_rank_cdf ] ; then
+  #    echo -e "integration_kernel\tintegration\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"| \
+  #    cat - $output_folder/integrated_rank_cdf > $report_folder/ranking_report/integrated_rank_cdf
+  # fi
   
-  ##################
-  # Obtaining HTMLS #
+  # ##################
+  # # Obtaining HTMLS #
 
-  report_html.py -t ./report/templates/kernel_report.py -d `ls $report_folder/kernel_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_kernel$html_name"
+  # report_html -t ./report/templates/kernel_report.py -d `ls $report_folder/kernel_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_kernel$html_name"
 
-  report_html.py -t ./report/templates/ranking_report.py -d `ls $report_folder/ranking_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_algQuality$html_name"
+  # report_html -t ./report/templates/ranking_report.py -d `ls $report_folder/ranking_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_algQuality$html_name"
 
 
 #########################################################
