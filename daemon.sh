@@ -131,11 +131,11 @@ elif [ "$exec_mode" == "process_download" ] ; then
   # # # PROCESS ONTOLOGIES #
   # for sample in phenotype disease function ; do
   #   zgrep ${tag_filter[$sample]} ./input/input_raw/gene_${sample}.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
-  #   aggregate_column_data.py -i - -x 1 -a 5 > ./input/input_processed/$sample # | head -n 230
+  #   aggregate_column_data -i - -x 1 -a 5 > ./input/input_processed/$sample # | head -n 230
   # done
 
   # ## Creating paco files for hpo.
-  # semtools.py -i ./input/input_processed/phenotype -o ./input/input_processed/filtered_phenotype -O HPO -S "," -c -T HP:0000001
+  # semtools -i ./input/input_processed/phenotype -o ./input/input_processed/filtered_phenotype -O HPO -S "," -c -T HP:0000001
   # cat ./input/input_processed/filtered_phenotype | tr -s "|" "," > ./input/input_processed/phenotype
   # rm ./input/input_processed/filtered_phenotype
   # rm rejected_profs
@@ -143,7 +143,7 @@ elif [ "$exec_mode" == "process_download" ] ; then
   # ## Creating paco files for each go branch.
   # gene_ontology=( molecular_function cellular_component biological_process )
   # for branch in ${gene_ontology[@]} ; do
-  #   semtools.py -i ./input/input_processed/function -o ./input/input_processed/filtered_$branch -O GO -S "," -c -T ${tag_filter[$branch]}
+  #   semtools -i ./input/input_processed/function -o ./input/input_processed/filtered_$branch -O GO -S "," -c -T ${tag_filter[$branch]}
   #   cat ./input/input_processed/filtered_$branch | tr -s "|" "," > ./input/input_processed/$branch
   #   rm ./rejected_profs
   #   rm ./input/input_processed/filtered_$branch
@@ -160,20 +160,20 @@ elif [ "$exec_mode" == "process_download" ] ; then
   # 11.5 | 11.0
   read string_version
   cat ./input/input_raw/string_data.v$string_version.txt | tr -s " " "\t" > string_data.v.txt
-  standard_name_replacer.py -i string_data.v.txt -I ./translators/ProtEnsemble_HGNC -c 1,2 -u > ./input/input_raw/interaction_scored && rm string_data.v.txt
+  standard_name_replacer -i string_data.v.txt -I ./translators/ProtEnsemble_HGNC -c 1,2 -u > ./input/input_raw/interaction_scored && rm string_data.v.txt
   awk '{OFS="\t"}{print $1,$2,$3}' ./input/input_raw/interaction_scored > ./input/input_processed/string_ppi
   ## HIPPO
   # current v2_2
   echo "Which hippie version you want to process?"
   read hippie_version
-  standard_name_replacer.py -i ./input/input_raw/hippie_$hippie_version.txt -I ./translators/entrez_HGNC -c 2,4 -u  >  ./input/input_processed/tmp 
+  standard_name_replacer -i ./input/input_raw/hippie_$hippie_version.txt -I ./translators/entrez_HGNC -c 2,4 -u  >  ./input/input_processed/tmp 
   cut -f 2,4,5 ./input/input_processed/tmp  > ./input/input_processed/hippie_ppi 
 
 
   # # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 
   # sed 's/([0-9]*)//1g' ./input/input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/input_raw/CRISPR_gene_effect_symbol
   # cut -f 1 -d "," ./input/input_raw/CRISPR_gene_effect | tr -d "DepMap_ID"  | tr -s "\t" "\n" | sed '1d' >  ./input/input_processed/DepMap_effect_rows
-  # standard_name_replacer.py -I ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_effect_symbol -c 1 -u --transposed > ./input/input_processed/genetic_interaction_effect_values
+  # standard_name_replacer -I ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_effect_symbol -c 1 -u --transposed > ./input/input_processed/genetic_interaction_effect_values
   # head -n 1 ./input/input_processed/genetic_interaction_effect_values | tr -s "\t" "\n" >  ./input/input_processed/DepMap_effect_cols
   # sed '1d' ./input/input_processed/genetic_interaction_effect_values > ./input/input_processed/DepMap_effect
   # rm ./input/input_raw/CRISPR_gene_effect_symbol ./input/input_processed/genetic_interaction_effect_values
@@ -181,22 +181,22 @@ elif [ "$exec_mode" == "process_download" ] ; then
   # # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 
   # sed 's/([0-9]*)//1g' ./input/input_raw/CRISPR_gene_exprs | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/input_raw/CRISPR_gene_exprs_symbol
   # cut -f 1 -d "," ./input/input_raw/CRISPR_gene_exprs | tr -d "DepMap_ID"  | tr -s "\t" "\n" | sed '1d' >  ./input/input_processed/DepMap_exprs_rows
-  # standard_name_replacer.py -I ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_exprs_symbol -c 1 -u --transposed > ./input/input_processed/genetic_interaction_exprs_values
+  # standard_name_replacer -I ./translators/symbol_HGNC -i ./input/input_raw/CRISPR_gene_exprs_symbol -c 1 -u --transposed > ./input/input_processed/genetic_interaction_exprs_values
   # head -n 1 ./input/input_processed/genetic_interaction_exprs_values | tr -s "\t" "\n" >   ./input/input_processed/DepMap_exprs_cols
   # sed '1d' ./input/input_processed/genetic_interaction_exprs_values > ./input/input_processed/DepMap_exprs
   # rm ./input/input_raw/CRISPR_gene_exprs_symbol ./input/input_processed/genetic_interaction_exprs_values
 
   # # Translating to GENE-TF interaction.ls
-  # standard_name_replacer.py -i ./input/input_raw/gene_TF -I ./translators/symbol_HGNC -c 1,2 -u | sed 's/HGNC:/TF:/2g' > ./input/input_processed/gene_TF
+  # standard_name_replacer -i ./input/input_raw/gene_TF -I ./translators/symbol_HGNC -c 1,2 -u | sed 's/HGNC:/TF:/2g' > ./input/input_processed/gene_TF
 
   # # Formatting data_columns
   # cut -f 1,14 ./input/input_raw/gene_hgncGroup | sed "s/\"//g" | tr -s "|" "," | awk '{if( $2 != "") print $0}' \
-  #  | desaggregate_column_data.py -i "-" -x 2 | sed 's/\t/\tGROUP:/1g' | sed 1d > ./input/input_processed/gene_hgncGroup
+  #  | desaggregate_column_data -i "-" -x 2 | sed 's/\t/\tGROUP:/1g' | sed 1d > ./input/input_processed/gene_hgncGroup
 
   # # Formatting PS-Genes
   # get_PS_gene_relation.py -i "/mnt/home/users/bio_267_uma/federogc/projects/GraphPrioritizer/input/phenotypic_series/series_data" -o "./input/input_processed/PS_genes"
-  # desaggregate_column_data.py -i ./input/input_processed/PS_genes -x 2 > ./input/input_processed/tmp 
-  # standard_name_replacer.py -i ./input/input_processed/tmp -I ./translators/symbol_HGNC -c 2 -u | awk 'BEGIN{FS="\t";OFS="\t"}{print $2,$1}' > ./input/input_processed/gene_PS
+  # desaggregate_column_data -i ./input/input_processed/PS_genes -x 2 > ./input/input_processed/tmp 
+  # standard_name_replacer -i ./input/input_processed/tmp -I ./translators/symbol_HGNC -c 2 -u | awk 'BEGIN{FS="\t";OFS="\t"}{print $2,$1}' > ./input/input_processed/gene_PS
   # rm ./input/input_processed/PS_genes ./input/input_processed/tmp 
 
   # Updating info process file
@@ -218,7 +218,7 @@ elif [ "$exec_mode" == "whitelist" ] ; then
   cd ./input/input_processed
   mkdir -p whitelist
 
-  filter_by_list.py -f phenotype,disease,biological_process,cellular_component,molecular_function,pathway,string_ppi,hippie_ppi,gene_TF,gene_hgncGroup,gene_PS \
+  filter_by_list -f phenotype,disease,biological_process,cellular_component,molecular_function,pathway,string_ppi,hippie_ppi,gene_TF,gene_hgncGroup,gene_PS \
    -c "1;1;1;1;1;1;1,2;1,2;1;1;1" -t ../../white_list/hgnc_white_list -o ./whitelist/ --prefix "" --metrics 
 
   # Special section for DepMap info.
@@ -230,7 +230,7 @@ elif [ "$exec_mode" == "whitelist" ] ; then
   cat ./whitelist/DepMap_effect_cols DepMap_effect > ./whitelist/DepMap_effect
 
   ## Filtering by the colnames
-  filter_by_list.py -f ./whitelist/DepMap_exprs,./whitelist/DepMap_effect -c "1;1" -t ../../white_list/hgnc_white_list --transposed --metrics 
+  filter_by_list -f ./whitelist/DepMap_exprs,./whitelist/DepMap_effect -c "1;1" -t ../../white_list/hgnc_white_list --transposed --metrics 
 
   # Geting format: Values table, rownames, colnames for DepMap.
   head -n 1 ./whitelist/DepMap_exprs | tr -s "\t" "\n" >  ./whitelist/DepMap_exprs_cols
@@ -288,12 +288,12 @@ elif [ "$exec_mode" == "get_production_seedgenes" ] ; then
   cat ./production_seedgenes/* > production_seedgens
 
   if [ $translate_from == "symbol" ] ; then
-    desaggregate_column_data.py -i production_seedgens -x 2 > disaggregated_production_seedgens
-    standard_name_replacer.py -I ./translators/symbol_HGNC -i disaggregated_production_seedgens -c 2 -u | aggregate_column_data.py -i - -x 1 -a 2 > production_seedgens
+    desaggregate_column_data -i production_seedgens -x 2 > disaggregated_production_seedgens
+    standard_name_replacer -I ./translators/symbol_HGNC -i disaggregated_production_seedgens -c 2 -u | aggregate_column_data -i - -x 1 -a 2 > production_seedgens
     rm disaggregated_production_seedgens
   elif [ $translate_from == "ensemble" ] ; then
-    desaggregate_column_data.py -i production_seedgens -x 2 > disaggregated_production_seedgens
-    standard_name_replacer.py -I ./translators/Ensemble_HGNC -i disaggregated_production_seedgens -c 2 -u | aggregate_column_data.py -i - -x 1 -a 2 > production_seedgens
+    desaggregate_column_data -i production_seedgens -x 2 > disaggregated_production_seedgens
+    standard_name_replacer -I ./translators/Ensemble_HGNC -i disaggregated_production_seedgens -c 2 -u | aggregate_column_data -i - -x 1 -a 2 > production_seedgens
     rm disaggregated_production_seedgens
   fi
 
@@ -393,8 +393,8 @@ elif [ "$exec_mode" == "integrate" ] ; then
   
   echo -e "$annotations" | tr -s " " "\n" > uwant
   cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path
-  #filter_by_whitelist.py -f $output_folder/similarity_kernels/ugot_path -c "1" -t uwant -o $output_folder/similarity_kernels
-  filter_by_list.py -f $output_folder/similarity_kernels/ugot_path -c "2" -t uwant -o $output_folder/similarity_kernels
+  #filter_by_whitelist -f $output_folder/similarity_kernels/ugot_path -c "1" -t uwant -o $output_folder/similarity_kernels
+  filter_by_list -f $output_folder/similarity_kernels/ugot_path -c "2" -t uwant -o $output_folder/similarity_kernels
   rm uwant
 
   for integration_type in ${integration_types} ; do 
@@ -527,7 +527,7 @@ elif [ "$exec_mode" == "report" ] ; then
   # annotations_metrics uncomb_kernel_metrics comb_kernel_metrics
   for metric in annotations_metrics final_stats_by_steps uncomb_kernel_metrics comb_kernel_metrics ; do
     if [ -s $output_folder/$metric ] ; then
-      create_metric_table.py $output_folder/$metric ${references[$metric]} $report_folder/kernel_report/parsed_${metric} 
+      create_metric_table $output_folder/$metric ${references[$metric]} $report_folder/kernel_report/parsed_${metric} 
     fi
   done
 
@@ -549,7 +549,7 @@ elif [ "$exec_mode" == "report" ] ; then
   # for metric in non_integrated_rank_summary integrated_rank_summary non_integrated_rank_pos_cov integrated_rank_pos_cov non_integrated_rank_positive_stats integrated_rank_positive_stats ; do
   #   if [ -s $output_folder/$metric ] ; then
   #     echo "$output_folder/$metric"
-  #     create_metric_table.py $output_folder/$metric ${references[$metric]} $report_folder/ranking_report/parsed_${metric} 
+  #     create_metric_table $output_folder/$metric ${references[$metric]} $report_folder/ranking_report/parsed_${metric} 
   #   fi
   # done
 

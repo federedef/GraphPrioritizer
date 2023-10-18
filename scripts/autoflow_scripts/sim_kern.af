@@ -34,8 +34,8 @@ get_similarity){
 		netanalyzer.py -i $network_file -n $node_files -f $format -l $layers --both_repre_formats --dsl_script dsl
   else                                                                                                                                                  
   	if [ "$ontology" != "-" ] ; then
-  		desaggregate_column_data.py -i $network_file -x 2 > ont_profs
-  		netanalyzer.py -i ont_profs -f $format -l $layers -T [cpu] -O "ont:`semtools.py -d list | grep $ontology`" --dsl_script dsl 
+  		desaggregate_column_data -i $network_file -x 2 > ont_profs
+  		netanalyzer.py -i ont_profs -f $format -l $layers -T [cpu] -O "ont:`semtools -d list | grep $ontology`" --dsl_script dsl 
   	else
   		netanalyzer.py -i $network_file -f $format -l $layers --dsl_script dsl
   	fi
@@ -47,7 +47,7 @@ get_similarity){
 
   for file in `ls | grep "stats_from_matrix" | sort -k 5 -t "_" -n` ; do
     var=`echo -e "$file" | sed 's/stats_from_matrix_//' | sed 's/_[0-9]//'`
-    tag_table.py -i $file -t $var >> tmp_stats_matrix 
+    tag_table -i $file -t $var >> tmp_stats_matrix 
   done
   mv tmp_stats_matrix stats_from_matrix
 
@@ -86,7 +86,7 @@ filter_net){
 
     for file in `ls | grep "stats_from_matrix" | sort -k 5 -t "_" -n` ; do
       var=`echo -e "$file" | sed 's/stats_from_matrix_//' | sed 's/_[0-9]//'`
-      tag_table.py -i $file -t $var >> tmp_stats_matrix 
+      tag_table -i $file -t $var >> tmp_stats_matrix 
     done
     mv tmp_stats_matrix stats_from_matrix
 
@@ -115,7 +115,7 @@ normalize_adjMatrix){
 	rm final_stats_by_steps
 	?
 	netanalyzer.py -i filter_net)/similarity_matrix_bin.npy -f "bin" -l "gene" -n ./similarity_matrix_bin.lst --dsl_script dsl
-	tag_table.py -i stats_from_matrix_1 -t "Normalization" > stats_from_matrix
+	tag_table -i stats_from_matrix_1 -t "Normalization" > stats_from_matrix
 	if [ -s stats_from_matrix ] ; then 
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$2); gsub(/ /,"_",$0); print tracker,$1,$2,$3}' stats_from_matrix >> stats_by_steps
 		awk '{OFS="\t"}{print $1"_"$2,$0}' stats_by_steps > final_stats_by_steps

@@ -15,8 +15,8 @@ rank_genes_with_leave_one_out){
 	## Obtaining genes of interest
 	cat $control_neg > filter
 	## Obtaining tags for group-case
-	desaggregate_column_data.py -i $control_pos -x 2 |& awk '{OFS="\t"}{print $1,$2,1}' > tags
-	desaggregate_column_data.py -i $control_neg -x 2 |& awk '{OFS="\t"}{print $1,$2,0}' >> tags
+	desaggregate_column_data -i $control_pos -x 2 |& awk '{OFS="\t"}{print $1,$2,1}' > tags
+	desaggregate_column_data -i $control_neg -x 2 |& awk '{OFS="\t"}{print $1,$2,0}' >> tags
 	?
 	ranker.py -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -l -f seed_by_group
 	awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/_iteration_[0-9]+$/,"",$6); print $0}' ranked_genes_all_candidates > processed_ranked_genes
@@ -90,7 +90,7 @@ rank_genes_with_kfold_cv){
 	## Defining seed genes
     cat $control_pos > seed_by_group
 	## Obtaining tags for group-case
-	desaggregate_column_data.py -i $control_pos -x 2 |& awk '{OFS="\t"}{print $1,$2,1}' > tags
+	desaggregate_column_data -i $control_pos -x 2 |& awk '{OFS="\t"}{print $1,$2,1}' > tags
 	?
 	ranker.py -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -l -K 10
 	awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/_iteration_[0-9]+$/,"",$6); print $0}' ranked_genes_all_candidates > processed_ranked_genes
@@ -163,7 +163,7 @@ rank_genes_with_kfold_cv){
 			cat tmp_measure_summary | tail -n1 | cut -f 1,4 >> auc_by_group
 		done
 		cut -f6 positive_genes | sort | uniq -c | awk '{FS=" ";OFS="\t"}{print $2, $1}' > realSize_by_group
-		merge_tabular.py realSize_by_group auc_by_group > size_auc_by_group
+		merge_tabular realSize_by_group auc_by_group > size_auc_by_group
 		grep -v -w "-" size_auc_by_group > tmp
 		mv tmp size_auc_by_group
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2,$3}' size_auc_by_group > $output_name_size_auc_by_group
