@@ -15,8 +15,8 @@ source ~soft_bio_267/initializes/init_python
   ################
   mkdir -p $control_genes_folder/menche
 
-  desaggregate_column_data.py -i $control_genes_folder/menche/data/menche_bench.tsv -x 2 -s ";" > disaggregated_menche_bench.tsv
-  standard_name_replacer.py -I ./translators/symbol_HGNC -i disaggregated_menche_bench.tsv -c 2 -u | aggregate_column_data.py -i - -x 1 -a 2 > $control_genes_folder/menche/disease_gens
+  desaggregate_column_data -i $control_genes_folder/menche/data/menche_bench.tsv -x 2 -s ";" > disaggregated_menche_bench.tsv
+  standard_name_replacer -I ./translators/symbol_HGNC -i disaggregated_menche_bench.tsv -c 2 -u | aggregate_column_data -i - -x 1 -a 2 > $control_genes_folder/menche/disease_gens
   sed -i 's/ /_/g' $control_genes_folder/menche/disease_gens
   rm disaggregated_menche_bench.tsv
 

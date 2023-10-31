@@ -18,9 +18,9 @@ rank_genes_with_leave_one_out){
 	desaggregate_column_data -i $control_pos -x 2 |& awk '{OFS="\t"}{print $1,$2,1}' > tags
 	desaggregate_column_data -i $control_neg -x 2 |& awk '{OFS="\t"}{print $1,$2,0}' >> tags
 	?
-	ranker.py -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -l -f seed_by_group
+	ranker -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -l -f seed_by_group
 	awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/_iteration_[0-9]+$/,"",$6); print $0}' ranked_genes_all_candidates > processed_ranked_genes
-	ranker.py -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -f filter
+	ranker -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -f filter
 	cat ranked_genes_all_candidates >> processed_ranked_genes
 
 	# Add tags to ranked_genes_all_candidates.
@@ -92,7 +92,7 @@ rank_genes_with_kfold_cv){
 	## Obtaining tags for group-case
 	desaggregate_column_data -i $control_pos -x 2 |& awk '{OFS="\t"}{print $1,$2,1}' > tags
 	?
-	ranker.py -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -l -K 10
+	ranker -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -l -K 10
 	awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/_iteration_[0-9]+$/,"",$6); print $0}' ranked_genes_all_candidates > processed_ranked_genes
 	# Add tags to ranked_genes_all_candidates.
 	add_tags2ranks.py -i processed_ranked_genes -g 5 -c 0 -t tags -o tagged_ranks.txt -n
