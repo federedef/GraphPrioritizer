@@ -1,0 +1,67 @@
+Phenotypic Series  - PS231200
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Bleeding disorder, platelet-type - PS231200 - 27 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+1p36.12	?Bleeding disorder, platelet-type, 22	AR	3	618462	EPHB2, EPHT3, DRT, ERK, PCBC, CAPB, BDPLT22	600997
+3p21.31	Gray platelet syndrome	AR	3	139090	NBEAL2, KIAA0540, GPS, BDPLT4	614169
+3q21.3	Bernard-Soulier syndrome, type C	AR	3	231200	GP9	173515
+3q25.1	Bleeding disorder, platelet-type, 8	AR	3	609821	P2RY12, P2Y12, BDPLT8	600515
+5q11.2	Bleeding disorder, platelet-type, 9	AD	2	614200	BDPLT9	614200
+7q21.11	Platelet glycoprotein IV deficiency	AR	3	608404	CD36, CHDS7, BDPLT10	173510
+7q34	Bleeding disorder, platelet-type, 14	AD	2	614158	BDPLT14	614158
+9q21.11	?Bleeding disorder, platelet-type, 19	AR	3	616176	PRKACG, BDPLT19	176893
+9q34.13	Bleeding disorder, platelet-type, 17	AD, AR	3	187900	GFI1B, BDPLT17	604383
+10q22.2	Quebec platelet disorder	AD	3	601709	PLAU, URK, QPD, BDPLT5	191840
+11q13.1	?Bleeding disorder, platelet-type, 18	AR	3	615888	RASGRP2, CDC25L	605577
+11q24.3	Bleeding disorder, platelet-type, 21	AD, AR	3	617443	FLI1, BDPLT21	193067
+12q12	Scott syndrome	AR	3	262890	ANO6, TMEM16F, SCTS, BDPLT7	608663
+14q24.1	Bleeding disorder, platelet-type, 15	AD	3	615193	ACTN1, BDPLT15	102575
+17p13.2	von Willebrand disease, platelet-type	AD	3	177820	GP1BA, BSS, BDPLT1, VWDP, BDPLT3	606672
+17p13.2	Bernard-Soulier syndrome, type A1 (recessive)	AR	3	231200	GP1BA, BSS, BDPLT1, VWDP, BDPLT3	606672
+17q12	Bleeding disorder, platelet-type, 20	AD	3	616913	SLFN14, BDPLT20	614958
+17q21.31	Bleeding disorder, platelet-type, 16, autosomal dominant	AD	3	187800	ITGA2B, GP2B, CD41B, GT1, BDPLT2, BDPLT16	607759
+17q21.31	Glanzmann thrombasthenia 1	AR	3	273800	ITGA2B, GP2B, CD41B, GT1, BDPLT2, BDPLT16	607759
+17q21.32	Glanzmann thrombasthenia 2	AR	3	619267	ITGB3, GP3A, GT2, BDPLT24	173470
+17q21.32	Bleeding disorder, platelet-type, 24, autosomal dominant		3	619271	ITGB3, GP3A, GT2, BDPLT24	173470
+19p13.3	{Bleeding disorder, platelet-type, 13, susceptibility to}	AD	3	614009	TBXA2R, BDPLT13	188070
+19q13.42	Bleeding disorder, platelet-type, 11	AR	3	614201	GP6, GPIV, BDPLT11	605546
+22q11.21	Giant platelet disorder, isolated	AR	3	231200	GP1BB, BS, BDPLT1	138720
+22q11.21	Bernard-Soulier syndrome, type B	AR	3	231200	GP1BB, BS, BDPLT1	138720
+22q12.3	Macrothrombocytopenia and granulocyte inclusions with or without nephritis or sensorineural hearing loss	AD	3	155100	MYH9, MHA, FTNS, DFNA17, BDPLT6, MATINS	160775
+Not Mapped	Bleeding disorder, platelet-type, 12	AD		605735	BDPLT12	605735
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

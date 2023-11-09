@@ -1,0 +1,56 @@
+Phenotypic Series  - PS119530
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Orofacial cleft - PS119530 - 16 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+1p33	Orofacial cleft 13	AD	2	613857	OFC13	613857
+1p31	Orofacial cleft 14	AR	2	615892	OFC14	615892
+1q32.2	{Orofacial cleft 6}	AD	3	608864	IRF6, VWS1, LPS, PIT, PPS1, OFC6	607199
+2p13	Orofacial cleft 2	AD	2	602966	OFC2	602966
+2q33.1	?Orofacial cleft 10	IC	3	613705	SUMO1, UBL1, SMT3, OFC10	601912
+3q28	Orofacial cleft 8		3	618149	TP63, TP73L, KET, EEC3, SHFM4, LMS, RHS, OFC8	603273
+4p16.2	Orofacial cleft 5	AD	3	608874	MSX1, HOX7, HYD1, OFC5, STHAG1, ECTD3	142983
+4q21-q31	Orofacial cleft 4		2	608371	OFC4	608371
+6p24.3	Orofacial cleft-1	AD	2	119530	OFC1, CL	119530
+8q24.3	Orofacial cleft 12		2	612858	OFC12	612858
+11q23.3	Cleft lip/palate-ectodermal dysplasia syndrome	AR	3	225060	NECTIN1, PVRL1, HVEC, PVRR1, PRR1, ED4, OFC7, CLPED1	600644
+11q23.3	Orofacial cleft 7	AR	3	225060	NECTIN1, PVRL1, HVEC, PVRR1, PRR1, ED4, OFC7, CLPED1	600644
+13q33.1-q34	Orofacial cleft 9		2	610361	OFC9	610361
+14q22.2	Orofacial cleft 11		3	600625	BMP4, BMP2B1, BMP2B, MCOPS6, OFC11	112262
+17q21.33	?Orofacial cleft 15	AD	3	616788	DLX4, DLX7, DLX8, OFC15	601911
+19q13	Orofacial cleft 3	?AD	2	600757	OFC3	600757
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

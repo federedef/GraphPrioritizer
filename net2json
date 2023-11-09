@@ -174,7 +174,7 @@
 		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
 			"get_association_values ['gene'] 'cell_line' 'correlation' add_to_object=True pvalue=0.1",
-			"write_matrix ('semantic_sims',('gene','gene'),'correlation') output_filename='similarity_matrix_bin'",
+			"write_matrix ('associations',('gene','gene'),'correlation') output_filename='similarity_matrix_bin'",
 			"write_stats_from_matrix ('associations',('gene','gene'),'correlation') output_filename='stats_from_matrix_PearsonCorr_1'"]
 	},
 	"DepMap_exprs_pearson": {

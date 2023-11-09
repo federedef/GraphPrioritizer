@@ -1,0 +1,56 @@
+Phenotypic Series  - PS311200
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Orofaciodigital syndrome - PS311200 - 16 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+1q32.1	Orofaciodigital syndrome V	AR	3	174300	DDX59, OFD5	615464
+3q13.12-q13.13	?Orofaciodigital syndrome XVIII	AR	3	617927	IFT57, ESRRBL1, HIPPI, OFD18	606621
+4q28.1	?Orofaciodigital syndrome XVII	AR	3	617926	INTU, KIAA1284, PDZK6, SRTD20, OFD17	610621
+5p13.2	Orofaciodigital syndrome VI	AR	3	277170	CPLANE1, C5orf42, JBTS17, OFD6	614571
+10q24.1	Orofaciodigital syndrome IV	AR	3	258860	TCTN3, TECT3, C10orf61, OFD4, JBTS18	613847
+11q13.4	Orofaciodigital syndrome XIV	AR	3	615948	C2CD3, OFD14	615944
+17p13.1	?Orofaciodigital syndrome XV	AR	3	617127	KIAA0753, OFIP, OFD15, JBTS38, SRTD21	617112
+17p13.1	Orofaciodigital syndrome XVI	AR	3	617563	TMEM107, MKS13, JBTS29	616183
+Xp22.2	Orofaciodigital syndrome I	XLD	3	311200	OFD1, CXorf5, SGBS2, JBTS10, RP23	300170
+Chr.X	Orofaciodigital syndrome VIII	XLR	2	300484	OFD8	300484
+Not Mapped	Orofaciodigital syndrome X	AD		165590	OFD10	165590
+Not Mapped	Orofaciodigital syndrome II	AR		252100	OFD2	252100
+Not Mapped	Orofaciodigital syndrome III	AR		258850	OFD3	258850
+Not Mapped	Orofaciodigital syndrome IX	AR		258865	OFD9	258865
+Not Mapped	Orofaciodigital syndrome VII			608518	OFD7	608518
+Not Mapped	Orofaciodigital syndrome XI	IC		612913	OFD11	612913
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

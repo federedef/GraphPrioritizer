@@ -1,0 +1,55 @@
+Phenotypic Series  - PS256730
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Ceroid lipofuscinoses - PS256730 - 15 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+1p34.2	Ceroid lipofuscinosis, neuronal, 1	AR	3	256730	PPT1, CLN1	600722
+4q28.2	Ceroid lipofuscinosis, neuronal, 7	AR	3	610951	MFSD8, MGC33302, CLN7, CCMD	611124
+7q11.21	Epilepsy, progressive myoclonic 3, with or without intracellular inclusions	AR	3	611726	KCTD7, EPM3, CLN14	611725
+8p23.3	Ceroid lipofuscinosis, neuronal, 8	AR	3	600143	CLN8, EPMR	607837
+8p23.3	Ceroid lipofuscinosis, neuronal, 8, Northern epilepsy variant	AR	3	610003	CLN8, EPMR	607837
+11p15.5	Ceroid lipofuscinosis, neuronal, 10	AR	3	610127	CTSD, CPSD, CLN10	116840
+11p15.4	Ceroid lipofuscinosis, neuronal, 2	AR	3	204500	TPP1, CLN2, SCAR7	607998
+11q13.2	Ceroid lipofuscinosis, neuronal, 13 (Kufs type)	AR	3	615362	CTSF, CLN13	603539
+13q22.3	Ceroid lipofuscinosis, neuronal, 5	AR	3	256731	CLN5	608102
+15q23	Ceroid lipofuscinosis, neuronal, 6A	AR	3	601780	CLN6, CLN6A	606725
+15q23	Ceroid lipofuscinosis, neuronal, 6B (Kufs type)	AR	3	204300	CLN6, CLN6A	606725
+16p12.1	Ceroid lipofuscinosis, neuronal, 3	AR	3	204200	CLN3, BTS	607042
+17q21.31	Ceroid lipofuscinosis, neuronal, 11	AR	3	614706	GRN, CLN11	138945
+20q13.33	Ceroid lipofuscinosis, neuronal, 4 (Kufs type), autosomal dominant	AD	3	162350	DNAJC5, DNAJC5A, CSP, CLN4	611203
+Not Mapped	Ceroid lipofuscinosis, neuronal, 9	AR		609055	CLN9	609055
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

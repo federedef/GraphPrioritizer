@@ -18,20 +18,9 @@ report_folder=$output_folder/report
 
 # Custom variables.
 annotations="disease phenotype molecular_function biological_process cellular_component string_ppi hippie_ppi pathway gene_TF gene_hgncGroup DepMap_effect_pearson DepMap_effect_spearman gene_PS"
-#annotations="string_ppi hippie_ppi pathway gene_TF gene_hgncGroup DepMap_effect_pearson DepMap_effect_spearman gene_PS disease"
-#annotations="phenotype molecular_function cellular_component biological_process hippie_ppi DepMap_effect_pearson DepMap_effect_spearman"
-#annotations="DepMap_effect_pearson DepMap_effect_spearman"
-#annotations="disease string_ppi"
-annotations="string_ppi"
-#annotations="gene_hgncGroup"
-#nnotations="disease phenotype molecular_function biological_process cellular_component string_ppi hippie_ppi pathway gene_TF gene_hgncGroup DepMap_effect_pearson gene_PS"
-#annotations="disease phenotype molecular_function biological_process cellular_component string_ppi hippie_ppi pathway gene_hgncGroup DepMap_effect_pearson gene_PS"
-#annotations="gene_TF"
-#annotations="string_ppi gene_TF gene_PS"
-#annotations="string_ppi hippie_ppi pathway gene_TF gene_hgncGroup disease"
 #annotations="string_ppi hippie_ppi"
+
 kernels="ka rf ct el node2vec"
-#kernels="ka rf ct el node2vec"
 integration_types="mean integration_mean_by_presence"
 net2custom=$input_path'/net2json' 
 control_pos=$input_path'/control_pos'
@@ -118,15 +107,15 @@ elif [ "$exec_mode" == "process_download" ] ; then
   mkdir -p ./input/input_processed
   touch ./input/input_processed/info_process_file
 
-  declare -A tag_filter 
-  tag_filter[phenotype]='HP:'
-  tag_filter[disease]='MONDO:'
-  tag_filter[function]='GO:'
-  tag_filter[pathway]='REACT:'
-  tag_filter[interaction]='RO:0002434' # RO:0002434 <=> interacts with
-  tag_filter[molecular_function]='GO:0003674'
-  tag_filter[biological_process]='GO:0008150'
-  tag_filter[cellular_component]='GO:0005575'
+  # declare -A tag_filter 
+  # tag_filter[phenotype]='HP:'
+  # tag_filter[disease]='MONDO:'
+  # tag_filter[function]='GO:'
+  # tag_filter[pathway]='REACT:'
+  # tag_filter[interaction]='RO:0002434' # RO:0002434 <=> interacts with
+  # tag_filter[molecular_function]='GO:0003674'
+  # tag_filter[biological_process]='GO:0008150'
+  # tag_filter[cellular_component]='GO:0005575'
 
   # # # PROCESS ONTOLOGIES #
   # for sample in phenotype disease function ; do
@@ -249,7 +238,7 @@ elif [ "$exec_mode" == "whitelist" ] ; then
   echo "Annotation files filtered"
   cd ../..
 
-elif [ "$exec_mode" == "download_control" ] ; then
+elif [ "$exec_mode" == "download_control" ] ; then #TODO: 07/11/23
   # All this section must be fixed
   mkdir $control_genes_folder/zampieri
   # mkdir $control_genes_folder/zampieri/data
@@ -322,7 +311,7 @@ elif [ "$exec_mode" == "kernels" ] ; then
       echo $process_type
       net2json_parser.py --net_id $annotation --json_path $net2custom
       echo "Performing kernels without umap $annotation"
-      AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} -A "exclude:sr133,sr014,sr030" $add_opt 
+      AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} -L $add_opt #-A "exclude:sr133,sr014,sr030"
 
   done
 
@@ -339,7 +328,7 @@ elif [ "$exec_mode" == "plot_sims" ] ; then
 
   autoflow_vars=`echo "\\$rawSim_paths=$output_folder/similarity_kernels/rawSim_paths,\\$annotations_varflow=$annotations_varflow"`
   echo -e "$autoflow_vars"
-  AutoFlow -w $autoflow_scripts/plot_sims.af -V $autoflow_vars -o $output_folder/plot_sims $add_opt
+  AutoFlow -w $autoflow_scripts/plot_sims.af -V $autoflow_vars -o $output_folder/plot_sims -L $add_opt 
 
 elif [ "$exec_mode" == "ranking" ] ; then
   #########################################################
@@ -374,7 +363,7 @@ elif [ "$exec_mode" == "ranking" ] ; then
         \\$geneseeds=$input_path/geneseeds
         " | tr -d [:space:]`
 
-        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/rankings/ranking_${kernel}_${annotation} -m 60gb -t 4-00:00:00 $3 #-A "exclude:sr060" 
+        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/rankings/ranking_${kernel}_${annotation} -m 60gb -t 4-00:00:00 -L $3 #-A "exclude:sr060" 
       fi
 
     done
@@ -407,7 +396,7 @@ elif [ "$exec_mode" == "integrate" ] ; then
       \\$ugot_path=$ugot_path
       " | tr -d [:space:]`
 
-      AutoFlow -w $autoflow_scripts/integrate.af -V $autoflow_vars -o $output_folder/integrations/${integration_type} -m 60gb -t 4-00:00:00 $add_opt 
+      AutoFlow -w $autoflow_scripts/integrate.af -V $autoflow_vars -o $output_folder/integrations/${integration_type} -m 60gb -t 4-00:00:00 -L $add_opt 
 
   done
 
@@ -448,7 +437,7 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
         \\$geneseeds=$input_path/geneseeds
         " | tr -d [:space:]`
 
-        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/integrated_rankings/ranking_${kernel}_${integration_type} -m 60gb -t 4-00:00:00 $3
+        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/integrated_rankings/ranking_${kernel}_${integration_type} -m 60gb -L -t 4-00:00:00 $3
       fi
 
     done
@@ -464,6 +453,7 @@ elif [ "$exec_mode" == "report" ] ; then
   source ~soft_bio_267/initializes/init_R
   #report_type=$2
   html_name=$2
+  check=$3
   
   # #################################
   # Setting up the report section #
@@ -498,7 +488,7 @@ elif [ "$exec_mode" == "report" ] ; then
   # Here the data is collected from executed folders.
   for file in "${!original_folders[@]}" ; do
     original_folder=${original_folders[$file]}
-    count=`find $output_folder/$original_folder -maxdepth 3 -mindepth 3 -name $file | wc -l`
+    count=`find $output_folder/$original_folder -maxdepth 4 -mindepth 4 -name $file | wc -l`
     if [ "$count" -gt "0" ] ; then
       echo "$file"
       cat $output_folder/$original_folder/*/*/$file > $output_folder/$file
@@ -558,7 +548,7 @@ elif [ "$exec_mode" == "report" ] ; then
      cat - $output_folder/non_integrated_rank_measures > $report_folder/ranking_report/non_integrated_rank_measures
   fi
 
-    if [ -s $output_folder/integrated_rank_measures ] ; then
+  if [ -s $output_folder/integrated_rank_measures ] ; then
     echo -e "integration_kernel\tintegration\tkernel\trank\tacc\ttpr\tfpr\tprec\trec" | \
      cat - $output_folder/integrated_rank_measures > $report_folder/ranking_report/integrated_rank_measures
   fi
@@ -572,14 +562,36 @@ elif [ "$exec_mode" == "report" ] ; then
      echo -e "integration_kernel\tintegration\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"| \
      cat - $output_folder/integrated_rank_cdf > $report_folder/ranking_report/integrated_rank_cdf
   fi
+
+  if [ -z "$check" ] ; then
+    echo "---------------------------------------"
+    echo " Now it is necessary some information of the process "
+    echo "string version?"
+    # 11.5 | 11.0
+    read string_version
+    echo "hippie version?"
+    read hippie_version
+    echo "whitelist used?"
+    read whitelist
+    name_dir=`date +%m_%d_%Y`
+    mkdir ./report/HTMLs/$name_dir
+    # Create preprocess file
+    echo " String version:\t$string_version\nHippie version:\t$hippie_version\nWhitelist:\t$whitelist " > ./report/HTMLs/$name_dir/info_preprocess
+    # Copy net2json
+    cp ./net2json ./report/HTMLs/$name_dir/
+  else 
+    echo "Reports to check available"
+  fi
   
   ##################
   # Obtaining HTMLS #
-
   report_html -t ./report/templates/kernel_report.py -d `ls $report_folder/kernel_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_kernel$html_name"
-
   report_html -t ./report/templates/ranking_report.py -d `ls $report_folder/ranking_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_algQuality$html_name"
 
+  if [ -z "$check" ] ; then
+    mv ./report_kernel$html_name.html ./report/HTMLs/$name_dir/
+    mv ./report_algQuality$html_name.html ./report/HTMLs/$name_dir/
+  fi
 
 #########################################################
 # STAGE TO CHECK AUTOFLOW IS RIGHT

@@ -1,0 +1,46 @@
+Phenotypic Series  - PS145600
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Malignant hyperthermia - PS145600 - 6 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+1q32.1	{Malignant hyperthermia susceptibility 5}	AD	3	601887	CACNA1S, CACNL1A3, CCHL1A3, TTPP1, HOKPP1, MHS5	114208
+3q13.1	{Malignant hyperthermia susceptibility 4}	AD	2	600467	MHS4	600467
+5p	{Malignant hyperthermia susceptibility 6}		2	601888	MHS6	601888
+7q21-q22	{Malignant hyperthermia susceptibility 3}	AD	2	154276	MHS3	154276
+17q11.2-q24	{Malignant hyperthermia susceptibility 2}	AD	2	154275	MHS2	154275
+19q13.2	{Malignant hyperthermia susceptibility 1}	AD	3	145600	RYR1, MHS, CCO, KDS	180901
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

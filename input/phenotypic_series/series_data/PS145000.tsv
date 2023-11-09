@@ -1,0 +1,47 @@
+Phenotypic Series  - PS145000
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Hyperparathyroidism - PS145000 - 7 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+1q31.2	Hyperparathyroidism-jaw tumor syndrome	AD	3	145001	CDC73, HRPT2, C1orf28	607393
+1q31.2	Parathyroid adenoma with cystic changes	AD	3	145001	CDC73, HRPT2, C1orf28	607393
+1q31.2	Hyperparathyroidism, familial primary	AD	3	145000	CDC73, HRPT2, C1orf28	607393
+2p14-p13.3	Hyperparathyroidism 3		2	610071	HRPT3	610071
+3q13.33-q21.1	Hyperparathyroidism, neonatal	AD, AR	3	239200	CASR, HHC1, PCAR1, FIH, EIG8, HYPOC1	601199
+6p24.2	Hyperparathyroidism 4	AD	3	617343	GCM2, GCMB, HRPT4, FIH2	603716
+7q34	Hyperparathyroidism, transient neonatal	AR	3	618188	TRPV6, ECAC2, CAT1, CATL, HRPTTN	606680
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

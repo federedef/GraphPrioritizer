@@ -1,0 +1,47 @@
+Phenotypic Series  - PS183600
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Split-hand/foot malformation - PS183600 - 7 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+2q31	Split-hand/foot malformation 5		2	606708	SHFM5	606708
+3q28	Split-hand/foot malformation 4	AD	3	605289	TP63, TP73L, KET, EEC3, SHFM4, LMS, RHS, OFC8	603273
+7q21.3	?Split-hand/foot malformation 1 with sensorineural hearing loss	AR	3	220600	DLX5, SHFM1D, SHFM1	600028
+7q21.3	Split-hand/foot malformation 1	AD	3	183600	DLX5, SHFM1D, SHFM1	600028
+10q24	Split-hand/foot malformation 3, gene duplication syndrome	AD	4	246560	SHFM3, SHSF3, DUP10q24, C10DUPq24	246560
+12q13.12	Split-hand/foot malformation 6	AR	3	225300	WNT10B, SHFM6, STHAG8	601906
+Xq26	Split hand/foot malformation 2	XL	2	313350	SHFM2, SHFD2	313350
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

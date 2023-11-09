@@ -1,0 +1,44 @@
+Phenotypic Series  - PS604370
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Breast-ovarian cancer, familial, susceptibility to - PS604370 - 4 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+13q13.1	{Breast-ovarian cancer, familial, 2}	AD	3	612555	BRCA2, FANCD1, BROVCA2, GLM3, PNCA2	600185
+17q12	{Breast-ovarian cancer, familial, susceptibility to, 4}		3	614291	RAD51D, RAD51L3, BROVCA4	602954
+17q21.31	{Breast-ovarian cancer, familial, 1}	AD, Mu	3	604370	BRCA1, PSCP, BROVCA1, PNCA4, FANCS	113705
+17q22	{Breast-ovarian cancer, familial, susceptibility to, 3}		3	613399	RAD51C, FANCO, BROVCA3	602774
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

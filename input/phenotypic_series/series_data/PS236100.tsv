@@ -1,0 +1,54 @@
+Phenotypic Series  - PS236100
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Holoprosencephaly - PS236100 - 14 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+1q41-q42	Chromosome 1q41-q42 deletion syndrome	IC	4	612530	DEL1q41q42, C1DELq41q42	612530
+2p21	Holoprosencephaly 2	AD	3	157170	SIX3, HPE2	603714
+2q14.2	Holoprosencephaly 9	AD	3	610829	GLI2, HPE9, CJS	165230
+2q37.1-q37.3	Holoprosencephaly 6		2	605934	HPE6	605934
+3q25.31	Holoprosencephaly 14	AR	3	619895	PLCH1, PLCL3, KIAA1069, HPE14	612835
+7q36.3	Holoprosencephaly 3	AD	3	142945	SHH, HPE3, HLP3, SMMCI, MCOPCB5	600725
+9q22.32	Holoprosencephaly 7	AD	3	610828	PTCH1, NBCCS, BCNS, HPE7	601309
+11q24.2	Holoprosencephaly 11	AD	3	614226	CDON, CDO, HPE11	608707
+13q32.3	Holoprosencephaly 5	AD	3	609637	ZIC2, HPE5	603073
+14q13	Holoprosencephaly 8		2	609408	HPE8	609408
+16q21	Holoprosencephaly 12, with or without pancreatic agenesis	AD	3	618500	CNOT1, NOT1, HPE12, VIBOS	604917
+18p11.31	Holoprosencephaly 4	AD	3	142946	TGIF1, HPE4	602630
+21q22.3	Holoprosencephaly 1	AD, IC	2	236100	HPE1	236100
+Xq25	Holoprosencephaly 13, X-linked	XLD, XLR	3	301043	STAG2, SA2, MKMS, HPE13	300826
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

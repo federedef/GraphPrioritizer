@@ -1,0 +1,57 @@
+Phenotypic Series  - PS157300
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Migraine with or without aura, susceptibility to - PS157300 - 17 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+1q31	{Migraine with or without aura, susceptibility to, 6}	AD	2	607516	MGR6, FHM3	607516
+1q31	{Migraine, familial hemiplegic, 4}	AD	2	607516	MGR6, FHM3	607516
+4q24	{Migraine with or without aura, susceptibility to, 1}	AD	2	157300	MGR1, MA	157300
+4q31.22-q31.23	{Migraine, resistance to}	AD	3	157300	EDNRA, MFDA	131243
+5q21	{Migraine, susceptibility to, 8}		2	609570	MGR8	609570
+6p21.33	{Migraine without aura, susceptibility to}	AD	3	157300	TNF, TNFA	191160
+6p21.1-p12.2	{Migraine with or without aura, susceptibility to, 3}	AD	2	607498	MGR3	607498
+6q25.1-q25.2	{Migraine, susceptibility to}	AD	3	157300	ESR1, ESR, ESTRR	133430
+10q22-q23	{Migraine, with or without aura, susceptibility to, 12}	AD	2	611706	MGR12	611706
+10q25.3	{Migraine, with or without aura, susceptibility to, 13}	AD	3	613656	KCNK18, TRESK, TRIK, MGR13	613655
+11q24	{Migraine with aura, susceptibility to, 9}		2	609670	MGR9	609670
+14q21.2-q22.3	{Migraine without aura, susceptibility to, 4}	AD	2	607501	MGR4, MGOA	607501
+15q11.2-q12	{Migraine with aura, susceptibility to, 7}		2	609179	MGR7	609179
+17p13.1	{Migraine with or without aura, susceptibility to, 10}	AD	2	610208	MGR10	610208
+18q12.1	{Migraine with or without aura, susceptibility to, 11}	AD	2	610209	MGR11	610209
+19p13	{Migraine with or without aura, susceptibility to, 5}	AD	2	607508	MGR5	607508
+Xq	{Migraine, familial typical, susceptibility to, 2}	XL	2	300125	MGR2	300125
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

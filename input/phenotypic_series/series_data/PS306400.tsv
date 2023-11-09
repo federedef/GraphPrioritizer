@@ -1,0 +1,46 @@
+Phenotypic Series  - PS306400
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Granulomatous disease, chronic - PS306400 - 6 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+1q25.3	Chronic granulomatous disease 2, autosomal recessive	AR	3	233710	NCF2	608515
+7q11.23	Chronic granulomatous disease 1, autosomal recessive	AR	3	233700	NCF1, CGD1	608512
+16q24.2	Chronic granulomatous disease 4, autosomal recessive	AR	3	233690	CYBA, CGD4	608508
+17q25.3	Chronic granulomatous disease 5, autosomal recessive	AR	3	618935	CYBC1, EROS, C17orf62, CGD5	618334
+22q12.3	Chronic granulomatous disease 3, autosomal recessive	AR	3	613960	NCF4, P40PHOX, CGD3	601488
+Xp21.1-p11.4	Chronic granulomatous disease, X-linked	XLR	3	306400	CYBB, CGDX, AMCBX2, IMD34	300481
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

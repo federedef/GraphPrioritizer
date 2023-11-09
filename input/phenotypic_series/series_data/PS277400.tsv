@@ -1,0 +1,48 @@
+Phenotypic Series  - PS277400
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Methylmalonic aciduria and homocystinuria - PS277400 - 8 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+1p34.1	Methylmalonic aciduria and homocystinuria, cblC type	AR	3	277400	MMACHC	609831
+1p34.1	Methylmalonic aciduria and homocystinuria, cblC type, digenic	AR	3	277400	PRDX1, PRXI, PAGA, NKEFA	176763
+2q23.2	Methylmalonic aciduria, cblD type, variant 2	AR	3	277410	MMADHC, C2orf25	611935
+2q23.2	Homocystinuria, cblD type, variant 1	AR	3	277410	MMADHC, C2orf25	611935
+2q23.2	Methylmalonic aciduria and homocystinuria, cblD type	AR	3	277410	MMADHC, C2orf25	611935
+6q13	Methylmalonic aciduria and homocystinuria, cblF type	AR	3	277380	LMBRD1, LMBD1, NESI, MAHCF	612625
+14q24.3	Methylmalonic aciduria and homocystinuria, cblJ type	AR	3	614857	ABCD4, PXMP1L, P79R, PMP69, MAHCJ	603214
+Xq28	Methylmalonic aciduria and homocysteinemia, cblX type	XLR	3	309541	HCFC1, HCF1, MAHCX, XLID3	300019
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

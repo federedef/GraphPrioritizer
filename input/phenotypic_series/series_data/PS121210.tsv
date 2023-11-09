@@ -1,0 +1,57 @@
+Phenotypic Series  - PS121210
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Seizures, familial febrile - PS121210 - 17 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+2q23-q24	Generalized epilepsy with febrile seizures plus, type 7	AD	2	613863	GEFSP7, FEB3B	613863
+2q24.3	Generalized epilepsy with febrile seizures plus, type 2	AD	3	604403	SCN1A, GEFSP2, SMEI, FEB3A, DEE6A, DRVT, FHM3, DEE6B	182389
+2q24.3	Febrile seizures, familial, 3A	AD	3	604403	SCN1A, GEFSP2, SMEI, FEB3A, DEE6A, DRVT, FHM3, DEE6B	182389
+3p24.2-p23	Febrile seizures, familial, 9	AD	2	611634	FEB9	611634
+3q26.2-q26.33	Febrile seizures, familial, 10		2	612637	FEB10	612637
+5q14.3	?Febrile seizures, familial, 4	AD	3	604352	ADGRV1, GPR98, MASS1, VLGR1, KIAA0686, FEB4, USH2C	602851
+5q34	Febrile seizures, familial, 8	AD	3	607681	GABRG2, DEE74, FEB8, ECA2, GEFSP3	137164
+5q34	Generalized epilepsy with febrile seizures plus, type 3	AD	3	607681	GABRG2, DEE74, FEB8, ECA2, GEFSP3	137164
+6q22-q24	Febrile seizures, familial, 5	AD	2	609255	FEB5	609255
+8q13-q21	Febrile seizures, familial, 1	AD	2	121210	FEB1	121210
+8q13.2	Febrile seizures, familial, 11	AR	3	614418	CPA6, CPAH, ETL5, FEB11	609562
+18p11.2	Febrile seizures, familial, 6	AD	2	609253	FEB6	609253
+19p13.3	Febrile seizures, familial, 2	AD	2	602477	FEB2	602477
+19p13.3	Generalized epilepsy with febrile seizures plus, type 11	AD	3	602477	HCN2, BCNG2, GEFSP11, FEB2, EIG17	602781
+19p13.3	{Epilepsy, idiopathic generalized, susceptibility to, 17}	AD	3	602477	HCN2, BCNG2, GEFSP11, FEB2, EIG17	602781
+19p13.3	Febrile seizures, familial, 2	AD	3	602477	HCN2, BCNG2, GEFSP11, FEB2, EIG17	602781
+21q22	Febrile seizures, familial, 7		2	611515	FEB7	611515
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

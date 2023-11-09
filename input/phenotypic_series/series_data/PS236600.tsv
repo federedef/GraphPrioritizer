@@ -1,0 +1,46 @@
+Phenotypic Series  - PS236600
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Hydrocephalus, congenital - PS236600 - 6 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+9p23	Hydrocephalus, congenital, 2, with or without brain or eye anomalies	AR	3	615219	MPDZ, MUPP1, HYC2	603785
+14q32.11-q32.12	Hydrocephalus, congenital, 1	AR	3	236600	CCDC88C, HKRP2, DAPLE, KIAA1509, HYC1, SCA40	611204
+17p13.3	Hydrocephalus, congenital, 3, with brain anomalies	AR	3	617967	WDR81, CAMRQ2, HYC3	614218
+Xq28	Hydrocephalus due to aqueductal stenosis	XLR	3	307000	L1CAM, CAML1, HSAS1, MASA, SPG1	308840
+Xq28	Hydrocephalus with Hirschsprung disease	XLR	3	307000	L1CAM, CAML1, HSAS1, MASA, SPG1	308840
+Xq28	Hydrocephalus with congenital idiopathic intestinal pseudoobstruction	XLR	3	307000	L1CAM, CAML1, HSAS1, MASA, SPG1	308840
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

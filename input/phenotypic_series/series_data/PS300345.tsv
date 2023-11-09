@@ -1,0 +1,53 @@
+Phenotypic Series  - PS300345
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Microphthalmia, isolated, with coloboma - PS300345 - 13 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+2q35	Microphthalmia, isolated, with coloboma 7	AD	3	614497	ABCB6, MTABC3, MCOPCB7, LAN, DUH3, PSHK2	605452
+4q34.3-q35.1	?Microphthalmia, isolated, with coloboma 9	AR	3	615145	TENM3, ODZ3, TNM3, KIAA1455, MCOPCB9, MCOPS15	610083
+4q34.3-q35.1	Microphthalmia, syndromic 15	AR	3	615145	TENM3, ODZ3, TNM3, KIAA1455, MCOPCB9, MCOPS15	610083
+7q36.3	Microphthalmia with coloboma 5	AD	3	611638	SHH, HPE3, HLP3, SMMCI, MCOPCB5	600725
+8q22.1	Microphthalmia with coloboma 6, digenic	AD	3	613703	GDF6, MCOP4, KFS1, MCOPCB6, LCA17, SYNS4	601147
+10q23.33	Microphthalmia, isolated, with coloboma 10	AD	3	616428	RBP4, RDCCAS, MCOPCB10	180250
+12p13.31	Microphthalmia, isolated, with coloboma 6	AD	3	613703	GDF3, KFS3, MCOPCB6, MCOP7	606522
+14q24.3	Microphthalmia with coloboma 3	AR	3	610092	VSX2, CHX10, HOX10, MCOP2, MCOPCB3	142993
+15q12-q15	Microphthalmia with coloboma 2	AD	2	605738	MCOPCB2	605738
+15q24.1	Microphthalmia, isolated, with coloboma 8	AR	3	601186	STRA6, MCOPS9, MCOPCB8	610745
+15q24.1	Microphthalmia, syndromic 9	AR	3	601186	STRA6, MCOPS9, MCOPCB8	610745
+Chr.X	Microphthalmia with coloboma 1		2	300345	MCOPCB1	300345
+Not Mapped	Microphthalmia, isolated, with coloboma 4	AR		251505	MCOPCB4	251505
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

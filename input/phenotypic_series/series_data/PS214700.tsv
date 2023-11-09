@@ -1,0 +1,52 @@
+Phenotypic Series  - PS214700
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Diarrhea, congenital - PS214700 - 12 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+1p13.2	Diarrhea 9	AR	3	618168	WNT2B, WNT13, XWNT2	601968
+2p21	Diarrhea 5, with tufting enteropathy, congenital	AR	3	613217	EPCAM, ACSTD1, TROP1, M4S1, MIC18, DIAR5, LYNCH8	185535
+5p15.33	Diarrhea 8, secretory sodium, congenital	AR	3	616868	SLC9A3, NHE3, DIAR8	182307
+7q22.3-q31.1	Diarrhea 1, secretory chloride, congenital	AR	3	214700	SLC26A3, DRA, CLD	126650
+8q24.3	?Diarrhea 7, protein-losing enteropathy type	AR	3	615863	DGAT1, ARGP1, DIAR7	604900
+10q22.1	Diarrhea 4, malabsorptive, congenital	AR	3	610370	NEUROG3, NGN3, ATOH5	604882
+11q12.1	Diarrhea 12, with microvillus atrophy	AR	3	619445	STX3, STX3A, DIAR12, MVID2, RDMVID	600876
+12p12.3	Diarrhea 6	AD	3	614616	GUCY2C, GUC2C, DIAR6, MECIL	601330
+16p13.3	Diarrhea 11, malabsorptive, congenital	AR	3	618662	PERCC1, ICR, DIAR11	618656
+18q21.1	Diarrhea 2, with microvillus atrophy, with or without cholestasis	AR	3	251850	MYO5B, KIAA1119, DIAR2, MVID1, PFIC10	606540
+19p13.11	Diarrhea 10, protein-losing enteropathy type	AR	3	618183	PLVAP, PV1, DIAR10	607647
+19q13.2	Diarrhea 3, secretory sodium, congenital, syndromic	AR	3	270420	SPINT2, HAI2, DIAR3	605124
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

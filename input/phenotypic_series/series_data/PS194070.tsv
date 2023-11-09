@@ -1,0 +1,48 @@
+Phenotypic Series  - PS194070
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Wilms tumor - PS194070 - 8 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+4q12	{Wilms tumor 6, susceptibility to}	AD	3	616806	REST, NRSF, WT6, GINGF5, HGF5, DFNA27	600571
+7p14.1	{Wilms tumor susceptibility-5}	AD, SMu	3	601583	POU6F2, WTSL, WT5	609062
+11p15.5	Wilms tumor 2	AD, SMu	3	194071	ICR1, BWS, WT2, SRS1	616186
+11p13	Wilms tumor, type 1	AD, SMu	3	194070	WT1, NPHS4	607102
+13q13.1	Wilms tumor	AD, SMu	3	194070	BRCA2, FANCD1, BROVCA2, GLM3, PNCA2	600185
+16q	Wilms tumor, type 3	AD	2	194090	WT3	194090
+17q12-q21	Wilms tumor, type 4	AD	2	601363	WT4	601363
+Xq26.2	Wilms tumor, somatic		3	194070	GPC3, SDYS, SGBS1	300037
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+

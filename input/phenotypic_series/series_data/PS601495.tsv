@@ -1,0 +1,52 @@
+Phenotypic Series  - PS601495
+Downloaded:	Nov 23, 2022
+Copyright (c) 1966-2022 Johns Hopkins University OMIM, data are provided for research purposes only.
+
+
+Agammaglobulinemia - PS601495 - 12 Entries
+Location	Phenotype	Inheritance	Phenotype mapping key	Phenotype MIM number	Gene/Locus	Gene/Locus MIM number
+5q13.1	?Agammaglobulinemia 7, autosomal recessive	AR	3	615214	PIK3R1, GRB1, AGM7, SHORT, IMD36	171833
+6p21.32	Agammaglobulinemia 9, autosomal recessive	AR	3	619693	SLC39A7, D6S2244E, HKE4, AGM9	601416
+9q34.11	?Agammaglobulinemia 5	AD	3	613506	LRRC8A, KIAA1437, AGM5	608360
+10q24.1	?Agammaglobulinemia 4	AR	3	613502	BLNK, SLP65, AGM4	604515
+11p11.2	Agammaglobulinemia 10, autosomal dominant	AD	3	619707	SPI1, SFPI1, AGM10	165170
+14q32.33	Agammaglobulinemia 1	AR	3	601495	IGHM, MU, AGM1	147020
+17q23.3	Agammaglobulinemia 6	AR	3	612692	CD79B, IGB, B29, AGM6	147245
+19p13.3	Agammaglobulinemia 8A, autosomal dominant	AD	3	616941	TCF3, E2A, AGM8A, AGM8B	147141
+19q13.2	Agammaglobulinemia 3	AR	3	613501	CD79A, IGA	112205
+22q11.23	Agammaglobulinemia 2	AR	3	613500	IGLL1, IGO, IGL5, VPREB2, AGM2	146770
+Xp22.12	?Immunodeficiency 61	XLR	3	300310	SH3KBP1, CIN85, IMD61, AGMX2	300374
+Xq22.1	Agammaglobulinemia, X-linked 1	XLR	3	300755	BTK, AGMX1, IMD1, XLA, AT, IGHD3	300300
+
+
+
+
+Phenotype Mapping Key
+1 - The disorder is placed on the map due to its association with a gene, but the underlying defect is not known.
+2 - The disorder was placed on the map by statistical methods.
+3 - The molecular basis of the disorder is known.
+4 - A contiguous gene duplication or deletion syndrome in which multiple genes are involved.
+
+
+Inheritance Abbreviations
+?AD	?Autosomal dominant
+?XLR	?X-linked recessive
+AD	Autosomal dominant
+AR	Autosomal recessive
+PD	Pseudoautosomal dominant
+PR	Pseudoautosomal recessive
+DD	Digenic dominant
+DR	Digenic recessive
+ICB	Inherited chromosomal imbalance
+IC	Isolated cases
+Mi	Mitochondrial
+Mu	Multifactorial
+SMo	Somatic mosaicism
+SMu	Somatic mutation
+XL	X-linked
+XLD	X-linked dominant
+XLR	X-linked recessive
+YL	Y-linked
+
+
+
