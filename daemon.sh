@@ -17,8 +17,15 @@ export output_folder=$SCRATCH/executions/GraphPrioritizer
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="disease phenotype molecular_function biological_process cellular_component string_ppi hippie_ppi pathway gene_TF gene_hgncGroup DepMap_effect_pearson DepMap_effect_spearman gene_PS"
+annotations="disease phenotype molecular_function biological_process cellular_component string_ppi string_ppi_exp hippie_ppi pathway gene_TF gene_hgncGroup DepMap_effect_pearson DepMap_effect_spearman gene_PS"
 #annotations="string_ppi hippie_ppi"
+#annotations="disease phenotype molecular_function biological_process cellular_component pathway gene_TF gene_hgncGroup DepMap_effect_pearson DepMap_effect_spearman gene_PS"
+#annotations="disease phenotype molecular_function biological_process cellular_component string_ppi hippie_ppi pathway gene_TF gene_hgncGroup DepMap_effect_pearson DepMap_effect_spearman gene_PS"
+#annotations="string_ppi hippie_ppi"
+#annotations="disease phenotype molecular_function biological_process cellular_component string_ppi_exp pathway gene_TF gene_hgncGroup DepMap_effect_pearson DepMap_effect_spearman gene_PS"
+#annotations="string_ppi_exp string_ppi hippie_ppi biological_process"
+#annotations="string_ppi string_ppi_exp hippie_ppi"
+#annotations="disease phenotype molecular_function biological_process cellular_component string_ppi_exp pathway gene_TF gene_hgncGroup DepMap_effect_pearson DepMap_effect_spearman gene_PS"
 
 kernels="ka rf ct el node2vec"
 integration_types="mean integration_mean_by_presence"
@@ -39,41 +46,41 @@ if [ "$exec_mode" == "download_layers" ] ; then
   . ~soft_bio_267/initializes/init_R
   . ~soft_bio_267/initializes/init_ruby
 
-  # Pass raw downloaded files.
-  if [ -s ./input/data_downloaded/aux ] ; then
-    echo "removing pre-existed obos files"
-    find ./input/data_downloaded/aux -name "*.obo*" -delete 
-  fi
+  # # Pass raw downloaded files.
+  # if [ -s ./input/data_downloaded/aux ] ; then
+  #   echo "removing pre-existed obos files"
+  #   find ./input/data_downloaded/aux -name "*.obo*" -delete 
+  # fi
 
-  # Downloading ONTOLOGIES and PATHWAY ANNOTATION files from MONARCH.
-  downloader.rb -i ./input/input_source/source_data -o ./input/data_downloaded
-  mkdir -p ./input/input_raw
-  cp ./input/data_downloaded/raw/monarch/tsv/all_associations/* ./input/input_raw
+  # # Downloading ONTOLOGIES and PATHWAY ANNOTATION files from MONARCH.
+  # downloader.rb -i ./input/input_source/source_data -o ./input/data_downloaded
+  # mkdir -p ./input/input_raw
+  # cp ./input/data_downloaded/raw/monarch/tsv/all_associations/* ./input/input_raw
 
   # Downloading PROTEIN INTERACTIONS and ALIASES from STRING.
-  wget https://stringdb-static.org/download/protein.links.v11.5/9606.protein.links.v11.5.txt.gz -O ./input/input_raw/string_data.v11.5.txt.gz
+  wget https://stringdb-static.org/download/protein.links.detailed.v11.5/9606.protein.links.detailed.v11.5.txt.gz -O ./input/input_raw/string_data.v11.5.txt.gz
   gzip -d ./input/input_raw/string_data.v11.5.txt.gz
 
-  wget https://stringdb-static.org/download/protein.links.v11.0/9606.protein.links.v11.0.txt.gz -O ./input/input_raw/string_data.v11.0.txt.gz
+  wget https://stringdb-static.org/download/protein.links.detailed.v11.0/9606.protein.links.detailed.v11.0.txt.gz -O ./input/input_raw/string_data.v11.0.txt.gz
   gzip -d ./input/input_raw/string_data.v11.0.txt.gz
 
-  # Downloading PROTEIN INTERACTION form HIPPIE.
-  wget http://cbdm-01.zdv.uni-mainz.de/~mschaefer/hippie/hippie_current.txt -O ./input/input_raw/hippie_current.txt
-  wget http://cbdm-01.zdv.uni-mainz.de/~mschaefer/hippie/hippie_v2_2.txt -O ./input/input_raw/hippie_v2_2.txt
+  # # Downloading PROTEIN INTERACTION form HIPPIE.
+  # wget http://cbdm-01.zdv.uni-mainz.de/~mschaefer/hippie/hippie_current.txt -O ./input/input_raw/hippie_current.txt
+  # wget http://cbdm-01.zdv.uni-mainz.de/~mschaefer/hippie/hippie_v2_2.txt -O ./input/input_raw/hippie_v2_2.txt
 
 
-  # Downloading GENETIC INTERACTIONS from DEPMAP.
-  wget https://ndownloader.figshare.com/files/34990033 -O ./input/input_raw/CRISPR_gene_effect 
-  wget https://ndownloader.figshare.com/files/34989919 -O ./input/input_raw/CRISPR_gene_exprs 
-  # Gene Expression: https://ndownloader.figshare.com/files/34989919
-  # Cell Surpervivence score: https://ndownloader.figshare.com/files/34008491
+  # # Downloading GENETIC INTERACTIONS from DEPMAP.
+  # wget https://ndownloader.figshare.com/files/34990033 -O ./input/input_raw/CRISPR_gene_effect 
+  # wget https://ndownloader.figshare.com/files/34989919 -O ./input/input_raw/CRISPR_gene_exprs 
+  # # Gene Expression: https://ndownloader.figshare.com/files/34989919
+  # # Cell Surpervivence score: https://ndownloader.figshare.com/files/34008491
 
-  # Downloading Gen-Transcriptional Factor relation.
-  get_gen_TF_data.R -O ./input/input_raw/gene_TF
-  rm -r omnipathr-log
+  # # Downloading Gen-Transcriptional Factor relation.
+  # get_gen_TF_data.R -O ./input/input_raw/gene_TF
+  # rm -r omnipathr-log
 
   # Downloading HGNC_group
-  wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./input/input_raw/gene_hgncGroup
+  # wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./input/input_raw/gene_hgncGroup
 
 elif [ "$exec_mode" == "download_translators" ] ; then
 
@@ -147,10 +154,16 @@ elif [ "$exec_mode" == "process_download" ] ; then
   ## STRING
   echo "Hello! Which string version you want to process?"
   # 11.5 | 11.0
+  # Combined score
   read string_version
-  cat ./input/input_raw/string_data.v$string_version.txt | tr -s " " "\t" > string_data.v.txt
+  cat ./input/input_raw/string_data.v$string_version.txt | tr -s " " "\t" | cut -f 1,2,10 > string_data.v.txt
   standard_name_replacer -i string_data.v.txt -I ./translators/ProtEnsemble_HGNC -c 1,2 -u > ./input/input_raw/interaction_scored && rm string_data.v.txt
   awk '{OFS="\t"}{print $1,$2,$3}' ./input/input_raw/interaction_scored > ./input/input_processed/string_ppi
+  # Experimental score
+  cat ./input/input_raw/string_data.v$string_version.txt | tr -s " " "\t" | cut -f 1,2,7 > string_data.v.txt
+  standard_name_replacer -i string_data.v.txt -I ./translators/ProtEnsemble_HGNC -c 1,2 -u > ./input/input_raw/interaction_scored && rm string_data.v.txt
+  awk '{OFS="\t"}{if ($3 > 0) print $1,$2,$3}' ./input/input_raw/interaction_scored > ./input/input_processed/string_ppi_exp
+
   ## HIPPO
   # current v2_2
   echo "Which hippie version you want to process?"
@@ -573,10 +586,10 @@ elif [ "$exec_mode" == "report" ] ; then
     read hippie_version
     echo "whitelist used?"
     read whitelist
-    name_dir=`date +%m_%d_%Y`
+    name_dir=`date +%d_%m_%Y`
     mkdir ./report/HTMLs/$name_dir
     # Create preprocess file
-    echo " String version:\t$string_version\nHippie version:\t$hippie_version\nWhitelist:\t$whitelist " > ./report/HTMLs/$name_dir/info_preprocess
+    echo -e " String version:\t$string_version\nHippie version:\t$hippie_version\nWhitelist:\t$whitelist " > ./report/HTMLs/$name_dir/info_preprocess
     # Copy net2json
     cp ./net2json ./report/HTMLs/$name_dir/
   else 
