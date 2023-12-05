@@ -1,4 +1,4 @@
-get_similarity){
+%get_similarity){
 	resources: -m '200gb' -t '4-00:00:00' -c 4
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
@@ -82,15 +82,14 @@ filter_net){
 		ln -sf get_similarity)/similarity_matrix_bin.npy ./similarity_matrix_bin.npy
     fi
 
-
+	# Looking for all possible stats from matrix files 
     for file in `ls | grep "stats_from_matrix" | sort -k 5 -t "_" -n` ; do
       var=`echo -e "$file" | sed 's/stats_from_matrix_//' | sed 's/_[0-9]//'`
       tag_table -i $file -t $var >> tmp_stats_matrix 
     done
-    mv tmp_stats_matrix stats_from_matrix
-
-    if [ -s stats_from_matrix ] ; then 
-			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$2); gsub(/ /,"_",$0); print tracker,$1,$2,$3}' stats_from_matrix >> stats_by_steps
+    if [ -s tmp_stats_matrix ] ; then 
+		mv tmp_stats_matrix stats_from_matrix
+		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$2); gsub(/ /,"_",$0); print tracker,$1,$2,$3}' stats_from_matrix >> stats_by_steps
 	fi
 
     if [ ! -s similarity_matrix_bin.npy ] ; then

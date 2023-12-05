@@ -3,6 +3,7 @@ rank_genes_with_leave_one_out){
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_python
 	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
+	#source ~/projects/GraphPrioritizer/myenv/bin/activate
 	source ~/projects/GraphPrioritizer/myenv/bin/activate
 	source ~soft_bio_267/initializes/init_R
 	if [ $benchmark != "zampieri" ] ; then
@@ -16,16 +17,16 @@ rank_genes_with_leave_one_out){
 	## Obtaining genes of interest
 	cat $control_neg > filter
 	## Obtaining tags for group-case
-	desaggregate_column_data -i $control_pos -x 2 |& awk '{OFS="\t"}{print $1,$2,1}' > tags
-	desaggregate_column_data -i $control_neg -x 2 |& awk '{OFS="\t"}{print $1,$2,0}' >> tags
+	desaggregate_column_data -i $control_pos -x 2 |& awk '{OFS="\t"}{print $1,$2,1}' > tags_group
+	desaggregate_column_data -i $control_neg -x 2 |& awk '{OFS="\t"}{print $1,$2,0}' >> tags_group
 	?
 	ranker -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -l --minimum_size 2
 	cp ranked_genes_all_candidates processed_ranked_genes
 	ranker -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -f filter --minimum_size 2
-	cat ranked_genes_all_candidates >> processed_ranked_genes
+	cut -f 1,2,3,4,6 ranked_genes_all_candidates >> processed_ranked_genes
 
 	# Add tags to ranked_genes_all_candidates.
-	add_tags2ranks.py -i processed_ranked_genes -g 4 -c 0 -t tags -o tagged_ranks.txt
+	add_tags2ranks.py -i processed_ranked_genes -g 4 -c 0 -t tags_group -o tagged_ranks.txt
 	number_of_genes=`wc -l tagged_ranks.txt | cut -f1 -d " "`
 
 	# Obtaining Metrics And statistical summary
@@ -80,7 +81,8 @@ rank_genes_with_kfold_cv){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_python
-	export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
+	# export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
+	source ~/projects/GraphPrioritizer/myenv/bin/activate
 	source ~soft_bio_267/initializes/init_R
 	if [ $benchmark != "menche" ] ; then
 		exit 0

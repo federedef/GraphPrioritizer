@@ -139,7 +139,7 @@
 		"Layers": "gene,HGNC:",
 		"Node_list": "-",
 		"Ontology": "-",
-		"Source ": "string_ppi",
+		"Source ": "string_ppi_combined_score",
 		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
 			"generate_adjacency_matrix 'gene' 'gene'",
@@ -147,13 +147,97 @@
 			"write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_RawWeights_1'"
 		]
 	},
-	"string_ppi_exp": {
+	"string_ppi_neighborhood": {
 		"Filter": [],
 		"Format": "pair",
 		"Layers": "gene,HGNC:",
 		"Node_list": "-",
 		"Ontology": "-",
-		"Source ": "string_ppi_exp",
+		"Source ": "string_ppi_neighborhood",
+		"Build_graph": [
+			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+			"generate_adjacency_matrix 'gene' 'gene'",
+			"write_matrix ('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+			"write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_RawWeights_1'"
+		]
+	},
+	"string_ppi_fusion": {
+		"Filter": [],
+		"Format": "pair",
+		"Layers": "gene,HGNC:",
+		"Node_list": "-",
+		"Ontology": "-",
+		"Source ": "string_ppi_fusion",
+		"Build_graph": [
+			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+			"generate_adjacency_matrix 'gene' 'gene'",
+			"write_matrix ('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+			"write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_RawWeights_1'"
+		]
+	},
+	"string_ppi_cooccurence": {
+		"Filter": [],
+		"Format": "pair",
+		"Layers": "gene,HGNC:",
+		"Node_list": "-",
+		"Ontology": "-",
+		"Source ": "string_ppi_cooccurence",
+		"Build_graph": [
+			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+			"generate_adjacency_matrix 'gene' 'gene'",
+			"write_matrix ('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+			"write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_RawWeights_1'"
+		]
+	},
+	"string_ppi_coexpression": {
+		"Filter": [],
+		"Format": "pair",
+		"Layers": "gene,HGNC:",
+		"Node_list": "-",
+		"Ontology": "-",
+		"Source ": "string_ppi_cooccurence",
+		"Build_graph": [
+			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+			"generate_adjacency_matrix 'gene' 'gene'",
+			"write_matrix ('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+			"write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_RawWeights_1'"
+		]
+	},
+	"string_ppi_experimental": {
+		"Filter": [],
+		"Format": "pair",
+		"Layers": "gene,HGNC:",
+		"Node_list": "-",
+		"Ontology": "-",
+		"Source ": "string_ppi_experimental",
+		"Build_graph": [
+			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+			"generate_adjacency_matrix 'gene' 'gene'",
+			"write_matrix ('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+			"write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_RawWeights_1'"
+		]
+	},
+	"string_ppi_database": {
+		"Filter": [],
+		"Format": "pair",
+		"Layers": "gene,HGNC:",
+		"Node_list": "-",
+		"Ontology": "-",
+		"Source ": "string_ppi_database",
+		"Build_graph": [
+			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+			"generate_adjacency_matrix 'gene' 'gene'",
+			"write_matrix ('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+			"write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_RawWeights_1'"
+		]
+	},
+	"string_ppi_textmining": {
+		"Filter": [],
+		"Format": "pair",
+		"Layers": "gene,HGNC:",
+		"Node_list": "-",
+		"Ontology": "-",
+		"Source ": "string_ppi_textmining",
 		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
 			"generate_adjacency_matrix 'gene' 'gene'",
@@ -162,7 +246,7 @@
 		]
 	},
 	"hippie_ppi": {
-		"Filter": [
+        "Filter": [
 			"filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_cutoff' options={'cutoff':0.7} add_to_object=True",
 			"write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
 			"write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_filterCutoff_1'"
