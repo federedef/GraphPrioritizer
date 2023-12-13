@@ -1,4 +1,4 @@
-%get_similarity){
+get_similarity){
 	resources: -m '200gb' -t '4-00:00:00' -c 4
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
@@ -35,7 +35,7 @@
   else                                                                                                                                                  
   	if [ "$ontology" != "-" ] ; then
   		desaggregate_column_data -i $network_file -x 2 > ont_profs
-  		netanalyzer -i ont_profs -f $format -l $layers -T [cpu] -O "ont:`semtools -d list | grep $ontology`" --dsl_script dsl 
+  		netanalyzer -i ont_profs -f $format -l $layers -T [cpu] -O "$input_path/input_obo/$ontology" --dsl_script dsl 
   	else
   		netanalyzer -i $network_file -f $format -l $layers --dsl_script dsl
   	fi
@@ -118,7 +118,6 @@ normalize_adjMatrix){
 		awk '{OFS="\t"}{print $1"_"$2,$0}' stats_by_steps > final_stats_by_steps
 	fi
 }
-
 
 calc_kernel_[$kernels_varflow]){
 	resources: -c 16 -m '500gb' -t '1-00:00:00'

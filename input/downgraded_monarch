@@ -1,4 +1,2 @@
-monarch	https://archive.monarchinitiative.org/latest/tsv/all_associations/gene_phenotype.all.tsv.gz
-monarch	https://archive.monarchinitiative.org/latest/tsv/all_associations/gene_function.all.tsv.gz
-monarch	https://archive.monarchinitiative.org/latest/tsv/all_associations/gene_disease.all.tsv.gz
-monarch	https://archive.monarchinitiative.org/latest/tsv/all_associations/gene_pathway.all.tsv.gz
+monarch	https://data.monarchinitiative.org/201902/tsv/gene_associations/gene_phenotype.9606.tsv.gz
+monarch	https://data.monarchinitiative.org/201902/tsv/gene_associations/gene_disease.9606.tsv.gz

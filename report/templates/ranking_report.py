@@ -14,11 +14,13 @@
                 order_columns('parsed_integrated_rank_summary',0)
 
         if plotter.hash_vars.get('parsed_non_integrated_rank_pos_cov') is not None:
-                order_columns('parsed_non_integrated_rank_pos_cov',0)
-
+                order_columns('parsed_non_integrated_rank_pos_cov',2)
+                order_columns('parsed_non_integrated_rank_pos_cov',1)
+   
         if plotter.hash_vars.get('parsed_integrated_rank_pos_cov') is not None:
-                order_columns('parsed_integrated_rank_pos_cov',0)
-
+                order_columns('parsed_integrated_rank_pos_cov',2)
+                order_columns('parsed_integrated_rank_pos_cov',1)
+           
         if plotter.hash_vars.get('parsed_annotation_grade_metrics') is not None:
                 order_columns('parsed_annotation_grade_metrics',0)
 

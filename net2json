@@ -4,7 +4,7 @@
 		"Format": "pair",
 		"Layers": "ont,GO:;gene,HGNC:",
 		"Node_list": "-",
-		"Ontology": "GO",
+		"Ontology": "go.obo",
 		"Source ": "biological_process",
 		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
@@ -18,7 +18,7 @@
 		"Format": "pair",
 		"Layers": "ont,GO:;gene,HGNC:",
 		"Node_list": "-",
-		"Ontology": "GO",
+		"Ontology": "go.obo",
 		"Source ": "cellular_component",
 		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
@@ -32,7 +32,7 @@
 		"Format": "pair",
 		"Layers": "ont,MONDO:;gene,HGNC:",
 		"Node_list": "-",
-		"Ontology": "MONDO",
+		"Ontology": "mondo.obo",
 		"Source ": "disease",
 		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
@@ -124,7 +124,7 @@
 		"Format": "pair",
 		"Layers": "ont,HP:;gene,HGNC:",
 		"Node_list": "-",
-		"Ontology": "HPO",
+		"Ontology": "hp.obo",
 		"Source ": "phenotype",
 		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
@@ -195,7 +195,7 @@
 		"Layers": "gene,HGNC:",
 		"Node_list": "-",
 		"Ontology": "-",
-		"Source ": "string_ppi_cooccurence",
+		"Source ": "string_ppi_coexpression",
 		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
 			"generate_adjacency_matrix 'gene' 'gene'",
