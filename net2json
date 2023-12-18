@@ -92,7 +92,7 @@
 		"Format": "pair",
 		"Layers": "ont,GO:;gene,HGNC:",
 		"Node_list": "-",
-		"Ontology": "GO",
+		"Ontology": "go.obo",
 		"Source ": "molecular_function",
 		"Build_graph": [
 			"get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",

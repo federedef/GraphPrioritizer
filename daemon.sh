@@ -19,6 +19,9 @@ report_folder=$output_folder/report
 # Custom variables.
 annotations="disease phenotype molecular_function biological_process cellular_component string_ppi string_ppi_exp hippie_ppi pathway gene_TF gene_hgncGroup DepMap_effect_pearson DepMap_effect_spearman gene_PS"
 annotations="string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood string_ppi"
+#MONDO, Phenotype, gene_hgnc, biological_process, string_coexp, string_texmin
+annotations="string_ppi disease phenotype biological_process string_ppi_textmining string_ppi_coexpression gene_hgncGroup"
+#annotations="disease phenotype biological_process"
 #annotations="string_ppi"
 #annotations="hippie_ppi"
 #annotations="disease phenotype molecular_function biological_process cellular_component pathway gene_TF gene_hgncGroup DepMap_effect_pearson DepMap_effect_spearman gene_PS"
@@ -32,7 +35,7 @@ annotations="string_ppi_textmining string_ppi_database string_ppi_experimental s
 #annotations="string_ppi"
 integrated_annotations="disease phenotype molecular_function biological_process cellular_component string_ppi_exp pathway gene_TF gene_hgncGroup DepMap_effect_pearson gene_PS"
 integrated_annotations="string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
-
+integrated_annotations="phenotype biological_process string_ppi_textmining string_ppi_coexpression gene_hgncGroup"
 kernels="ka rf ct el node2vec raw_sim"
 integration_types="mean integration_mean_by_presence median max geometric_mean"
 net2custom=$input_path'/net2json' 
@@ -83,26 +86,25 @@ if [ "$exec_mode" == "download_layers" ] ; then
 
 
   # Downgraded version # MONDO, HP
-  downloader.rb -i ./input/downgraded_monarch -o ./input/monarch
-  cp ./input/monarch/raw/monarch/tsv/all_associations/* ./input/downgraded/input_raw
-  rm -r ./input/monarch
+  wget https://data.monarchinitiative.org/201902/tsv/gene_associations/gene_phenotype.9606.tsv.gz -O ./input/downgraded/input_raw/gene_phenotype.9606.tsv.gz
+  wget https://data.monarchinitiative.org/201902/tsv/gene_associations/gene_disease.9606.tsv.gz -O ./input/downgraded/input_raw/gene_disease.9606.tsv.gz
   ##GO Annotations 2019-01-01
   wget https://release.geneontology.org/2019-01-01/annotations/goa_human.gaf.gz -O ./input/downgraded/input_raw/gene_functions.gaf.gz
   ##GO 
   wget https://release.geneontology.org/2019-01-01/ontology/go-basic.obo -O ./input/downgraded/input_obo/go.obo
-  ##HP OBO Feb 12, 2019
-  wget https://github.com/obophenotype/human-phenotype-ontology/blob/78b4e8f89ffe8eba78beadadd1d891364651e8a9/hp.obo -O ./input/downgraded/input_obo/hp.obo
+  ##HP OBO 12-2018
+  wget wget https://github.com/obophenotype/human-phenotype-ontology/raw/b745ba91f22d641629997aa4de512ac32a1988ea/hp.obo -O ./input/downgraded/input_obo/hp.obo
   ## MONDO OBO 2018-12-02
-  wget https://github.com/monarch-initiative/mondo/blob/v2018-12-02/src/ontology/mondo-edit.obo -O ./input/downgraded/input_obo/mondo.obo
+  wget https://github.com/monarch-initiative/mondo/releases/download/v2018-12-02/mondo.obo -O ./input/downgraded/input_obo/mondo.obo
 
 
   # # Downloading PROTEIN INTERACTIONS and ALIASES from STRING.
   # # Upgraded version
   # wget https://stringdb-static.org/download/protein.links.detailed.v11.5/9606.protein.links.detailed.v11.5.txt.gz -O ./input/upgraded/input_raw/string_data.txt.gz
   # gzip -d ./input/upgraded/input_raw/string_data.txt.gz
-  # # Downgraded version
-  # wget https://stringdb-static.org/download/protein.links.detailed.v11.0/9606.protein.links.detailed.v11.0.txt.gz -O ./input/downgraded/input_raw/string_data.txt.gz
-  # gzip -d ./input/downgraded/input_raw/string_data.txt.gz
+  # Downgraded version
+  wget https://stringdb-static.org/download/protein.links.detailed.v11.0/9606.protein.links.detailed.v11.0.txt.gz -O ./input/downgraded/input_raw/string_data.txt.gz
+  gzip -d ./input/downgraded/input_raw/string_data.txt.gz
 
   # # Downloading PROTEIN INTERACTION form HIPPIE.
   # # Upgraded version
@@ -128,8 +130,8 @@ if [ "$exec_mode" == "download_layers" ] ; then
   # #Downloading HGNC_group
   # # Upgraded version
   # wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./input/upgraded/input_raw/gene_hgncGroup
-  # # Downgraded version
-  # wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2021-03-01.txt -O ./input/downgraded/input_raw/gene_hgncGroup
+  # Downgraded version
+  wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2021-03-01.txt -O ./input/downgraded/input_raw/gene_hgncGroup
 
 elif [ "$exec_mode" == "download_translators" ] ; then
 
@@ -251,12 +253,12 @@ elif [ "$exec_mode" == "process_download" ] ; then
   ##################
 
   datatime="downgraded"
-  # # # PROCESS ONTOLOGIES #
-  # for sample in phenotype disease ; do
-  #   echo -e "in $sample"
-  #   zgrep ${tag_filter[$sample]} ./input/$datatime/input_raw/gene_${sample}.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
-  #   aggregate_column_data -i - -x 1 -a 5 > ./input/$datatime/input_processed/$sample # | head -n 230
-  # done
+  # # PROCESS ONTOLOGIES #
+  for sample in phenotype disease ; do
+    echo -e "in $sample"
+    zgrep ${tag_filter[$sample]} ./input/$datatime/input_raw/gene_${sample}.9606.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
+    aggregate_column_data -i - -x 1 -a 5 > ./input/$datatime/input_processed/$sample # | head -n 230
+  done
 
   # echo "in go"
   # gzip -d ./input/downgraded/input_raw/gene_functions.gaf.gz
@@ -267,23 +269,28 @@ elif [ "$exec_mode" == "process_download" ] ; then
   # mv tmp ./input/$datatime/input_processed/function
 
   ## Creating paco files for hpo.
-  semtools -i ./input/$datatime/input_processed/phenotype -o ./input/$datatime/input_processed/filtered_phenotype -O ./input/$datatime/input_obo/hp.obo -S "," -c #-T HP:0000001
-  cat ./input/$datatime/input_processed/filtered_phenotype | tr -s "|" "," > ./input/$datatime/input_processed/phenotype
-  rm ./input/$datatime/input_processed/filtered_phenotype
+  # semtools -i ./input/$datatime/input_processed/phenotype -o ./input/$datatime/input_processed/filtered_phenotype -O ./input/$datatime/input_obo/hp.obo -S "," -c -T HP:0000001
+  # cat ./input/$datatime/input_processed/filtered_phenotype | tr -s "|" "," > ./input/$datatime/input_processed/phenotype
+  # rm ./input/$datatime/input_processed/filtered_phenotype
+  # rm rejected_profs
+
+  semtools -i ./input/$datatime/input_processed/disease -o ./input/$datatime/input_processed/filtered_disease -O ./input/$datatime/input_obo/mondo.obo -S "," -c -T MONDO:0000001
+  cat ./input/$datatime/input_processed/filtered_disease | tr -s "|" "," > ./input/$datatime/input_processed/disease
+  rm ./input/$datatime/input_processed/filtered_disease
   rm rejected_profs
 
   ## Creating paco files for each go branch.
-  gene_ontology=( molecular_function cellular_component biological_process )
-  for branch in ${gene_ontology[@]} ; do
-    semtools -i ./input/$datatime/input_processed/function -o ./input/$datatime/input_processed/filtered_$branch -O ./input/$datatime/input_obo/go.obo -S "," -c -T ${tag_filter[$branch]}
-    cat ./input/$datatime/input_processed/filtered_$branch | tr -s "|" "," > ./input/$datatime/input_processed/$branch
-    rm ./rejected_profs
-    rm ./input/$datatime/input_processed/filtered_$branch
-  done
-  rm ./input/$datatime/input_processed/function
+  # gene_ontology=( molecular_function cellular_component biological_process )
+  # for branch in ${gene_ontology[@]} ; do
+  #   semtools -i ./input/$datatime/input_processed/function -o ./input/$datatime/input_processed/filtered_$branch -O ./input/$datatime/input_obo/go.obo -S "," -c -T ${tag_filter[$branch]}
+  #   cat ./input/$datatime/input_processed/filtered_$branch | tr -s "|" "," > ./input/$datatime/input_processed/$branch
+  #   rm ./rejected_profs
+  #   rm ./input/$datatime/input_processed/filtered_$branch
+  # done
+  # rm ./input/$datatime/input_processed/function
 
-  # # PROCESS PROTEIN INTERACTIONS
-  # ## STRING 11.5 | 11.0
+  # PROCESS PROTEIN INTERACTIONS
+  ## STRING 11.5 | 11.0
   # cat ./input/$datatime/input_raw/string_data.txt | tr -s " " "\t" > string_data.txt
   # head -n 1 string_data.txt > header
   # standard_name_replacer -i string_data.txt -I ./translators/ProtEnsemble_HGNC -c 1,2 -u > tmp && rm string_data.txt
@@ -296,10 +303,10 @@ elif [ "$exec_mode" == "process_download" ] ; then
   # standard_name_replacer -i ./input/$datatime/input_raw/hippie.txt -I ./translators/entrez_HGNC -c 2,4 -u  >  ./input/$datatime/input_processed/tmp 
   # cut -f 2,4,5 ./input/$datatime/input_processed/tmp  > ./input/$datatime/input_processed/hippie_ppi 
 
-  # # HGNC_group
-  # # Formatting data_columns
-  # cut -f 1,14 ./input/$datatime/input_raw/gene_hgncGroup | sed "s/\"//g" | tr -s "|" "," | awk '{if( $2 != "") print $0}' \
-  #   | desaggregate_column_data -i "-" -x 2 | sed 's/\t/\tGROUP:/1g' | sed 1d > ./input/$datatime/input_processed/gene_hgncGroup
+  # HGNC_group
+  # Formatting data_columns
+  cut -f 1,14 ./input/$datatime/input_raw/gene_hgncGroup | sed "s/\"//g" | tr -s "|" "," | awk '{if( $2 != "") print $0}' \
+    | desaggregate_column_data -i "-" -x 2 | sed 's/\t/\tGROUP:/1g' | sed 1d > ./input/$datatime/input_processed/gene_hgncGroup
 
 elif [ "$exec_mode" == "dversion" ] ; then
 
@@ -407,7 +414,6 @@ elif [ "$exec_mode" == "kernels" ] ; then
   #STAGE 2.1 PROCESS SIMILARITY AND OBTAIN KERNELS
   mkdir -p $output_folder/similarity_kernels
   whitelist=$2
-
 
   for annotation in $annotations ; do 
 
@@ -530,7 +536,7 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
     for kernel in $kernels ; do 
 
       ugot_path="$output_folder/integrations/ugot_path"
-      folder_kernel_path=`awk '{print $0,NR}' $ugot_path | sort -k 5 -r -u | grep "${integration_type}_$kernel" | awk '{print $4}'`
+      folder_kernel_path=`awk '{print $0,NR}' $ugot_path | sort -k 5 -r -u | grep -w "${integration_type}_$kernel" | awk '{print $4}'`
       echo ${folder_kernel_path}
       if [ ! -z ${folder_kernel_path} ] ; then # This kernel for this integration_type is done? 
 
