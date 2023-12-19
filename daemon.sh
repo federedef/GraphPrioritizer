@@ -244,13 +244,13 @@ elif [ "$exec_mode" == "process_download" ] ; then
     | desaggregate_column_data -i "-" -x 2 | sed 's/\t/\tGROUP:/1g' | sed 1d > ./input/$datatime/input_processed/gene_hgncGroup
 
   # Formatting PS-Genes
-  get_PS_gene_relation.py -i "/mnt/home/users/bio_267_uma/federogc/projects/GraphPrioritize./input/$datatime/phenotypic_series/series_data" -o "./input/$datatime/input_processed/PS_genes"
+  get_PS_gene_relation.py -i "/mnt/home/users/bio_267_uma/federogc/projects/GraphPrioritizer/input/phenotypic_series/series_data" -o "./input/$datatime/input_processed/PS_genes"
   desaggregate_column_data -i ./input/$datatime/input_processed/PS_genes -x 2 > ./input/$datatime/input_processed/tmp 
   standard_name_replacer -i ./input/$datatime/input_processed/tmp -I ./translators/symbol_HGNC -c 2 -u | awk 'BEGIN{FS="\t";OFS="\t"}{print $2,$1}' > ./input/$datatime/input_processed/gene_PS
   rm ./input/$datatime/input_processed/PS_genes ./input/$datatime/input_processed/tmp 
 
-  # For downgraded #
-  ##################
+  # # For downgraded #
+  # ##################
 
   datatime="downgraded"
   # # PROCESS ONTOLOGIES #
@@ -260,48 +260,48 @@ elif [ "$exec_mode" == "process_download" ] ; then
     aggregate_column_data -i - -x 1 -a 5 > ./input/$datatime/input_processed/$sample # | head -n 230
   done
 
-  # echo "in go"
-  # gzip -d ./input/downgraded/input_raw/gene_functions.gaf.gz
-  # mv ./input/downgraded/input_raw/gene_functions.gaf ./input/downgraded/input_raw/gene_functions
-  # echo "remove header"
-  # tail -n +31 ./input/$datatime/input_raw/gene_functions | cut -f 3,5 | aggregate_column_data -i - -x 1 -a 2 > ./input/$datatime/input_processed/function
-  # standard_name_replacer -i ./input/$datatime/input_processed/function -I ./translators/symbol_HGNC -c 1 -u > tmp && rm ./input/$datatime/input_processed/function
-  # mv tmp ./input/$datatime/input_processed/function
+  echo "in go"
+  gzip -d ./input/downgraded/input_raw/gene_functions.gaf.gz
+  mv ./input/downgraded/input_raw/gene_functions.gaf ./input/downgraded/input_raw/gene_functions
+  echo "remove header"
+  tail -n +31 ./input/$datatime/input_raw/gene_functions | cut -f 3,5 | aggregate_column_data -i - -x 1 -a 2 > ./input/$datatime/input_processed/function
+  standard_name_replacer -i ./input/$datatime/input_processed/function -I ./translators/symbol_HGNC -c 1 -u > tmp && rm ./input/$datatime/input_processed/function
+  mv tmp ./input/$datatime/input_processed/function
 
-  ## Creating paco files for hpo.
-  # semtools -i ./input/$datatime/input_processed/phenotype -o ./input/$datatime/input_processed/filtered_phenotype -O ./input/$datatime/input_obo/hp.obo -S "," -c -T HP:0000001
-  # cat ./input/$datatime/input_processed/filtered_phenotype | tr -s "|" "," > ./input/$datatime/input_processed/phenotype
-  # rm ./input/$datatime/input_processed/filtered_phenotype
-  # rm rejected_profs
+  # Creating paco files for hpo.
+  semtools -i ./input/$datatime/input_processed/phenotype -o ./input/$datatime/input_processed/filtered_phenotype -O ./input/$datatime/input_obo/hp.obo -S "," -c -T HP:0000001
+  cat ./input/$datatime/input_processed/filtered_phenotype | tr -s "|" "," > ./input/$datatime/input_processed/phenotype
+  rm ./input/$datatime/input_processed/filtered_phenotype
+  rm rejected_profs
 
   semtools -i ./input/$datatime/input_processed/disease -o ./input/$datatime/input_processed/filtered_disease -O ./input/$datatime/input_obo/mondo.obo -S "," -c -T MONDO:0000001
   cat ./input/$datatime/input_processed/filtered_disease | tr -s "|" "," > ./input/$datatime/input_processed/disease
   rm ./input/$datatime/input_processed/filtered_disease
   rm rejected_profs
 
-  ## Creating paco files for each go branch.
-  # gene_ontology=( molecular_function cellular_component biological_process )
-  # for branch in ${gene_ontology[@]} ; do
-  #   semtools -i ./input/$datatime/input_processed/function -o ./input/$datatime/input_processed/filtered_$branch -O ./input/$datatime/input_obo/go.obo -S "," -c -T ${tag_filter[$branch]}
-  #   cat ./input/$datatime/input_processed/filtered_$branch | tr -s "|" "," > ./input/$datatime/input_processed/$branch
-  #   rm ./rejected_profs
-  #   rm ./input/$datatime/input_processed/filtered_$branch
-  # done
-  # rm ./input/$datatime/input_processed/function
+  # Creating paco files for each go branch.
+  gene_ontology=( molecular_function cellular_component biological_process )
+  for branch in ${gene_ontology[@]} ; do
+    semtools -i ./input/$datatime/input_processed/function -o ./input/$datatime/input_processed/filtered_$branch -O ./input/$datatime/input_obo/go.obo -S "," -c -T ${tag_filter[$branch]}
+    cat ./input/$datatime/input_processed/filtered_$branch | tr -s "|" "," > ./input/$datatime/input_processed/$branch
+    rm ./rejected_profs
+    rm ./input/$datatime/input_processed/filtered_$branch
+  done
+  rm ./input/$datatime/input_processed/function
 
   # PROCESS PROTEIN INTERACTIONS
-  ## STRING 11.5 | 11.0
-  # cat ./input/$datatime/input_raw/string_data.txt | tr -s " " "\t" > string_data.txt
-  # head -n 1 string_data.txt > header
-  # standard_name_replacer -i string_data.txt -I ./translators/ProtEnsemble_HGNC -c 1,2 -u > tmp && rm string_data.txt
-  # cat header tmp > tmp_header
-  # generate_strings.py -i tmp_header -o ./input/$datatime/input_processed/
-  # rm tmp tmp_header
+  # STRING 11.5 | 11.0
+  cat ./input/$datatime/input_raw/string_data.txt | tr -s " " "\t" > string_data.txt
+  head -n 1 string_data.txt > header
+  standard_name_replacer -i string_data.txt -I ./translators/ProtEnsemble_HGNC -c 1,2 -u > tmp && rm string_data.txt
+  cat header tmp > tmp_header
+  generate_strings.py -i tmp_header -o ./input/$datatime/input_processed/
+  rm tmp tmp_header
 
-  # ## HIPPO
-  # # current v2_2
-  # standard_name_replacer -i ./input/$datatime/input_raw/hippie.txt -I ./translators/entrez_HGNC -c 2,4 -u  >  ./input/$datatime/input_processed/tmp 
-  # cut -f 2,4,5 ./input/$datatime/input_processed/tmp  > ./input/$datatime/input_processed/hippie_ppi 
+  ## HIPPO
+  # current v2_2
+  standard_name_replacer -i ./input/$datatime/input_raw/hippie.txt -I ./translators/entrez_HGNC -c 2,4 -u  >  ./input/$datatime/input_processed/tmp 
+  cut -f 2,4,5 ./input/$datatime/input_processed/tmp  > ./input/$datatime/input_processed/hippie_ppi 
 
   # HGNC_group
   # Formatting data_columns
