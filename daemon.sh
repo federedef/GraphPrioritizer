@@ -17,26 +17,16 @@ export output_folder=$SCRATCH/executions/GraphPrioritizer
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="disease phenotype molecular_function biological_process cellular_component string_ppi string_ppi_exp hippie_ppi pathway gene_TF gene_hgncGroup DepMap_effect_pearson DepMap_effect_spearman gene_PS"
-annotations="string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood string_ppi"
-#MONDO, Phenotype, gene_hgnc, biological_process, string_coexp, string_texmin
-annotations="hippie_ppi string_ppi disease phenotype biological_process string_ppi_textmining string_ppi_coexpression gene_hgncGroup kim_coess_gene reactome"
-#annotations="disease phenotype biological_process"
-#annotations="string_ppi"
-annotations="hippie_ppi"
-#annotations="disease phenotype molecular_function biological_process cellular_component pathway gene_TF gene_hgncGroup DepMap_effect_pearson DepMap_effect_spearman gene_PS"
-#annotations="disease phenotype molecular_function biological_process cellular_component string_ppi hippie_ppi pathway gene_TF gene_hgncGroup DepMap_effect_pearson DepMap_effect_spearman gene_PS"
-#annotations="string_ppi hippie_ppi"
-#annotations="disease phenotype molecular_function biological_process cellular_component string_ppi_exp pathway gene_TF gene_hgncGroup DepMap_effect_pearson DepMap_effect_spearman gene_PS"
-#annotations="string_ppi_exp string_ppi hippie_ppi biological_process"
-#annotations="string_ppi string_ppi_exp hippie_ppi"
-#annotations="disease phenotype molecular_function biological_process cellular_component string_ppi_exp pathway gene_TF gene_hgncGroup DepMap_effect_pearson DepMap_effect_spearman gene_PS"
-#annotations="disease phenotype biological_process string_ppi hippie_ppi pathway gene_TF gene_hgncGroup DepMap_effect_pearson gene_PS"
-#annotations="string_ppi"
+annotations="hippie_ppi string_ppi disease phenotype biological_process string_ppi_textmining string_ppi_coexpression string_ppi_experimental gene_hgncGroup DepMap_effect_pearson kim_coess_gene pathway"
+annotations=" disease phenotype molecular_function biological_process cellular_component"
+annotations+=" string_ppi hippie_ppi"
+annotations+=" string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
+annotations+=" DepMap_effect_pearson DepMap_effect_spearman kim_coess_gene"
+annotations+=" pathway gene_TF gene_hgncGroup DepMap_effect_pearson DepMap_effect_spearman gene_PS"
 integrated_annotations="disease phenotype molecular_function biological_process cellular_component string_ppi_exp pathway gene_TF gene_hgncGroup DepMap_effect_pearson gene_PS"
 integrated_annotations="string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
 integrated_annotations="phenotype biological_process string_ppi_textmining string_ppi_coexpression gene_hgncGroup"
-integrated_annotations="phenotype biological_process string_ppi_textmining string_ppi_coexpression gene_hgncGroup reactome"
+integrated_annotations="phenotype biological_process string_ppi_textmining string_ppi_coexpression string_ppi_experimental gene_hgncGroup kim_coess_gene pathway"
 kernels="ka rf ct el node2vec raw_sim"
 integration_types="mean integration_mean_by_presence median max geometric_mean"
 net2custom=$input_path'/net2json' 
