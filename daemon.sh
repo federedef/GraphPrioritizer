@@ -17,7 +17,6 @@ export output_folder=$SCRATCH/executions/GraphPrioritizer
 report_folder=$output_folder/report
 
 # Custom variables.
-annotations="hippie_ppi string_ppi disease phenotype biological_process string_ppi_textmining string_ppi_coexpression string_ppi_experimental gene_hgncGroup DepMap_effect_pearson kim_coess_gene pathway"
 annotations=" disease phenotype molecular_function biological_process cellular_component"
 annotations+=" string_ppi hippie_ppi"
 annotations+=" string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
@@ -33,6 +32,7 @@ net2custom=$input_path'/net2json'
 control_pos=$input_path'/control_pos'
 control_neg=$input_path'/control_neg'
 production_seedgens=$input_path'/production_seedgens'
+whitelist="whitelist"
 
 echo "$annotations"
 
@@ -460,7 +460,10 @@ elif [ "$exec_mode" == "kernels" ] ; then
   #######################################################
   #STAGE 2.1 PROCESS SIMILARITY AND OBTAIN KERNELS
   mkdir -p $output_folder/similarity_kernels
-  whitelist=$2
+
+  if [ ! -z $2 ] ; then
+    whitelist=$2
+  fi
 
   for annotation in $annotations ; do 
 
