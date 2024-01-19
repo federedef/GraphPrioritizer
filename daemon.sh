@@ -22,13 +22,13 @@ annotations=" disease phenotype molecular_function biological_process cellular_c
 annotations+=" string_ppi hippie_ppi"
 annotations+=" string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
 annotations+=" DepMap_effect_pearson DepMap_effect_spearman kim_coess_gene"
-annotations+=" pathway gene_TF gene_hgncGroup DepMap_effect_pearson DepMap_effect_spearman gene_PS"
+annotations+=" pathway gene_TF gene_hgncGroup gene_PS"
 integrated_annotations="disease phenotype molecular_function biological_process cellular_component string_ppi_exp pathway gene_TF gene_hgncGroup DepMap_effect_pearson gene_PS"
 integrated_annotations="string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
 integrated_annotations="phenotype biological_process string_ppi_textmining string_ppi_coexpression gene_hgncGroup"
 integrated_annotations="phenotype biological_process string_ppi_textmining string_ppi_coexpression string_ppi_experimental gene_hgncGroup kim_coess_gene pathway"
 kernels="ka rf ct el node2vec raw_sim"
-integration_types="mean integration_mean_by_presence median max geometric_mean"
+integration_types="mean integration_mean_by_presence median max"
 net2custom=$input_path'/net2json' 
 control_pos=$input_path'/control_pos'
 control_neg=$input_path'/control_neg'
@@ -56,54 +56,53 @@ if [ "$exec_mode" == "download_layers" ] ; then
   mkdir -p ./input/downgraded/input_raw
   mkdir -p ./input/downgraded/input_processed
 
-  # # Pass raw downloaded files.
-  # if [ -s ./input/data_downloaded/aux ] ; then
-  #   echo "removing pre-existed obos files"
-  #   find ./input/data_downloaded/aux -name "*.obo*" -delete 
-  # fi
+  # Pass raw downloaded files.
+  if [ -s ./input/data_downloaded/aux ] ; then
+    echo "removing pre-existed obos files"
+    find ./input/data_downloaded/aux -name "*.obo*" -delete 
+  fi
 
 
-  # # Downloading ONTOLOGIES and PATHWAY ANNOTATION files from MONARCH.
-  # # Upgraded version # MONDO, GO, HP, REACTOME
-  # downloader.rb -i ./input/upgraded_monarch -o ./input/monarch
-  # cp ./input/monarch/raw/monarch/tsv/all_associations/* ./input/upgraded/input_raw
-  # rm -r ./input/monarch
-  # ## GO Annotations 
-  # wget	http://purl.obolibrary.org/obo/go/go-basic.obo -O ./input/upgraded/input_obo/go.obo
-  # ## HP
-  # wget	http://purl.obolibrary.org/obo/hp.obo -O ./input/upgraded/input_obo/hp.obo
-  # ## MONDO
-  # wget	http://purl.obolibrary.org/obo/mondo.obo -O ./input/upgraded/input_obo/mondo.obo
+  # Downloading ONTOLOGIES and PATHWAY ANNOTATION files from MONARCH.
+  # Upgraded version # MONDO, GO, HP, REACTOME
+  downloader.rb -i ./input/upgraded_monarch -o ./input/monarch
+  cp ./input/monarch/raw/monarch/tsv/all_associations/* ./input/upgraded/input_raw
+  rm -r ./input/monarch
+  ## GO Annotations 
+  wget	http://purl.obolibrary.org/obo/go/go-basic.obo -O ./input/upgraded/input_obo/go.obo
+  ## HP
+  wget	http://purl.obolibrary.org/obo/hp.obo -O ./input/upgraded/input_obo/hp.obo
+  ## MONDO
+  wget	http://purl.obolibrary.org/obo/mondo.obo -O ./input/upgraded/input_obo/mondo.obo
 
 
-  # # Downgraded version # Reactome
-  # cp ./input/raw_menche/ReactomePathways.gmt ./input/downgraded/input_raw/ReactomePathways.gmt
-  # # Downgraded version # MONDO, HP, GO
-  # # Annotations #
-  # #-------------#
-  # cp ./input/raw_menche/HPO_phenotype_to_genes.txt ./input/downgraded/input_raw/HPO_genes.txt
-  # #wget https://data.monarchinitiative.org/201902/tsv/gene_associations/gene_phenotype.9606.tsv.gz -O ./input/downgraded/input_raw/gene_phenotype.9606.tsv.gz
-  # wget https://data.monarchinitiative.org/201902/tsv/gene_associations/gene_disease.9606.tsv.gz -O ./input/downgraded/input_raw/gene_disease.9606.tsv.gz
-  # ##GO Annotations 2018-11-15
-  # wget https://release.geneontology.org/2018-11-15/annotations/goa_human.gaf.gz -O ./input/downgraded/input_raw/gene_functions.gaf.gz
+  # Downgraded version # Reactome
+  cp ./input/downloaded_raw/raw_menche/ReactomePathways.gmt ./input/downgraded/input_raw/ReactomePathways.gmt
+  # Downgraded version # MONDO, HP, GO
+  # Annotations #
+  #-------------#
+  cp ./input/downloaded_raw/raw_menche/HPO_phenotype_to_genes.txt ./input/downgraded/input_raw/HPO_genes.txt
+  wget https://data.monarchinitiative.org/201902/tsv/gene_associations/gene_disease.9606.tsv.gz -O ./input/downgraded/input_raw/gene_disease.9606.tsv.gz
+  ##GO Annotations 2018-11-15
+  wget https://release.geneontology.org/2018-11-15/annotations/goa_human.gaf.gz -O ./input/downgraded/input_raw/gene_functions.gaf.gz
   
-  # ## OBOS
-  # #-------#
-  # ##GO 2018-11-15 ( just before 2018-11-24 Menche release )
-  # wget https://release.geneontology.org/2018-11-15/ontology/go-basic.obo -O ./input/downgraded/input_obo/go.obo
-  # ##HP OBO 2018-10-09
-  # wget https://raw.githubusercontent.com/obophenotype/human-phenotype-ontology/v2018-10-09/hp.obo -O ./input/downgraded/input_obo/hp.obo
-  # ## MONDO OBO 2018-12-02
-  # wget https://github.com/monarch-initiative/mondo/releases/download/v2018-12-02/mondo.obo -O ./input/downgraded/input_obo/mondo.obo
+  ## OBOS
+  #-------#
+  ##GO 2018-11-15 ( just before 2018-11-24 Menche release )
+  wget https://release.geneontology.org/2018-11-15/ontology/go-basic.obo -O ./input/downgraded/input_obo/go.obo
+  ##HP OBO 2018-10-09
+  wget https://raw.githubusercontent.com/obophenotype/human-phenotype-ontology/v2018-10-09/hp.obo -O ./input/downgraded/input_obo/hp.obo
+  ## MONDO OBO 2018-12-02
+  wget https://github.com/monarch-initiative/mondo/releases/download/v2018-12-02/mondo.obo -O ./input/downgraded/input_obo/mondo.obo
 
 
-  # # # Downloading PROTEIN INTERACTIONS and ALIASES from STRING.
-  # # Upgraded version
-  # wget https://stringdb-static.org/download/protein.links.detailed.v11.5/9606.protein.links.detailed.v11.5.txt.gz -O ./input/upgraded/input_raw/string_data.txt.gz
-  # gzip -d ./input/upgraded/input_raw/string_data.txt.gz
-  # # Downgraded version
-  # wget https://stringdb-static.org/download/protein.links.detailed.v11.0/9606.protein.links.detailed.v11.0.txt.gz -O ./input/downgraded/input_raw/string_data.txt.gz
-  # gzip -d ./input/downgraded/input_raw/string_data.txt.gz
+  # # Downloading PROTEIN INTERACTIONS and ALIASES from STRING.
+  # Upgraded version
+  wget https://stringdb-static.org/download/protein.links.detailed.v11.5/9606.protein.links.detailed.v11.5.txt.gz -O ./input/upgraded/input_raw/string_data.txt.gz
+  gzip -d ./input/upgraded/input_raw/string_data.txt.gz
+  # Downgraded version
+  wget https://stringdb-static.org/download/protein.links.detailed.v11.0/9606.protein.links.detailed.v11.0.txt.gz -O ./input/downgraded/input_raw/string_data.txt.gz
+  gzip -d ./input/downgraded/input_raw/string_data.txt.gz
 
 
   # Downloading PROTEIN INTERACTION form HIPPIE.
@@ -111,34 +110,35 @@ if [ "$exec_mode" == "download_layers" ] ; then
   wget https://cbdm-01.zdv.uni-mainz.de/~mschaefer/hippie/HIPPIE-current.mitab.txt -O ./input/upgraded/input_raw/hippie.txt
   # Downgraded version
   #wget https://cbdm-01.zdv.uni-mainz.de/~mschaefer/hippie/HIPPIE-2.2.mitab.txt -O ./input/downgraded/input_raw/hippie.txt
-  cp ./input/raw_menche/ppi.tsv ./input/downgraded/input_raw/hippie.txt
+  cp ./input/downloaded_raw/raw_menche/ppi.tsv ./input/downgraded/input_raw/hippie.txt
 
-  # # Downloading GENETIC INTERACTIONS from DEPMAP.
-  # # Upgraded version
-  # wget https://ndownloader.figshare.com/files/34990033 -O ./input/upgraded/input_raw/CRISPR_gene_effect 
-  # wget https://ndownloader.figshare.com/files/34989919 -O ./input/upgraded/input_raw/CRISPR_gene_exprs 
-  # # Gene Expression: https://ndownloader.figshare.com/files/34989919
-  # # Cell Surpervivence score: https://ndownloader.figshare.com/files/34008491
-  # # Downgraded version
-  # wget https://www.life-science-alliance.org/content/lsa/2/2/e201800278/DC5/embed/inline-supplementary-material-5.txt -O ./input/downgraded/input_raw/KimCoess_gene
+  # Downloading GENETIC INTERACTIONS from DEPMAP.
+  # Upgraded version
+  wget https://ndownloader.figshare.com/files/34990033 -O ./input/upgraded/input_raw/CRISPR_gene_effect 
+  wget https://ndownloader.figshare.com/files/34989919 -O ./input/upgraded/input_raw/CRISPR_gene_exprs 
+  # Gene Expression: https://ndownloader.figshare.com/files/34989919
+  # Cell Surpervivence score: https://ndownloader.figshare.com/files/34008491
+  # Downgraded version menche version
+  wget https://www.life-science-alliance.org/content/lsa/2/2/e201800278/DC5/embed/inline-supplementary-material-5.txt -O ./input/downgraded/input_raw/KimCoess_gene
+  # Downgraded version DepMap version
+  cp ./input/downloaded_raw/gene_effect.csv ./input/downgraded/input_raw/CRISPR_gene_effect 
 
-
-  # # Downloading Gen-Transcriptional Factor relation.
-  # # https://rescued.omnipathdb.org/
-  # # 25-Feb-2021
-  # # Upgraded version
-  # get_gen_TF_data.R -O ./input/upgraded/input_raw/gene_TF
-  # rm -r omnipathr-log
-  # # Downgraded version
-  # get_gen_TF_data.R -O ./input/downgraded/input_raw/gene_TF
-  # rm -r omnipathr-log
+  # Downloading Gen-Transcriptional Factor relation.
+  # https://rescued.omnipathdb.org/
+  # 25-Feb-2021
+  # Upgraded version
+  get_gen_TF_data.R -O ./input/upgraded/input_raw/gene_TF
+  rm -r omnipathr-log
+  # Downgraded version
+  get_gen_TF_data.R -O ./input/downgraded/input_raw/gene_TF
+  rm -r omnipathr-log
   
-  # #Downloading HGNC_group
-  # # Upgraded version
-  # # TEST:   hgnc_complete_set_2024-01-01.txt
-  # wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./input/upgraded/input_raw/gene_hgncGroup
-  # # Downgraded version
-  # wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/quarterly/tsv/hgnc_complete_set_2020-07-01.txt -O ./input/downgraded/input_raw/gene_hgncGroup
+  #Downloading HGNC_group
+  # Upgraded version
+  # TEST:   hgnc_complete_set_2024-01-01.txt
+  wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./input/upgraded/input_raw/gene_hgncGroup
+  # Downgraded version
+  wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/quarterly/tsv/hgnc_complete_set_2020-07-01.txt -O ./input/downgraded/input_raw/gene_hgncGroup
 
 elif [ "$exec_mode" == "download_translators" ] ; then
 
@@ -164,8 +164,6 @@ elif [ "$exec_mode" == "download_translators" ] ; then
   # The other direction symbol_HGNC
   awk '{OFS="\t"}{print $2,$1}' ./translators/HGNC_symbol > ./translators/symbol_HGNC
 
-
-
 elif [ "$exec_mode" == "process_download" ] ; then
   source ~soft_bio_267/initializes/init_python
 
@@ -187,148 +185,153 @@ elif [ "$exec_mode" == "process_download" ] ; then
   ################
 
   datatime="upgraded"
-  # # # PROCESS ONTOLOGIES #
-  # for sample in phenotype disease function ; do
-  #   zgrep ${tag_filter[$sample]} ./input/$datatime/input_raw/gene_${sample}.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
-  #   aggregate_column_data -i - -x 1 -a 5 > ./input/$datatime/input_processed/$sample # | head -n 230
-  # done
+  # # PROCESS ONTOLOGIES #
+  for sample in phenotype disease function ; do
+    zgrep ${tag_filter[$sample]} ./input/$datatime/input_raw/gene_${sample}.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
+    aggregate_column_data -i - -x 1 -a 5 > ./input/$datatime/input_processed/$sample # | head -n 230
+  done
 
-  # ## Creating paco files for hpo.
-  # semtools -i ./input/$datatime/input_processed/phenotype -o ./input/$datatime/input_processed/filtered_phenotype -O HPO -S "," -c -T HP:0000001
-  # cat ./input/$datatime/input_processed/filtered_phenotype | tr -s "|" "," > ./input/$datatime/input_processed/phenotype
-  # rm ./input/$datatime/input_processed/filtered_phenotype
-  # rm rejected_profs
+  ## Creating paco files for hpo.
+  semtools -i ./input/$datatime/input_processed/phenotype -o ./input/$datatime/input_processed/filtered_phenotype -O HPO -S "," -c -T HP:0000001
+  cat ./input/$datatime/input_processed/filtered_phenotype | tr -s "|" "," > ./input/$datatime/input_processed/phenotype
+  rm ./input/$datatime/input_processed/filtered_phenotype
+  rm rejected_profs
 
-  # ## Creating paco files for each go branch.
-  # gene_ontology=( molecular_function cellular_component biological_process )
-  # for branch in ${gene_ontology[@]} ; do
-  #   semtools -i ./input/$datatime/input_processed/function -o ./input/$datatime/input_processed/filtered_$branch -O GO -S "," -c -T ${tag_filter[$branch]}
-  #   cat ./input/$datatime/input_processed/filtered_$branch | tr -s "|" "," > ./input/$datatime/input_processed/$branch
-  #   rm ./rejected_profs
-  #   rm ./input/$datatime/input_processed/filtered_$branch
-  # done
-  # rm ./input/$datatime/input_processed/function
+  ## Creating paco files for each go branch.
+  gene_ontology=( molecular_function cellular_component biological_process )
+  for branch in ${gene_ontology[@]} ; do
+    semtools -i ./input/$datatime/input_processed/function -o ./input/$datatime/input_processed/filtered_$branch -O GO -S "," -c -T ${tag_filter[$branch]}
+    cat ./input/$datatime/input_processed/filtered_$branch | tr -s "|" "," > ./input/$datatime/input_processed/$branch
+    rm ./rejected_profs
+    rm ./input/$datatime/input_processed/filtered_$branch
+  done
+  rm ./input/$datatime/input_processed/function
 
-  # # PROCESS REACTIONS 
-  # zgrep "REACT:" ./input/$datatime/input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | \
-  #   cut -f 1,5 > ./input/$datatime/input_processed/pathway
+  # PROCESS REACTIONS 
+  zgrep "REACT:" ./input/$datatime/input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | \
+    cut -f 1,5 > ./input/$datatime/input_processed/pathway
 
-  # # PROCESS PROTEIN INTERACTIONS
-  # ## STRING 11.5 | 11.0
-  # cat ./input/$datatime/input_raw/string_data.txt | tr -s " " "\t" > string_data.txt
-  # head -n 1 string_data.txt > header
-  # standard_name_replacer -i string_data.txt -I ./translators/ProtEnsemble_HGNC -c 1,2 -u > tmp && rm string_data.txt
-  # cat header tmp > tmp_header
-  # generate_strings.py -i tmp_header -o ./input/$datatime/input_processed/
-  # rm tmp tmp_header
+  # PROCESS PROTEIN INTERACTIONS
+  ## STRING 11.5 | 11.0
+  cat ./input/$datatime/input_raw/string_data.txt | tr -s " " "\t" > string_data.txt
+  head -n 1 string_data.txt > header
+  standard_name_replacer -i string_data.txt -I ./translators/ProtEnsemble_HGNC -c 1,2 -u > tmp && rm string_data.txt
+  cat header tmp > tmp_header
+  generate_strings.py -i tmp_header -o ./input/$datatime/input_processed/
+  rm tmp tmp_header
 
   ## HIPPO
   # current v2_2
   grep pubmed ./input/$datatime/input_raw/hippie.txt | cut -f 15,17,18 | awk '{OFS="\t"}{if (NF == 3) print $2,$3,$1}' \
   | standard_name_replacer -i - -I ./translators/symbol_HGNC -c 1,2 > ./input/$datatime/input_processed/hippie_ppi 
 
-  # # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 
-  # sed 's/([0-9]*)//1g' ./input/$datatime/input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/$datatime/input_raw/CRISPR_gene_effect_symbol
-  # cut -f 1 -d "," ./input/$datatime/input_raw/CRISPR_gene_effect | tr -d "DepMap_ID"  | tr -s "\t" "\n" | sed '1d' >  ./input/$datatime/input_processed/DepMap_effect_rows
-  # standard_name_replacer -I ./translators/symbol_HGNC -i ./input/$datatime/input_raw/CRISPR_gene_effect_symbol -c 1 -u --transposed > ./input/$datatime/input_processed/genetic_interaction_effect_values
-  # head -n 1 ./input/$datatime/input_processed/genetic_interaction_effect_values | tr -s "\t" "\n" >  ./input/$datatime/input_processed/DepMap_effect_cols
-  # sed '1d' ./input/$datatime/input_processed/genetic_interaction_effect_values > ./input/$datatime/input_processed/DepMap_effect
-  # rm ./input/$datatime/input_raw/CRISPR_gene_effect_symbol ./input/$datatime/input_processed/genetic_interaction_effect_values
+  # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 
+  sed 's/([0-9]*)//1g' ./input/$datatime/input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/$datatime/input_raw/CRISPR_gene_effect_symbol
+  cut -f 1 -d "," ./input/$datatime/input_raw/CRISPR_gene_effect | tr -d "DepMap_ID"  | tr -s "\t" "\n" | sed '1d' >  ./input/$datatime/input_processed/DepMap_effect_rows
+  standard_name_replacer -I ./translators/symbol_HGNC -i ./input/$datatime/input_raw/CRISPR_gene_effect_symbol -c 1 -u --transposed > ./input/$datatime/input_processed/genetic_interaction_effect_values
+  head -n 1 ./input/$datatime/input_processed/genetic_interaction_effect_values | tr -s "\t" "\n" >  ./input/$datatime/input_processed/DepMap_effect_cols
+  sed '1d' ./input/$datatime/input_processed/genetic_interaction_effect_values > ./input/$datatime/input_processed/DepMap_effect
+  rm ./input/$datatime/input_raw/CRISPR_gene_effect_symbol ./input/$datatime/input_processed/genetic_interaction_effect_values
 
-  # # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 
-  # sed 's/([0-9]*)//1g' ./input/$datatime/input_raw/CRISPR_gene_exprs | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/$datatime/input_raw/CRISPR_gene_exprs_symbol
-  # cut -f 1 -d "," ./input/$datatime/input_raw/CRISPR_gene_exprs | tr -d "DepMap_ID"  | tr -s "\t" "\n" | sed '1d' >  ./input/$datatime/input_processed/DepMap_exprs_rows
-  # standard_name_replacer -I ./translators/symbol_HGNC -i ./input/$datatime/input_raw/CRISPR_gene_exprs_symbol -c 1 -u --transposed > ./input/$datatime/input_processed/genetic_interaction_exprs_values
-  # head -n 1 ./input/$datatime/input_processed/genetic_interaction_exprs_values | tr -s "\t" "\n" >   ./input/$datatime/input_processed/DepMap_exprs_cols
-  # sed '1d' ./input/$datatime/input_processed/genetic_interaction_exprs_values > ./input/$datatime/input_processed/DepMap_exprs
-  # rm ./input/$datatime/input_raw/CRISPR_gene_exprs_symbol ./input/$datatime/input_processed/genetic_interaction_exprs_values
+  # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 
+  sed 's/([0-9]*)//1g' ./input/$datatime/input_raw/CRISPR_gene_exprs | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/$datatime/input_raw/CRISPR_gene_exprs_symbol
+  cut -f 1 -d "," ./input/$datatime/input_raw/CRISPR_gene_exprs | tr -d "DepMap_ID"  | tr -s "\t" "\n" | sed '1d' >  ./input/$datatime/input_processed/DepMap_exprs_rows
+  standard_name_replacer -I ./translators/symbol_HGNC -i ./input/$datatime/input_raw/CRISPR_gene_exprs_symbol -c 1 -u --transposed > ./input/$datatime/input_processed/genetic_interaction_exprs_values
+  head -n 1 ./input/$datatime/input_processed/genetic_interaction_exprs_values | tr -s "\t" "\n" >   ./input/$datatime/input_processed/DepMap_exprs_cols
+  sed '1d' ./input/$datatime/input_processed/genetic_interaction_exprs_values > ./input/$datatime/input_processed/DepMap_exprs
+  rm ./input/$datatime/input_raw/CRISPR_gene_exprs_symbol ./input/$datatime/input_processed/genetic_interaction_exprs_values
 
+  # Translating to GENE-TF interaction.ls
+  standard_name_replacer -i ./input/$datatime/input_raw/gene_TF -I ./translators/symbol_HGNC -c 1,2 -u | sed 's/HGNC:/TF:/2g' > ./input/$datatime/input_processed/gene_TF
 
-  # # Translating to GENE-TF interaction.ls
-  # standard_name_replacer -i ./input/$datatime/input_raw/gene_TF -I ./translators/symbol_HGNC -c 1,2 -u | sed 's/HGNC:/TF:/2g' > ./input/$datatime/input_processed/gene_TF
+  # Formatting data_columns
+  cut -f 1,14 ./input/$datatime/input_raw/gene_hgncGroup | sed "s/\"//g" | tr -s "|" "," | awk '{if( $2 != "") print $0}' \
+    | desaggregate_column_data -i "-" -x 2 | sed 's/\t/\tGROUP:/1g' | sed 1d > ./input/$datatime/input_processed/gene_hgncGroup
 
-  # # Formatting data_columns
-  # cut -f 1,14 ./input/$datatime/input_raw/gene_hgncGroup | sed "s/\"//g" | tr -s "|" "," | awk '{if( $2 != "") print $0}' \
-  #   | desaggregate_column_data -i "-" -x 2 | sed 's/\t/\tGROUP:/1g' | sed 1d > ./input/$datatime/input_processed/gene_hgncGroup
+  # Formatting PS-Genes
+  get_PS_gene_relation.py -i "/mnt/home/users/bio_267_uma/federogc/projects/GraphPrioritizer/input/downloaded_raw/phenotypic_series/series_data" -o "./input/$datatime/input_processed/PS_genes"
+  desaggregate_column_data -i ./input/$datatime/input_processed/PS_genes -x 2 > ./input/$datatime/input_processed/tmp 
+  standard_name_replacer -i ./input/$datatime/input_processed/tmp -I ./translators/symbol_HGNC -c 2 -u | awk 'BEGIN{FS="\t";OFS="\t"}{print $2,$1}' > ./input/$datatime/input_processed/gene_PS
+  rm ./input/$datatime/input_processed/PS_genes ./input/$datatime/input_processed/tmp 
 
-  # # Formatting PS-Genes
-  # get_PS_gene_relation.py -i "/mnt/home/users/bio_267_uma/federogc/projects/GraphPrioritizer/input/phenotypic_series/series_data" -o "./input/$datatime/input_processed/PS_genes"
-  # desaggregate_column_data -i ./input/$datatime/input_processed/PS_genes -x 2 > ./input/$datatime/input_processed/tmp 
-  # standard_name_replacer -i ./input/$datatime/input_processed/tmp -I ./translators/symbol_HGNC -c 2 -u | awk 'BEGIN{FS="\t";OFS="\t"}{print $2,$1}' > ./input/$datatime/input_processed/gene_PS
-  # rm ./input/$datatime/input_processed/PS_genes ./input/$datatime/input_processed/tmp 
-
-  # # For downgraded #
-  # ##################
+  # For downgraded #
+  ##################
 
   datatime="downgraded"
-  # # PROCESS ONTOLOGIES #
-  # echo -e "in disease"
-  # zgrep ${tag_filter[disease]} ./input/$datatime/input_raw/gene_disease.9606.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
-  # aggregate_column_data -i - -x 1 -a 5 > ./input/$datatime/input_processed/disease 
+  # PROCESS ONTOLOGIES #
+  echo -e "in disease"
+  zgrep ${tag_filter[disease]} ./input/$datatime/input_raw/gene_disease.9606.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
+  aggregate_column_data -i - -x 1 -a 5 > ./input/$datatime/input_processed/disease 
 
-  # tail -n +2 ./input/$datatime/input_raw/HPO_genes.txt | cut -f 1,4 | \
-  #  aggregate_column_data -i - -x 2 -a 1 | standard_name_replacer -i - -I ./translators/symbol_HGNC -c 1 -u > ./input/$datatime/input_processed/phenotype
+  tail -n +2 ./input/$datatime/input_raw/HPO_genes.txt | cut -f 1,4 | \
+   aggregate_column_data -i - -x 2 -a 1 | standard_name_replacer -i - -I ./translators/symbol_HGNC -c 1 -u > ./input/$datatime/input_processed/phenotype
 
-  # echo "in go"
-  # gzip -d ./input/downgraded/input_raw/gene_functions.gaf.gz
-  # mv ./input/downgraded/input_raw/gene_functions.gaf ./input/downgraded/input_raw/gene_functions
-  # echo "remove header"
-  # tail -n +31 ./input/$datatime/input_raw/gene_functions | cut -f 3,5 | aggregate_column_data -i - -x 1 -a 2 > ./input/$datatime/input_processed/function
-  # standard_name_replacer -i ./input/$datatime/input_processed/function -I ./translators/symbol_HGNC -c 1 -u > tmp && rm ./input/$datatime/input_processed/function
-  # mv tmp ./input/$datatime/input_processed/function
+  echo "in go"
+  gzip -d ./input/downgraded/input_raw/gene_functions.gaf.gz
+  mv ./input/downgraded/input_raw/gene_functions.gaf ./input/downgraded/input_raw/gene_functions
+  echo "remove header"
+  tail -n +31 ./input/$datatime/input_raw/gene_functions | cut -f 3,5 | aggregate_column_data -i - -x 1 -a 2 > ./input/$datatime/input_processed/function
+  standard_name_replacer -i ./input/$datatime/input_processed/function -I ./translators/symbol_HGNC -c 1 -u > tmp && rm ./input/$datatime/input_processed/function
+  mv tmp ./input/$datatime/input_processed/function
 
-  # # Creating paco files for hpo.
-  # semtools -i ./input/$datatime/input_processed/phenotype -o ./input/$datatime/input_processed/filtered_phenotype -O ./input/$datatime/input_obo/hp.obo -S "," -c -T HP:0000001
-  # cat ./input/$datatime/input_processed/filtered_phenotype | tr -s "|" "," > ./input/$datatime/input_processed/phenotype
-  # rm ./input/$datatime/input_processed/filtered_phenotype
-  # rm rejected_profs
+  # Creating paco files for hpo.
+  semtools -i ./input/$datatime/input_processed/phenotype -o ./input/$datatime/input_processed/filtered_phenotype -O ./input/$datatime/input_obo/hp.obo -S "," -c -T HP:0000001
+  cat ./input/$datatime/input_processed/filtered_phenotype | tr -s "|" "," > ./input/$datatime/input_processed/phenotype
+  rm ./input/$datatime/input_processed/filtered_phenotype
+  rm rejected_profs
 
-  # semtools -i ./input/$datatime/input_processed/disease -o ./input/$datatime/input_processed/filtered_disease -O ./input/$datatime/input_obo/mondo.obo -S "," -c -T MONDO:0000001
-  # cat ./input/$datatime/input_processed/filtered_disease | tr -s "|" "," > ./input/$datatime/input_processed/disease
-  # rm ./input/$datatime/input_processed/filtered_disease
-  # rm rejected_profs
+  semtools -i ./input/$datatime/input_processed/disease -o ./input/$datatime/input_processed/filtered_disease -O ./input/$datatime/input_obo/mondo.obo -S "," -c -T MONDO:0000001
+  cat ./input/$datatime/input_processed/filtered_disease | tr -s "|" "," > ./input/$datatime/input_processed/disease
+  rm ./input/$datatime/input_processed/filtered_disease
+  rm rejected_profs
 
-  # # Creating paco files for each go branch.
-  # gene_ontology=( molecular_function cellular_component biological_process )
-  # for branch in ${gene_ontology[@]} ; do
-  #   semtools -i ./input/$datatime/input_processed/function -o ./input/$datatime/input_processed/filtered_$branch -O ./input/$datatime/input_obo/go.obo -S "," -c -T ${tag_filter[$branch]}
-  #   cat ./input/$datatime/input_processed/filtered_$branch | tr -s "|" "," > ./input/$datatime/input_processed/$branch
-  #   rm ./rejected_profs
-  #   rm ./input/$datatime/input_processed/filtered_$branch
-  # done
-  # rm ./input/$datatime/input_processed/function
+  # Creating paco files for each go branch.
+  gene_ontology=( molecular_function cellular_component biological_process )
+  for branch in ${gene_ontology[@]} ; do
+    semtools -i ./input/$datatime/input_processed/function -o ./input/$datatime/input_processed/filtered_$branch -O ./input/$datatime/input_obo/go.obo -S "," -c -T ${tag_filter[$branch]}
+    cat ./input/$datatime/input_processed/filtered_$branch | tr -s "|" "," > ./input/$datatime/input_processed/$branch
+    rm ./rejected_profs
+    rm ./input/$datatime/input_processed/filtered_$branch
+  done
+  rm ./input/$datatime/input_processed/function
 
-  # # PROCESS PROTEIN INTERACTIONS
-  # # STRING 11.5 | 11.0
-  # cat ./input/$datatime/input_raw/string_data.txt | tr -s " " "\t" > string_data.txt
-  # head -n 1 string_data.txt > header
-  # standard_name_replacer -i string_data.txt -I ./translators/ProtEnsemble_HGNC -c 1,2 -u > tmp && rm string_data.txt
-  # cat header tmp > tmp_header
-  # generate_strings.py -i tmp_header -o ./input/$datatime/input_processed/
-  # rm tmp tmp_header
+  # PROCESS PROTEIN INTERACTIONS
+  # STRING 11.5 | 11.0
+  cat ./input/$datatime/input_raw/string_data.txt | tr -s " " "\t" > string_data.txt
+  head -n 1 string_data.txt > header
+  standard_name_replacer -i string_data.txt -I ./translators/ProtEnsemble_HGNC -c 1,2 -u > tmp && rm string_data.txt
+  cat header tmp > tmp_header
+  generate_strings.py -i tmp_header -o ./input/$datatime/input_processed/
+  rm tmp tmp_header
 
-  # # DEPMAP
-  # cut -f 1,2,3 ./input/$datatime/input_raw/KimCoess_gene | standard_name_replacer -I ./translators/symbol_HGNC -i - -c 1,2 -u > ./input/$datatime/input_processed/KimCoess_gene
+  # DEPMAP
+  cut -f 1,2,3 ./input/$datatime/input_raw/KimCoess_gene | standard_name_replacer -I ./translators/symbol_HGNC -i - -c 1,2 -u > ./input/$datatime/input_processed/KimCoess_gene
+  # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 
+  sed 's/([0-9]*)//1g' ./input/$datatime/input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/$datatime/input_raw/CRISPR_gene_effect_symbol
+  cut -f 1 -d "," ./input/$datatime/input_raw/CRISPR_gene_effect | tr -d "DepMap_ID"  | tr -s "\t" "\n" | sed '1d' >  ./input/$datatime/input_processed/DepMap_effect_rows
+  standard_name_replacer -I ./translators/symbol_HGNC -i ./input/$datatime/input_raw/CRISPR_gene_effect_symbol -c 1 -u --transposed > ./input/$datatime/input_processed/genetic_interaction_effect_values
+  head -n 1 ./input/$datatime/input_processed/genetic_interaction_effect_values | tr -s "\t" "\n" >  ./input/$datatime/input_processed/DepMap_effect_cols
+  sed '1d' ./input/$datatime/input_processed/genetic_interaction_effect_values > ./input/$datatime/input_processed/DepMap_effect
+  rm ./input/$datatime/input_raw/CRISPR_gene_effect_symbol ./input/$datatime/input_processed/genetic_interaction_effect_values
 
-
-  ## HIPPO
-  # current v2_2
-  #grep pubmed ./input/$datatime/input_raw/hippie.txt | standard_name_replacer -i - -I ./translators/symbol_HGNC -c 17,18 -u  >  ./input/$datatime/input_processed/tmp 
-  #cut -f 16,17,18 ./input/$datatime/input_processed/tmp | awk '{OFS="\t"}{print $2,$3,$1}'  > ./input/$datatime/input_processed/hippie_ppi 
+  # HIPPO
+  current v2_2
+  grep pubmed ./input/$datatime/input_raw/hippie.txt | standard_name_replacer -i - -I ./translators/symbol_HGNC -c 17,18 -u  >  ./input/$datatime/input_processed/tmp 
+  cut -f 16,17,18 ./input/$datatime/input_processed/tmp | awk '{OFS="\t"}{print $2,$3,$1}'  > ./input/$datatime/input_processed/hippie_ppi 
   standard_name_replacer -i ./input/$datatime/input_raw/hippie.txt -I ./translators/symbol_HGNC -c 1,2 -u > ./input/$datatime/input_processed/hippie_ppi 
 
-  # # HGNC_group
-  # # Formatting data_columns
-  # cut -f 1,14 ./input/$datatime/input_raw/gene_hgncGroup | sed "s/\"//g" | tr -s "|" "," | awk '{if( $2 != "") print $0}' \
-  #   | desaggregate_column_data -i "-" -x 2 | sed 's/\t/\tGROUP:/1g' | sed 1d > ./input/$datatime/input_processed/gene_hgncGroup
+  # HGNC_group
+  # Formatting data_columns
+  cut -f 1,14 ./input/$datatime/input_raw/gene_hgncGroup | sed "s/\"//g" | tr -s "|" "," | awk '{if( $2 != "") print $0}' \
+    | desaggregate_column_data -i "-" -x 2 | sed 's/\t/\tGROUP:/1g' | sed 1d > ./input/$datatime/input_processed/gene_hgncGroup
 
-  # # PROCESS REACTIONS 
-  # cut -f 2- ./input/$datatime/input_raw/ReactomePathways.gmt | sed 's/https:\/\/reactome.org\/content\/detail\//REACT:/g' \
-  #   | sed "s/\t/,/2g" \
-  #   | desaggregate_column_data -i - -x 2 \
-  #   | cut -f 1,2 \
-  #   | standard_name_replacer -i - -I ./translators/symbol_HGNC -c 2 -u \
-  #   | awk '{OFS="\t"}{print $2,$1}' > ./input/$datatime/input_processed/pathway
+  # PROCESS REACTIONS 
+  cut -f 2- ./input/$datatime/input_raw/ReactomePathways.gmt | sed 's/https:\/\/reactome.org\/content\/detail\//REACT:/g' \
+    | sed "s/\t/,/2g" \
+    | desaggregate_column_data -i - -x 2 \
+    | cut -f 1,2 \
+    | standard_name_replacer -i - -I ./translators/symbol_HGNC -c 2 -u \
+    | awk '{OFS="\t"}{print $2,$1}' > ./input/$datatime/input_processed/pathway
 
 elif [ "$exec_mode" == "dversion" ] ; then
 
@@ -348,40 +351,56 @@ elif [ "$exec_mode" == "whitelist" ] ; then
 # OPTIONAL STAGE : SELECT GENES FROM WHITELIST
 #########################################################
 
+  decleare -A gen_cols 
+  gen_cols[disease]="1"
+  gen_cols[phenotype]="1"
+  gen_cols[molecular_function]="1"
+  gen_cols[biological_process]="1"
+  gen_cols[cellular_component]="1"
+  gen_cols[string_ppi]="1,2"
+  gen_cols[hippie_ppi]="1,2"
+  gen_cols[string_ppi_textmining]="1,2"
+  gen_cols[string_ppi_database]="1,2"
+  gen_cols[string_ppi_experimental]="1,2"
+  gen_cols[string_ppi_coexpression]="1,2"
+  gen_cols[string_ppi_cooccurence]="1,2"
+  gen_cols[string_ppi_fusion]="1,2"
+  gen_cols[string_ppi_neighborhood]="1,2"
+  gen_cols[kim_coess_gene]="1,2"
+  gen_cols[pathway]="1"
+  gen_cols[gene_TF]="1"
+  gen_cols[gene_hgncGroup]="1"
+  gen_cols[gene_PS]="1"
+
 # TODO: Check this to put all layers new.
   . ~soft_bio_267/initializes/init_python
 
   cd ./input/input_processed
   mkdir -p whitelist
 
-  filter_by_list -f phenotype,disease,biological_process,cellular_component,molecular_function,pathway,string_ppi,hippie_ppi,gene_TF,gene_hgncGroup,gene_PS \
-   -c "1;1;1;1;1;1;1,2;1,2;1;1;1" -t ../../white_list/hgnc_white_list -o ./whitelist/ --prefix "" --metrics 
+  for annot in $annotations ; do
+    if [ -s $annot ] ; then
+      filter_by_list -f $annot -c ${gen_cols[$annot]} -t $input_path/white_list/hgnc_white_list -o ./whitelist/ --prefix "" --metrics 
+    fi
+  done
 
   # Special section for DepMap info.
   ## Adding the colnames
-  cat DepMap_exprs_cols | tr -s "\t" "\n" >   ./whitelist/DepMap_exprs_cols
-  cat ./whitelist/DepMap_exprs_cols DepMap_exprs > ./whitelist/DepMap_exprs
-
-  cat DepMap_effect_cols | tr -s "\t" "\n" >   ./whitelist/DepMap_effect_cols
-  cat ./whitelist/DepMap_effect_cols DepMap_effect > ./whitelist/DepMap_effect
-
-  ## Filtering by the colnames
-  filter_by_list -f ./whitelist/DepMap_exprs,./whitelist/DepMap_effect -c "1;1" -t ../../white_list/hgnc_white_list --transposed --metrics 
-
-  # Geting format: Values table, rownames, colnames for DepMap.
-  head -n 1 ./whitelist/DepMap_exprs | tr -s "\t" "\n" >  ./whitelist/DepMap_exprs_cols
-  sed -i '1d' ./whitelist/DepMap_exprs 
-  cp DepMap_exprs_rows ./whitelist/DepMap_exprs_rows
-
-  head -n 1 ./whitelist/DepMap_effect | tr -s "\t" "\n" >  ./whitelist/DepMap_effect_cols
-  sed -i '1d' ./whitelist/DepMap_effect 
-  cp DepMap_effect_rows ./whitelist/DepMap_effect_rows
-  ## End of DepMap whitelist section
+  for type in exprs effect ; do
+    if [ -s DepMap_${type} ] ; then
+      cat DepMap_${type}_cols | tr -s "\t" "\n" >   ./whitelist/DepMap_${type}_cols
+      cat ./whitelist/DepMap_${type}_cols DepMap_${type} > ./whitelist/DepMap_${type}
+      ## Filtering by the colnames
+      filter_by_list -f ./whitelist/DepMap_${type} -c "1" -t $input_path/white_list/hgnc_white_list --transposed --metrics 
+      # Geting format: Values table, rownames, colnames for DepMap.
+      head -n 1 ./whitelist/DepMap_${type} | tr -s "\t" "\n" >  ./whitelist/DepMap_${type}_cols
+      sed -i '1d' ./whitelist/DepMap_${type} 
+      cp DepMap_${type}_rows ./whitelist/DepMap_${type}_rows
+    fi
+  done
 
   mv filtered_* ./whitelist/
-
   rename -v 's/filtered_//' ./whitelist/*
-
   echo "Annotation files filtered"
   cd ../..
 
