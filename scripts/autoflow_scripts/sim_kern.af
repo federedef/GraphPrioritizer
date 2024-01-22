@@ -4,7 +4,6 @@ get_similarity){
 	# Output: Similarity list
 	source ~soft_bio_267/initializes/init_python
 	#source ~/dev_py/myvenv/bin/activate
-	source ~/projects/GraphPrioritizer/menv/bin/activate
 	source ~soft_bio_267/initializes/init_R
 	echo -e "$annotation_sim" > tracker
 	similarity_path=`pwd`

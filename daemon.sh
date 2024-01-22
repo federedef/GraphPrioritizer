@@ -22,6 +22,7 @@ annotations+=" string_ppi hippie_ppi"
 annotations+=" string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
 annotations+=" DepMap_effect_pearson DepMap_effect_spearman kim_coess_gene"
 annotations+=" pathway gene_TF gene_hgncGroup gene_PS"
+
 integrated_annotations="disease phenotype molecular_function biological_process cellular_component string_ppi_exp pathway gene_TF gene_hgncGroup DepMap_effect_pearson gene_PS"
 integrated_annotations="string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
 integrated_annotations="phenotype biological_process string_ppi_textmining string_ppi_coexpression gene_hgncGroup"
@@ -315,7 +316,7 @@ elif [ "$exec_mode" == "process_download" ] ; then
   rm ./input/$datatime/input_raw/CRISPR_gene_effect_symbol ./input/$datatime/input_processed/genetic_interaction_effect_values
 
   # HIPPO
-  current v2_2
+  #current v2_2
   grep pubmed ./input/$datatime/input_raw/hippie.txt | standard_name_replacer -i - -I ./translators/symbol_HGNC -c 17,18 -u  >  ./input/$datatime/input_processed/tmp 
   cut -f 16,17,18 ./input/$datatime/input_processed/tmp | awk '{OFS="\t"}{print $2,$3,$1}'  > ./input/$datatime/input_processed/hippie_ppi 
   standard_name_replacer -i ./input/$datatime/input_raw/hippie.txt -I ./translators/symbol_HGNC -c 1,2 -u > ./input/$datatime/input_processed/hippie_ppi 
@@ -351,13 +352,13 @@ elif [ "$exec_mode" == "whitelist" ] ; then
 # OPTIONAL STAGE : SELECT GENES FROM WHITELIST
 #########################################################
 
-  decleare -A gen_cols 
+  declare -A gen_cols 
   gen_cols[disease]="1"
   gen_cols[phenotype]="1"
   gen_cols[molecular_function]="1"
   gen_cols[biological_process]="1"
   gen_cols[cellular_component]="1"
-  gen_cols[string_ppi]="1,2"
+  gen_cols[string_ppi_combined_score]="1,2"
   gen_cols[hippie_ppi]="1,2"
   gen_cols[string_ppi_textmining]="1,2"
   gen_cols[string_ppi_database]="1,2"
@@ -366,32 +367,32 @@ elif [ "$exec_mode" == "whitelist" ] ; then
   gen_cols[string_ppi_cooccurence]="1,2"
   gen_cols[string_ppi_fusion]="1,2"
   gen_cols[string_ppi_neighborhood]="1,2"
-  gen_cols[kim_coess_gene]="1,2"
+  gen_cols[KimCoess_gene]="1,2"
   gen_cols[pathway]="1"
   gen_cols[gene_TF]="1"
   gen_cols[gene_hgncGroup]="1"
   gen_cols[gene_PS]="1"
 
-# TODO: Check this to put all layers new.
+  # TODO: Check this to put all layers new.
   . ~soft_bio_267/initializes/init_python
 
   cd ./input/input_processed
   mkdir -p whitelist
 
-  for annot in $annotations ; do
-    if [ -s $annot ] ; then
-      filter_by_list -f $annot -c ${gen_cols[$annot]} -t $input_path/white_list/hgnc_white_list -o ./whitelist/ --prefix "" --metrics 
-    fi
-  done
+  # for source in "${!gen_cols[@]}" ; do
+  #   if [ -s $source ] ; then
+  #     filter_by_list -f $source -c ${gen_cols[$source]} -t $input_path/white_list/hgnc_white_list -o ./whitelist/ --prefix "" --metrics 
+  #   fi
+  # done
 
   # Special section for DepMap info.
   ## Adding the colnames
   for type in exprs effect ; do
     if [ -s DepMap_${type} ] ; then
-      cat DepMap_${type}_cols | tr -s "\t" "\n" >   ./whitelist/DepMap_${type}_cols
+      cat DepMap_${type}_cols | tr -s "\n" "\t" | sed 's/$/\n/'> ./whitelist/DepMap_${type}_cols
       cat ./whitelist/DepMap_${type}_cols DepMap_${type} > ./whitelist/DepMap_${type}
       ## Filtering by the colnames
-      filter_by_list -f ./whitelist/DepMap_${type} -c "1" -t $input_path/white_list/hgnc_white_list --transposed --metrics 
+      filter_by_list -f ./whitelist/DepMap_${type} -c "1" -t $input_path/white_list/hgnc_white_list -o ./whitelist/ --prefix "" --transposed --metrics 
       # Geting format: Values table, rownames, colnames for DepMap.
       head -n 1 ./whitelist/DepMap_${type} | tr -s "\t" "\n" >  ./whitelist/DepMap_${type}_cols
       sed -i '1d' ./whitelist/DepMap_${type} 
@@ -399,8 +400,6 @@ elif [ "$exec_mode" == "whitelist" ] ; then
     fi
   done
 
-  mv filtered_* ./whitelist/
-  rename -v 's/filtered_//' ./whitelist/*
   echo "Annotation files filtered"
   cd ../..
 
@@ -644,6 +643,7 @@ elif [ "$exec_mode" == "report" ] ; then
   original_folders[non_integrated_rank_positive_stats]='rankings'
   original_folders[non_integrated_rank_size_auc_by_group]='rankings'
   original_folders[non_integrated_rank_auc_by_groupIteration]='rankings'
+  original_folders[non_integrated_rank_group_vs_posrank]='rankings'
 
   original_folders[integrated_rank_summary]='integrated_rankings'
   original_folders[integrated_rank_measures]='integrated_rankings'
@@ -651,6 +651,7 @@ elif [ "$exec_mode" == "report" ] ; then
   original_folders[integrated_rank_pos_cov]='integrated_rankings'
   original_folders[integrated_rank_positive_stats]='integrated_rankings'
   original_folders[integrated_rank_size_auc_by_group]='integrated_rankings'
+  original_folders[integrated_rank_group_vs_posrank]='integrated_rankings'
   
   # Here the data is collected from executed folders.
   for file in "${!original_folders[@]}" ; do
@@ -728,6 +729,16 @@ elif [ "$exec_mode" == "report" ] ; then
   if [ -s $output_folder/integrated_rank_cdf ] ; then
      echo -e "integration_kernel\tintegration\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"| \
      cat - $output_folder/integrated_rank_cdf > $report_folder/ranking_report/integrated_rank_cdf
+  fi
+
+  if [ -s $output_folder/non_integrated_rank_group_vs_posrank ] ; then
+     echo -e "annot_kernel\tannot\tkernel\tgroup_seed\trank"| \
+     cat - $output_folder/non_integrated_rank_group_vs_posrank > $report_folder/ranking_report/non_integrated_rank_group_vs_posrank
+  fi
+
+  if [ -s $output_folder/integrated_rank_group_vs_posrank ] ; then
+     echo -e "integration_kernel\tintegration\tkernel\tgroup_seed\trank"| \
+     cat - $output_folder/integrated_rank_group_vs_posrank > $report_folder/ranking_report/integrated_rank_group_vs_posrank
   fi
 
   if [ -z "$check" ] ; then

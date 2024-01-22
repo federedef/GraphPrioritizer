@@ -63,9 +63,13 @@ rank_genes_with_leave_one_out){
 		echo -e "positive_coverage\t${number_of_positive_genes}" > pos_cov
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2}' pos_cov > $output_name_pos_cov
 
+
 	    if [ $number_of_positive_genes -ge 1 ] ; then 
 			rank_metrics.py -r positive_genes -e "ranks" > prerank_list
 			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' prerank_list > $output_name_cdf
+
+			cut -f 3,5 positive_genes | awk '{OFS="\t";}{print $2,$1}' | sort > individual_group_posrank
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' individual_group_posrank > $output_name_group_vs_posrank
 		else 
 			echo -e "positive_coverage\t0" > prerank_list
 			exit 0
@@ -138,6 +142,9 @@ rank_genes_with_kfold_cv){
 	    if [ $number_of_positive_genes -ge 1 ] ; then 
 			rank_metrics.py -r positive_genes -e "ranks" > prerank_list
 			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' prerank_list > $output_name_cdf
+
+			cut -f 3,5 positive_genes | awk '{OFS="\t";}{print $2,$1}' | sort > individual_group_posrank
+			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' individual_group_posrank > $output_name_group_vs_posrank
 		else 
 			echo -e "positive_coverage\t0" > prerank_list
 			exit 0
