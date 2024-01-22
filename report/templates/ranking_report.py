@@ -1,11 +1,21 @@
 <%
         import os.path
         import warnings
+        import pandas as pd
         warnings.simplefilter(action='ignore', category=FutureWarning)
         def order_columns(name, column):
                 tab_header = plotter.hash_vars[name].pop(0)
                 plotter.hash_vars[name].sort(key=lambda x: x[column])
                 plotter.hash_vars[name].insert(0, tab_header)
+
+        def get_medianrank_size(var_name, groupby = ['annot_kernel','annot','kernel','group_seed'], value = 'rank'):
+                df = pd.DataFrame(plotter.hash_vars[var_name][1:], columns = plotter.hash_vars[var_name][0])
+                median_by_attributes = df.groupby(groupby)[value].median().reset_index()
+                len_by_attributes = df.groupby(groupby)[value].size().reset_index()
+                concatenated_df = pd.concat([median_by_attributes, len_by_attributes[[value]]], axis=1)
+                col_names = plotter.hash_vars[var_name][0]
+                col_names.append("size")
+                return [col_names] + concatenated_df.values.tolist()
 
         if plotter.hash_vars.get('parsed_non_integrated_rank_summary') is not None:
                 order_columns('parsed_non_integrated_rank_summary',0)
@@ -26,32 +36,10 @@
 
         img_path="/mnt/scratch/users/bio_267_uma/federogc/executions/GraphPrioritizer/report/img/"
 
-        # def plotting_ecdf(data, plotter_list, x, col=None, hue=None, col_wrap=4, suptitle=None, top=0.9, labels = None, x_label=None):
-        #         g = plotter_list["sns"].FacetGrid(data, col_wrap=col_wrap, col=col, hue=hue, aspect=1).map(plotter_list["sns"].ecdfplot, x)
-        #         if x_label: g.set_xlabels(x_label)
-        #         g.add_legend()
-        #         g.set_titles(col_template="{col_name}")
-        #         if suptitle is not None:
-        #                 g.fig.subplots_adjust(top=top)
-        #                 g.fig.suptitle(suptitle)
-
-        # def plotting_line(data, plotter_list, x='fpr', y='tpr', col=None, hue=None, col_wrap=4, suptitle=None, top=0.7, labels = None, x_label=None, y_label=None):
-        #         g = plotter_list["sns"].FacetGrid(data, col_wrap=col_wrap, col=col, hue=hue, aspect=1).map(plotter_list["sns"].lineplot, x, y)
-        #         if x_label: g.set_xlabels(x_label)
-        #         if y_label: g.set_ylabels(y_label)
-        #         g.add_legend()
-        #         g.set_titles(col_template="{col_name}")
-
-        #         if suptitle is not None:
-        #                 g.fig.subplots_adjust(top=top)
-        #                 g.fig.suptitle(suptitle)
-        #         #if labels is not None:
-        #         #        plotter_list["plt"].legend(labels=labels, title = "Legend")
-        #         # if x_label: 
-        #         #         plotter_list["plt"].xlabel(x_label)
-        #         # if y_label: 
-        #         #         plotter_list["plt"].ylabel(y_label)
-
+        if plotter.hash_vars.get('non_integrated_rank_group_vs_posrank') is not None:
+                plotter.hash_vars["non_integrated_rank_group_vs_posrank"] = get_medianrank_size('non_integrated_rank_group_vs_posrank', groupby = ['annot_kernel','annot','kernel','group_seed'], value = 'rank')
+        if plotter.hash_vars.get('integrated_rank_group_vs_posrank') is not None:
+                plotter.hash_vars["integrated_rank_group_vs_posrank"] = get_medianrank_size('integrated_rank_group_vs_posrank', groupby = ['integration_kernel','integration','kernel','group_seed'], value = 'rank')
 
         def plot_with_facet(data, plotter_list, plot_type="", x='fpr', y='tpr', col=None, hue=None, col_wrap=4, suptitle=None, top=0.7, labels = None, x_label=None, y_label=None):
                 if plot_type == "scatterplot":
@@ -155,7 +143,7 @@
                 <div style="margin-left: 10px;">
                                  % if plotter.hash_vars.get('non_integrated_rank_auc_by_groupIteration') is not None: 
                                         ${plotter.boxplot(id= 'non_integrated_rank_auc_by_groupIteration', header= True, group = "kernel",row_names= False, default= False, fields= [4],  var_attr= [0,1,2,3], 
-                                           title= "Distribution of ROC-AUCs in Dataset by Embeddings and seeds after Integration",
+                                           title= "Distribution of ROC-AUCs by iteration in dataset (before integration)",
                                                 x_label= "ROC-AUCs",
                                                 config= {
                                                         "graphOrientation": "vertical",
@@ -188,6 +176,23 @@
                          hue="kernel", col_wrap=2, suptitle="Rank vs Real Group Size after Integration", top=0.8, labels = None, x_label="Real Group Size", y_label="AUC"))}
                 % endif 
         </div>
+
+        <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
+                % if plotter.hash_vars.get('non_integrated_rank_group_vs_posrank') is not None: 
+                   ${ plotter.static_plot_main( id="non_integrated_rank_group_vs_posrank", header=True, row_names=False, var_attr=[0,1,2,3], 
+                        plotting_function= lambda data, plotter_list: plot_with_facet(data=data, plotter_list=plotter_list, plot_type="lmplot", x='size', y='rank', col="annot",
+                         hue="kernel", col_wrap=4, suptitle="Rank CDF vs Real Group Size before Integration", top=0.9, labels = None, x_label="Real Group Size", y_label="median-rank"))}
+                % endif 
+        </div>
+
+        <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
+                % if plotter.hash_vars.get('integrated_rank_group_vs_posrank') is not None: 
+                   ${ plotter.static_plot_main( id="integrated_rank_group_vs_posrank", header=True, row_names=False, var_attr=[0,1,2,3], 
+                        plotting_function= lambda data, plotter_list: plot_with_facet(data=data, plotter_list=plotter_list, plot_type="lmplot", x='size', y='rank', col="method",
+                         hue="kernel", col_wrap=2, suptitle="Rank CDF vs Real Group Size before Integration", top=0.9, labels = None, x_label="Real Group Size", y_label="median-rank"))}
+                % endif 
+        </div>
+
 
         <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
                 <div style="margin-right: 10px;">
