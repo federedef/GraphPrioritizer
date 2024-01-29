@@ -3,6 +3,7 @@
         import warnings
         import pandas as pd
         warnings.simplefilter(action='ignore', category=FutureWarning)
+
         def order_columns(name, column):
                 tab_header = plotter.hash_vars[name].pop(0)
                 plotter.hash_vars[name].sort(key=lambda x: x[column])
@@ -15,31 +16,8 @@
                 concatenated_df = pd.concat([median_by_attributes, len_by_attributes[[value]]], axis=1)
                 col_names = plotter.hash_vars[var_name][0]
                 col_names.append("size")
+                print([col_names])
                 return [col_names] + concatenated_df.values.tolist()
-
-        if plotter.hash_vars.get('parsed_non_integrated_rank_summary') is not None:
-                order_columns('parsed_non_integrated_rank_summary',0)
-
-        if plotter.hash_vars.get('parsed_integrated_rank_summary') is not None:
-                order_columns('parsed_integrated_rank_summary',0)
-
-        if plotter.hash_vars.get('parsed_non_integrated_rank_pos_cov') is not None:
-                order_columns('parsed_non_integrated_rank_pos_cov',2)
-                order_columns('parsed_non_integrated_rank_pos_cov',1)
-   
-        if plotter.hash_vars.get('parsed_integrated_rank_pos_cov') is not None:
-                order_columns('parsed_integrated_rank_pos_cov',2)
-                order_columns('parsed_integrated_rank_pos_cov',1)
-           
-        if plotter.hash_vars.get('parsed_annotation_grade_metrics') is not None:
-                order_columns('parsed_annotation_grade_metrics',0)
-
-        img_path="/mnt/scratch/users/bio_267_uma/federogc/executions/GraphPrioritizer/report/img/"
-
-        if plotter.hash_vars.get('non_integrated_rank_group_vs_posrank') is not None:
-                plotter.hash_vars["non_integrated_rank_group_vs_posrank"] = get_medianrank_size('non_integrated_rank_group_vs_posrank', groupby = ['annot_kernel','annot','kernel','group_seed'], value = 'rank')
-        if plotter.hash_vars.get('integrated_rank_group_vs_posrank') is not None:
-                plotter.hash_vars["integrated_rank_group_vs_posrank"] = get_medianrank_size('integrated_rank_group_vs_posrank', groupby = ['integration_kernel','integration','kernel','group_seed'], value = 'rank')
 
         def plot_with_facet(data, plotter_list, plot_type="", x='fpr', y='tpr', col=None, hue=None, col_wrap=4, suptitle=None, top=0.7, labels = None, x_label=None, y_label=None):
                 if plot_type == "scatterplot":
@@ -58,6 +36,29 @@
                 if suptitle is not None:
                         g.fig.subplots_adjust(top=top)
                         g.fig.suptitle(suptitle,fontsize=20)
+
+        if plotter.hash_vars.get('parsed_non_integrated_rank_summary') is not None:
+                order_columns('parsed_non_integrated_rank_summary',0)
+
+        if plotter.hash_vars.get('parsed_integrated_rank_summary') is not None:
+                order_columns('parsed_integrated_rank_summary',0)
+
+        if plotter.hash_vars.get('parsed_non_integrated_rank_pos_cov') is not None:
+                order_columns('parsed_non_integrated_rank_pos_cov',2)
+                order_columns('parsed_non_integrated_rank_pos_cov',1)
+   
+        if plotter.hash_vars.get('parsed_integrated_rank_pos_cov') is not None:
+                order_columns('parsed_integrated_rank_pos_cov',2)
+                order_columns('parsed_integrated_rank_pos_cov',1)
+           
+        if plotter.hash_vars.get('parsed_annotation_grade_metrics') is not None:
+                order_columns('parsed_annotation_grade_metrics',0)
+
+        if plotter.hash_vars.get('non_integrated_rank_group_vs_posrank') is not None:
+                plotter.hash_vars["non_integrated_rank_group_vs_posrank"] = get_medianrank_size('non_integrated_rank_group_vs_posrank', groupby = ['annot_kernel','annot','kernel','group_seed'], value = 'rank')
+        if plotter.hash_vars.get('integrated_rank_group_vs_posrank') is not None:
+                plotter.hash_vars["integrated_rank_group_vs_posrank"] = get_medianrank_size('integrated_rank_group_vs_posrank', groupby = ['integration_kernel','integration','kernel','group_seed'], value = 'rank')
+                print(plotter.hash_vars["integrated_rank_group_vs_posrank"])
         
 %>
 <div style="width:90%; background-color:#FFFFFF; margin:50 auto; align-content: center;">
@@ -163,33 +164,41 @@
 
         <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
                 % if plotter.hash_vars.get('non_integrated_rank_size_auc_by_group') is not None: 
-                   ${ plotter.static_plot_main( id="non_integrated_rank_size_auc_by_group", header=True, row_names=False, var_attr=[0,1,2,3], 
-                        plotting_function= lambda data, plotter_list: plot_with_facet(data=data, plotter_list=plotter_list, plot_type="lmplot", x='pos_cov', y='auc', col="annot",
-                         hue="kernel", col_wrap=4, suptitle="Rank vs Real Group Size before Integration", top=0.9, labels = None, x_label="Real Group Size", y_label="AUC"))}
+                   ${plotter.scatter2D(id= 'non_integrated_rank_size_auc_by_group', header= True, fields = [5,4], x_label = 'Real Group Size', y_label = 'median-AUROC', title= "Rank CDF vs Real Group Size before Integration", var_attr= [0,1,2,3], add_densities = True, config= {
+                                'showLegend' : True,
+                                "colorBy":"kernel",
+                                'segregateVariablesBy' : 'annot'
+                                })}
                 % endif 
         </div>
 
         <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
                 % if plotter.hash_vars.get('integrated_rank_size_auc_by_group') is not None: 
-                   ${ plotter.static_plot_main( id="integrated_rank_size_auc_by_group", header=True, row_names=False, var_attr=[0,1,2,3], 
-                        plotting_function= lambda data, plotter_list: plot_with_facet(data=data, plotter_list=plotter_list, plot_type="lmplot", x='pos_cov', y='auc', col="method",
-                         hue="kernel", col_wrap=2, suptitle="Rank vs Real Group Size after Integration", top=0.8, labels = None, x_label="Real Group Size", y_label="AUC"))}
+                    ${plotter.scatter2D(id= 'integrated_rank_size_auc_by_group', header= True, fields = [5,4], x_label = 'Real Group Size', y_label = 'median-AUROC', title= "Rank CDF vs Real Group Size after Integration", var_attr= [0,1,2,3], add_densities = True, config= {
+                                'showLegend' : True,
+                                "colorBy":"kernel",
+                                'segregateVariablesBy' : 'integration'
+                                })}
                 % endif 
         </div>
 
         <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
                 % if plotter.hash_vars.get('non_integrated_rank_group_vs_posrank') is not None: 
-                   ${ plotter.static_plot_main( id="non_integrated_rank_group_vs_posrank", header=True, row_names=False, var_attr=[0,1,2,3], 
-                        plotting_function= lambda data, plotter_list: plot_with_facet(data=data, plotter_list=plotter_list, plot_type="lmplot", x='size', y='rank', col="annot",
-                         hue="kernel", col_wrap=4, suptitle="Rank CDF vs Real Group Size before Integration", top=0.9, labels = None, x_label="Real Group Size", y_label="median-rank"))}
+                   ${plotter.scatter2D(id= 'non_integrated_rank_group_vs_posrank', header= True, fields = [5,4], x_label = 'Real Group Size', y_label = 'median-rank', title= "Rank CDF vs Real Group Size before Integration", var_attr= [0,1,2,3], add_densities = True, config= {
+                                'showLegend' : True,
+                                "colorBy":"kernel",
+                                'segregateVariablesBy' : 'annot'
+                                })}
                 % endif 
         </div>
 
         <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
                 % if plotter.hash_vars.get('integrated_rank_group_vs_posrank') is not None: 
-                   ${ plotter.static_plot_main( id="integrated_rank_group_vs_posrank", header=True, row_names=False, var_attr=[0,1,2,3], 
-                        plotting_function= lambda data, plotter_list: plot_with_facet(data=data, plotter_list=plotter_list, plot_type="lmplot", x='size', y='rank', col="method",
-                         hue="kernel", col_wrap=2, suptitle="Rank CDF vs Real Group Size before Integration", top=0.9, labels = None, x_label="Real Group Size", y_label="median-rank"))}
+                   ${plotter.scatter2D(id= 'integrated_rank_group_vs_posrank', header= True, fields = [5,4], x_label = 'Real Group Size', y_label = 'median-rank', title= "Rank CDF vs Real Group Size after Integration", var_attr= [0,1,2,3], add_densities = True, config= {
+                                'showLegend' : True,
+                                "colorBy":"kernel",
+                                'segregateVariablesBy' : 'integration'
+                                })} 
                 % endif 
         </div>
 

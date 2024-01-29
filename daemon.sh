@@ -26,7 +26,7 @@ annotations+=" pathway gene_TF gene_hgncGroup gene_PS"
 integrated_annotations="disease phenotype molecular_function biological_process cellular_component string_ppi_exp pathway gene_TF gene_hgncGroup DepMap_effect_pearson gene_PS"
 integrated_annotations="string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
 integrated_annotations="phenotype biological_process string_ppi_textmining string_ppi_coexpression gene_hgncGroup"
-integrated_annotations="phenotype biological_process string_ppi_textmining string_ppi_coexpression string_ppi_experimental gene_hgncGroup kim_coess_gene pathway"
+integrated_annotations="phenotype biological_process string_ppi_textmining string_ppi_coexpression gene_hgncGroup"
 kernels="ka rf ct el node2vec raw_sim"
 integration_types="mean integration_mean_by_presence median max"
 net2custom=$input_path'/net2json' 
@@ -167,6 +167,7 @@ elif [ "$exec_mode" == "download_translators" ] ; then
 
 elif [ "$exec_mode" == "process_download" ] ; then
   source ~soft_bio_267/initializes/init_python
+  source $input_path/scripts/aux_scripts/aux_daemon.sh
 
   mkdir -p ./input/upgraded/input_processed/
   mkdir -p ./input/downgraded/input_processed/
@@ -184,20 +185,18 @@ elif [ "$exec_mode" == "process_download" ] ; then
 
   # For upgraded #
   ################
-
   datatime="upgraded"
-  # # PROCESS ONTOLOGIES #
+  # Ontologies
+  # ----------
   for sample in phenotype disease function ; do
     zgrep ${tag_filter[$sample]} ./input/$datatime/input_raw/gene_${sample}.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
     aggregate_column_data -i - -x 1 -a 5 > ./input/$datatime/input_processed/$sample # | head -n 230
   done
-
   ## Creating paco files for hpo.
   semtools -i ./input/$datatime/input_processed/phenotype -o ./input/$datatime/input_processed/filtered_phenotype -O HPO -S "," -c -T HP:0000001
   cat ./input/$datatime/input_processed/filtered_phenotype | tr -s "|" "," > ./input/$datatime/input_processed/phenotype
   rm ./input/$datatime/input_processed/filtered_phenotype
   rm rejected_profs
-
   ## Creating paco files for each go branch.
   gene_ontology=( molecular_function cellular_component biological_process )
   for branch in ${gene_ontology[@]} ; do
@@ -207,59 +206,38 @@ elif [ "$exec_mode" == "process_download" ] ; then
     rm ./input/$datatime/input_processed/filtered_$branch
   done
   rm ./input/$datatime/input_processed/function
-
-  # PROCESS REACTIONS 
-  zgrep "REACT:" ./input/$datatime/input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | \
-    cut -f 1,5 > ./input/$datatime/input_processed/pathway
-
-  # PROCESS PROTEIN INTERACTIONS
-  ## STRING 11.5 | 11.0
-  cat ./input/$datatime/input_raw/string_data.txt | tr -s " " "\t" > string_data.txt
-  head -n 1 string_data.txt > header
-  standard_name_replacer -i string_data.txt -I ./translators/ProtEnsemble_HGNC -c 1,2 -u > tmp && rm string_data.txt
-  cat header tmp > tmp_header
-  generate_strings.py -i tmp_header -o ./input/$datatime/input_processed/
-  rm tmp tmp_header
-
-  ## HIPPO
-  # current v2_2
-  grep pubmed ./input/$datatime/input_raw/hippie.txt | cut -f 15,17,18 | awk '{OFS="\t"}{if (NF == 3) print $2,$3,$1}' \
-  | standard_name_replacer -i - -I ./translators/symbol_HGNC -c 1,2 > ./input/$datatime/input_processed/hippie_ppi 
-
-  # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 
-  sed 's/([0-9]*)//1g' ./input/$datatime/input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/$datatime/input_raw/CRISPR_gene_effect_symbol
-  cut -f 1 -d "," ./input/$datatime/input_raw/CRISPR_gene_effect | tr -d "DepMap_ID"  | tr -s "\t" "\n" | sed '1d' >  ./input/$datatime/input_processed/DepMap_effect_rows
-  standard_name_replacer -I ./translators/symbol_HGNC -i ./input/$datatime/input_raw/CRISPR_gene_effect_symbol -c 1 -u --transposed > ./input/$datatime/input_processed/genetic_interaction_effect_values
-  head -n 1 ./input/$datatime/input_processed/genetic_interaction_effect_values | tr -s "\t" "\n" >  ./input/$datatime/input_processed/DepMap_effect_cols
-  sed '1d' ./input/$datatime/input_processed/genetic_interaction_effect_values > ./input/$datatime/input_processed/DepMap_effect
-  rm ./input/$datatime/input_raw/CRISPR_gene_effect_symbol ./input/$datatime/input_processed/genetic_interaction_effect_values
-
-  # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 
-  sed 's/([0-9]*)//1g' ./input/$datatime/input_raw/CRISPR_gene_exprs | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/$datatime/input_raw/CRISPR_gene_exprs_symbol
-  cut -f 1 -d "," ./input/$datatime/input_raw/CRISPR_gene_exprs | tr -d "DepMap_ID"  | tr -s "\t" "\n" | sed '1d' >  ./input/$datatime/input_processed/DepMap_exprs_rows
-  standard_name_replacer -I ./translators/symbol_HGNC -i ./input/$datatime/input_raw/CRISPR_gene_exprs_symbol -c 1 -u --transposed > ./input/$datatime/input_processed/genetic_interaction_exprs_values
-  head -n 1 ./input/$datatime/input_processed/genetic_interaction_exprs_values | tr -s "\t" "\n" >   ./input/$datatime/input_processed/DepMap_exprs_cols
-  sed '1d' ./input/$datatime/input_processed/genetic_interaction_exprs_values > ./input/$datatime/input_processed/DepMap_exprs
-  rm ./input/$datatime/input_raw/CRISPR_gene_exprs_symbol ./input/$datatime/input_processed/genetic_interaction_exprs_values
-
-  # Translating to GENE-TF interaction.ls
+  # Protein associations
+  # --------------------
+  ## STRING 11.5 
+  process_string $datatime
+  ## HIPPO current
+  process_hippie $datatime
+  # DEPMAP
+  # -----------
+  process_gen_int $datatime "effect"
+  process_gen_int $datatime "exprs"
+  # GENE-TF interaction.ls
+  # ----------------------
   standard_name_replacer -i ./input/$datatime/input_raw/gene_TF -I ./translators/symbol_HGNC -c 1,2 -u | sed 's/HGNC:/TF:/2g' > ./input/$datatime/input_processed/gene_TF
-
-  # Formatting data_columns
-  cut -f 1,14 ./input/$datatime/input_raw/gene_hgncGroup | sed "s/\"//g" | tr -s "|" "," | awk '{if( $2 != "") print $0}' \
-    | desaggregate_column_data -i "-" -x 2 | sed 's/\t/\tGROUP:/1g' | sed 1d > ./input/$datatime/input_processed/gene_hgncGroup
-
-  # Formatting PS-Genes
+  # HGNC-groups
+  # -----------
+  process_hgnc_group $datatime
+  # Phenotypic Series
+  # -----------------
   get_PS_gene_relation.py -i "/mnt/home/users/bio_267_uma/federogc/projects/GraphPrioritizer/input/downloaded_raw/phenotypic_series/series_data" -o "./input/$datatime/input_processed/PS_genes"
   desaggregate_column_data -i ./input/$datatime/input_processed/PS_genes -x 2 > ./input/$datatime/input_processed/tmp 
   standard_name_replacer -i ./input/$datatime/input_processed/tmp -I ./translators/symbol_HGNC -c 2 -u | awk 'BEGIN{FS="\t";OFS="\t"}{print $2,$1}' > ./input/$datatime/input_processed/gene_PS
   rm ./input/$datatime/input_processed/PS_genes ./input/$datatime/input_processed/tmp 
+  # Reactions
+  # ---------
+  zgrep "REACT:" ./input/$datatime/input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | \
+    cut -f 1,5 > ./input/$datatime/input_processed/pathway
 
   # For downgraded #
   ##################
-
   datatime="downgraded"
-  # PROCESS ONTOLOGIES #
+  # Ontologies
+  # ----------
   echo -e "in disease"
   zgrep ${tag_filter[disease]} ./input/$datatime/input_raw/gene_disease.9606.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
   aggregate_column_data -i - -x 1 -a 5 > ./input/$datatime/input_processed/disease 
@@ -268,8 +246,7 @@ elif [ "$exec_mode" == "process_download" ] ; then
    aggregate_column_data -i - -x 2 -a 1 | standard_name_replacer -i - -I ./translators/symbol_HGNC -c 1 -u > ./input/$datatime/input_processed/phenotype
 
   echo "in go"
-  gzip -d ./input/downgraded/input_raw/gene_functions.gaf.gz
-  mv ./input/downgraded/input_raw/gene_functions.gaf ./input/downgraded/input_raw/gene_functions
+  gzip -d -c ./input/downgraded/input_raw/gene_functions.gaf.gz > ./input/downgraded/input_raw/gene_functions
   echo "remove header"
   tail -n +31 ./input/$datatime/input_raw/gene_functions | cut -f 3,5 | aggregate_column_data -i - -x 1 -a 2 > ./input/$datatime/input_processed/function
   standard_name_replacer -i ./input/$datatime/input_processed/function -I ./translators/symbol_HGNC -c 1 -u > tmp && rm ./input/$datatime/input_processed/function
@@ -296,37 +273,23 @@ elif [ "$exec_mode" == "process_download" ] ; then
   done
   rm ./input/$datatime/input_processed/function
 
-  # PROCESS PROTEIN INTERACTIONS
-  # STRING 11.5 | 11.0
-  cat ./input/$datatime/input_raw/string_data.txt | tr -s " " "\t" > string_data.txt
-  head -n 1 string_data.txt > header
-  standard_name_replacer -i string_data.txt -I ./translators/ProtEnsemble_HGNC -c 1,2 -u > tmp && rm string_data.txt
-  cat header tmp > tmp_header
-  generate_strings.py -i tmp_header -o ./input/$datatime/input_processed/
-  rm tmp tmp_header
-
-  # DEPMAP
-  cut -f 1,2,3 ./input/$datatime/input_raw/KimCoess_gene | standard_name_replacer -I ./translators/symbol_HGNC -i - -c 1,2 -u > ./input/$datatime/input_processed/KimCoess_gene
-  # PROCESS GENETIC INTERACTIONS # | cut -f 1-100 | head -n 
-  sed 's/([0-9]*)//1g' ./input/$datatime/input_raw/CRISPR_gene_effect | cut -d "," -f 2- | sed 's/,/\t/g' | sed 's/ //g' > ./input/$datatime/input_raw/CRISPR_gene_effect_symbol
-  cut -f 1 -d "," ./input/$datatime/input_raw/CRISPR_gene_effect | tr -d "DepMap_ID"  | tr -s "\t" "\n" | sed '1d' >  ./input/$datatime/input_processed/DepMap_effect_rows
-  standard_name_replacer -I ./translators/symbol_HGNC -i ./input/$datatime/input_raw/CRISPR_gene_effect_symbol -c 1 -u --transposed > ./input/$datatime/input_processed/genetic_interaction_effect_values
-  head -n 1 ./input/$datatime/input_processed/genetic_interaction_effect_values | tr -s "\t" "\n" >  ./input/$datatime/input_processed/DepMap_effect_cols
-  sed '1d' ./input/$datatime/input_processed/genetic_interaction_effect_values > ./input/$datatime/input_processed/DepMap_effect
-  rm ./input/$datatime/input_raw/CRISPR_gene_effect_symbol ./input/$datatime/input_processed/genetic_interaction_effect_values
-
-  # HIPPO
-  #current v2_2
-  grep pubmed ./input/$datatime/input_raw/hippie.txt | standard_name_replacer -i - -I ./translators/symbol_HGNC -c 17,18 -u  >  ./input/$datatime/input_processed/tmp 
-  cut -f 16,17,18 ./input/$datatime/input_processed/tmp | awk '{OFS="\t"}{print $2,$3,$1}'  > ./input/$datatime/input_processed/hippie_ppi 
+  # Protein associations
+  # --------------------
+  ## STRING 11.0
+  #process_string $datatime
+  ## HIPPIE from Paper
   standard_name_replacer -i ./input/$datatime/input_raw/hippie.txt -I ./translators/symbol_HGNC -c 1,2 -u > ./input/$datatime/input_processed/hippie_ppi 
-
-  # HGNC_group
-  # Formatting data_columns
-  cut -f 1,14 ./input/$datatime/input_raw/gene_hgncGroup | sed "s/\"//g" | tr -s "|" "," | awk '{if( $2 != "") print $0}' \
-    | desaggregate_column_data -i "-" -x 2 | sed 's/\t/\tGROUP:/1g' | sed 1d > ./input/$datatime/input_processed/gene_hgncGroup
-
-  # PROCESS REACTIONS 
+  # DEPMAP
+  # -----------
+  ## from paper
+  cut -f 1,2,3 ./input/$datatime/input_raw/KimCoess_gene | standard_name_replacer -I ./translators/symbol_HGNC -i - -c 1,2 -u > ./input/$datatime/input_processed/KimCoess_gene
+  ## from DepMap
+  process_gen_int $datatime "effect"
+  # HGNC-groups
+  # -----------
+  process_hgnc_group $datatime
+  # Reactions
+  # ---------
   cut -f 2- ./input/$datatime/input_raw/ReactomePathways.gmt | sed 's/https:\/\/reactome.org\/content\/detail\//REACT:/g' \
     | sed "s/\t/,/2g" \
     | desaggregate_column_data -i - -x 2 \
@@ -337,6 +300,7 @@ elif [ "$exec_mode" == "process_download" ] ; then
 elif [ "$exec_mode" == "dversion" ] ; then
 
   dversion=$2 
+  modify_json.py -k "data_process;Data_version" -v "$dversion" -jp net2json
   if [ -s ./input/input_processed ] ; then
     rm ./input/input_processed
   fi 
@@ -351,6 +315,8 @@ elif [ "$exec_mode" == "whitelist" ] ; then
 #########################################################
 # OPTIONAL STAGE : SELECT GENES FROM WHITELIST
 #########################################################
+  # TODO update the whitelist in json
+  #modify_json.py -k "data_process;Whitelist" -v  -jp net2json
 
   declare -A gen_cols 
   gen_cols[disease]="1"
@@ -377,13 +343,17 @@ elif [ "$exec_mode" == "whitelist" ] ; then
   . ~soft_bio_267/initializes/init_python
 
   cd ./input/input_processed
+  if [ -s whitelist ] ; then 
+    rm -r whitelist
+  fi
+
   mkdir -p whitelist
 
-  # for source in "${!gen_cols[@]}" ; do
-  #   if [ -s $source ] ; then
-  #     filter_by_list -f $source -c ${gen_cols[$source]} -t $input_path/white_list/hgnc_white_list -o ./whitelist/ --prefix "" --metrics 
-  #   fi
-  # done
+  for source in "${!gen_cols[@]}" ; do
+    if [ -s $source ] ; then
+      filter_by_list -f $source -c ${gen_cols[$source]} -t $input_path/white_list/hgnc_white_list -o ./whitelist/ --prefix "" --metrics 
+    fi
+  done
 
   # Special section for DepMap info.
   ## Adding the colnames
@@ -464,6 +434,13 @@ elif [ "$exec_mode" == "kernels" ] ; then
     whitelist=$2
   fi
 
+  # update net2json
+  annot=`echo $annotations | tr -s " " "," | awk '{print "["$0"]"}'`
+  modify_json.py -k "data_process;layers2process" -v "$annot" -jp net2json
+  # update net2json
+  embeddings=`echo $kernels | tr -s " " "," | awk '{print "["$0"]"}'`
+  modify_json.py -k "data_process;Embeddings" -v "$embeddings" -jp net2json
+
   for annotation in $annotations ; do 
 
       autoflow_vars=`echo " 
@@ -481,6 +458,8 @@ elif [ "$exec_mode" == "kernels" ] ; then
       AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} -L $add_opt #-A "exclude:sr133,sr014,sr030"
 
   done
+
+  cp ./net2json $output_folder/similarity_kernels/net2json
 
 elif [ "$exec_mode" == "plot_sims" ] ; then
   # Plotting the graphs in the correct manner.
@@ -552,6 +531,10 @@ elif [ "$exec_mode" == "integrate" ] ; then
   filter_by_list -f $output_folder/similarity_kernels/ugot_path -c "2" -t uwant -o $output_folder/similarity_kernels
   rm uwant
 
+  # update net2json
+  int_annot=`echo $integrated_annotations | tr -s " " "," | awk '{print "["$0"]"}'`
+  modify_json.py -k "data_process;Integrated_layers" -v "$int_annot" -jp net2json
+
   for integration_type in ${integration_types} ; do 
 
       ugot_path="$output_folder/similarity_kernels/filtered_ugot_path"
@@ -565,6 +548,9 @@ elif [ "$exec_mode" == "integrate" ] ; then
       AutoFlow -w $autoflow_scripts/integrate.af -V $autoflow_vars -o $output_folder/integrations/${integration_type} -m 60gb -t 4-00:00:00 -L $add_opt 
 
   done
+
+  sed -i "s/\"Integrated_layers\":.*/\"Integrated_layers\": \"$integrated_annotations\",/" net2json
+  cp net2json $output_folder/integrations/net2json
 
 elif [ "$exec_mode" == "integrated_ranking" ] ; then
   #########################################################
@@ -617,153 +603,115 @@ elif [ "$exec_mode" == "report" ] ; then
   source ~soft_bio_267/initializes/init_ruby
   source ~soft_bio_267/initializes/init_python
   source ~soft_bio_267/initializes/init_R
-  #report_type=$2
+  source $input_path/scripts/aux_scripts/aux_daemon.sh
   html_name=$2
   check=$3
   
-  # #################################
-  # Setting up the report section #
-  find $report_folder/ -mindepth 2 -delete
-  find $output_folder/ -maxdepth 1 -type f -delete
+  # # #################################
+  # # Setting up the report section #
+  # find $report_folder/ -mindepth 2 -delete
+  # find $output_folder/ -maxdepth 1 -type f -delete
 
-  mkdir -p $report_folder/kernel_report
-  mkdir -p $report_folder/ranking_report
-  mkdir -p $report_folder/img
+  # mkdir -p $report_folder/kernel_report
+  # mkdir -p $report_folder/ranking_report
+  # mkdir -p $report_folder/img
 
-  declare -A original_folders
-  original_folders[annotations_metrics]='similarity_kernels'
-  original_folders[final_stats_by_steps]='similarity_kernels'
-  original_folders[uncomb_kernel_metrics]='similarity_kernels'
-  original_folders[comb_kernel_metrics]='integrations'
+  # declare -A original_folders
+  # original_folders[annotations_metrics]='similarity_kernels'
+  # original_folders[final_stats_by_steps]='similarity_kernels'
+  # original_folders[uncomb_kernel_metrics]='similarity_kernels'
+  # original_folders[comb_kernel_metrics]='integrations'
 
-  original_folders[non_integrated_rank_summary]='rankings'
-  original_folders[non_integrated_rank_measures]='rankings'
-  original_folders[non_integrated_rank_cdf]='rankings'
-  original_folders[non_integrated_rank_pos_cov]='rankings'
-  original_folders[non_integrated_rank_positive_stats]='rankings'
-  original_folders[non_integrated_rank_size_auc_by_group]='rankings'
-  original_folders[non_integrated_rank_auc_by_groupIteration]='rankings'
-  original_folders[non_integrated_rank_group_vs_posrank]='rankings'
+  # original_folders[non_integrated_rank_summary]='rankings'
+  # original_folders[non_integrated_rank_measures]='rankings'
+  # original_folders[non_integrated_rank_cdf]='rankings'
+  # original_folders[non_integrated_rank_pos_cov]='rankings'
+  # original_folders[non_integrated_rank_positive_stats]='rankings'
+  # original_folders[non_integrated_rank_size_auc_by_group]='rankings'
+  # original_folders[non_integrated_rank_auc_by_groupIteration]='rankings'
+  # original_folders[non_integrated_rank_group_vs_posrank]='rankings'
 
-  original_folders[integrated_rank_summary]='integrated_rankings'
-  original_folders[integrated_rank_measures]='integrated_rankings'
-  original_folders[integrated_rank_cdf]='integrated_rankings'
-  original_folders[integrated_rank_pos_cov]='integrated_rankings'
-  original_folders[integrated_rank_positive_stats]='integrated_rankings'
-  original_folders[integrated_rank_size_auc_by_group]='integrated_rankings'
-  original_folders[integrated_rank_group_vs_posrank]='integrated_rankings'
+  # original_folders[integrated_rank_summary]='integrated_rankings'
+  # original_folders[integrated_rank_measures]='integrated_rankings'
+  # original_folders[integrated_rank_cdf]='integrated_rankings'
+  # original_folders[integrated_rank_pos_cov]='integrated_rankings'
+  # original_folders[integrated_rank_positive_stats]='integrated_rankings'
+  # original_folders[integrated_rank_size_auc_by_group]='integrated_rankings'
+  # original_folders[integrated_rank_group_vs_posrank]='integrated_rankings'
   
-  # Here the data is collected from executed folders.
-  for file in "${!original_folders[@]}" ; do
-    original_folder=${original_folders[$file]}
-    count=`find $output_folder/$original_folder -maxdepth 4 -mindepth 4 -name $file | wc -l`
-    if [ "$count" -gt "0" ] ; then
-      echo "$file"
-      cat $output_folder/$original_folder/*/*/$file > $output_folder/$file
-    fi
-  done 
+  # # Here the data is collected from executed folders.
+  # for file in "${!original_folders[@]}" ; do
+  #   original_folder=${original_folders[$file]}
+  #   count=`find $output_folder/$original_folder -maxdepth 4 -mindepth 4 -name $file | wc -l`
+  #   if [ "$count" -gt "0" ] ; then
+  #     echo "$file"
+  #     cat $output_folder/$original_folder/*/*/$file > $output_folder/$file
+  #   fi
+  # done 
 
 
-  ##########################
-  # Processing all metrics #
-  declare -A references
-  references[annotations_metrics]='Net'
-  references[final_stats_by_steps]='Net_Step,Net,Step'
-  references[uncomb_kernel_metrics]='Sample,Net,Kernel'
-  references[comb_kernel_metrics]='Sample,Integration,Kernel'
+  # ##########################
+  # # Processing all metrics #
+  # declare -A references_kernel_report
+  # references_kernel_report[annotations_metrics]='Net'
+  # references_kernel_report[final_stats_by_steps]='Net_Step,Net,Step'
+  # references_kernel_report[uncomb_kernel_metrics]='Sample,Net,Kernel'
+  # references_kernel_report[comb_kernel_metrics]='Sample,Integration,Kernel'
 
-  references[non_integrated_rank_summary]='Sample,Net,Kernel'
-  references[non_integrated_rank_pos_cov]='Sample,Net,Kernel'
-  references[non_integrated_rank_positive_stats]='Sample,Net,Kernel,group_seed'
+  # for metric in ${!references_kernel_report[@]} ; do 
+  #   if [ -s $output_folder/$metric ] ; then
+  #     echo "$output_folder/$metric"
+  #     create_metric_table $output_folder/$metric ${references_kernel_report[$metric]} $report_folder/kernel_report/parsed_${metric} 
+  #   fi
+  # done 
 
-  references[integrated_rank_summary]='Sample,Integration,Kernel'
-  references[integrated_rank_pos_cov]='Sample,Integration,Kernel'
-  references[integrated_rank_positive_stats]='Sample,Integration,Kernel,group_seed'
+  # declare -A references_ranking_report
+  # references_ranking_report[non_integrated_rank_summary]='Sample,Net,Kernel'
+  # references_ranking_report[non_integrated_rank_pos_cov]='Sample,Net,Kernel'
+  # references_ranking_report[non_integrated_rank_positive_stats]='Sample,Net,Kernel,group_seed'
+  # references_ranking_report[integrated_rank_summary]='Sample,Integration,Kernel'
+  # references_ranking_report[integrated_rank_pos_cov]='Sample,Integration,Kernel'
+  # references_ranking_report[integrated_rank_positive_stats]='Sample,Integration,Kernel,group_seed'
 
-  references[annotation_grade_metrics]='Gene_seed'
+  # for metric in ${!references_ranking_report[@]} ; do 
+  #   if [ -s $output_folder/$metric ] ; then
+  #     echo "$output_folder/$metric"
+  #     create_metric_table $output_folder/$metric ${references_ranking_report[$metric]} $report_folder/ranking_report/parsed_${metric} 
+  #   fi
+  # done 
 
-  # annotations_metrics uncomb_kernel_metrics comb_kernel_metrics
-  for metric in annotations_metrics final_stats_by_steps uncomb_kernel_metrics comb_kernel_metrics ; do
-    if [ -s $output_folder/$metric ] ; then
-      create_metric_table $output_folder/$metric ${references[$metric]} $report_folder/kernel_report/parsed_${metric} 
-    fi
-  done
+  # ##################
+  # # Adding headers #
 
-  if [ -s $output_folder/non_integrated_rank_auc_by_groupIteration ] ; then 
-    echo -e "sample\tannot\tkernel\tseed\tauc" | \
-     cat - $output_folder/non_integrated_rank_auc_by_groupIteration > $report_folder/ranking_report/non_integrated_rank_auc_by_groupIteration
-  fi
+  # declare -A headers
+  # headers[non_integrated_rank_auc_by_groupIteration]="sample\tannot\tkernel\tseed\tauc"
+  # headers[non_integrated_rank_size_auc_by_group]="sample\tannot\tkernel\tseed\tpos_cov\tauc"
+  # headers[integrated_rank_size_auc_by_group]="sample\tmethod\tkernel\tseed\tpos_cov\tauc"
+  # headers[non_integrated_rank_measures]="annot_kernel\tannot\tkernel\trank\tacc\ttpr\tfpr\tprec\trec"
+  # headers[integrated_rank_measures]="integration_kernel\tintegration\tkernel\trank\tacc\ttpr\tfpr\tprec\trec"
+  # headers[non_integrated_rank_cdf]="annot_kernel\tannot\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"
+  # headers[integrated_rank_cdf]="integration_kernel\tintegration\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"
+  # headers[non_integrated_rank_group_vs_posrank]="annot_kernel\tannot\tkernel\tgroup_seed\trank"
+  # headers[integrated_rank_group_vs_posrank]="integration_kernel\tintegration\tkernel\tgroup_seed\trank"
 
-  if [ -s $output_folder/non_integrated_rank_size_auc_by_group ] ; then 
-    echo -e "sample\tannot\tkernel\tseed\tpos_cov\tauc" | \
-     cat - $output_folder/non_integrated_rank_size_auc_by_group > $report_folder/ranking_report/non_integrated_rank_size_auc_by_group
-  fi
+  # for table in ${!headers[@]}; do
+  #   input_path=$output_folder/$table
+  #   output_path=$report_folder/ranking_report/$table
+  #   add_header ${headers[$table]} $input_path $output_path
+  # done
 
-  if [ -s $output_folder/integrated_rank_size_auc_by_group ] ; then 
-    echo -e "sample\tmethod\tkernel\tseed\tpos_cov\tauc" | \
-     cat - $output_folder/integrated_rank_size_auc_by_group > $report_folder/ranking_report/integrated_rank_size_auc_by_group
-  fi
-
-  for metric in non_integrated_rank_summary integrated_rank_summary non_integrated_rank_pos_cov integrated_rank_pos_cov non_integrated_rank_positive_stats integrated_rank_positive_stats ; do
-    if [ -s $output_folder/$metric ] ; then
-      echo "$output_folder/$metric"
-      create_metric_table $output_folder/$metric ${references[$metric]} $report_folder/ranking_report/parsed_${metric} 
-    fi
-  done
-
-  if [ -s $output_folder/non_integrated_rank_measures ] ; then
-     echo -e "annot_kernel\tannot\tkernel\trank\tacc\ttpr\tfpr\tprec\trec" | \
-     cat - $output_folder/non_integrated_rank_measures > $report_folder/ranking_report/non_integrated_rank_measures
-  fi
-
-  if [ -s $output_folder/integrated_rank_measures ] ; then
-    echo -e "integration_kernel\tintegration\tkernel\trank\tacc\ttpr\tfpr\tprec\trec" | \
-     cat - $output_folder/integrated_rank_measures > $report_folder/ranking_report/integrated_rank_measures
-  fi
-
-  if [ -s $output_folder/non_integrated_rank_cdf ] ; then
-     echo -e "annot_kernel\tannot\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"| \
-     cat - $output_folder/non_integrated_rank_cdf > $report_folder/ranking_report/non_integrated_rank_cdf
-  fi
-
-  if [ -s $output_folder/integrated_rank_cdf ] ; then
-     echo -e "integration_kernel\tintegration\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"| \
-     cat - $output_folder/integrated_rank_cdf > $report_folder/ranking_report/integrated_rank_cdf
-  fi
-
-  if [ -s $output_folder/non_integrated_rank_group_vs_posrank ] ; then
-     echo -e "annot_kernel\tannot\tkernel\tgroup_seed\trank"| \
-     cat - $output_folder/non_integrated_rank_group_vs_posrank > $report_folder/ranking_report/non_integrated_rank_group_vs_posrank
-  fi
-
-  if [ -s $output_folder/integrated_rank_group_vs_posrank ] ; then
-     echo -e "integration_kernel\tintegration\tkernel\tgroup_seed\trank"| \
-     cat - $output_folder/integrated_rank_group_vs_posrank > $report_folder/ranking_report/integrated_rank_group_vs_posrank
-  fi
-
-  if [ -z "$check" ] ; then
-    echo "---------------------------------------"
-    echo " Now it is necessary some information of the process "
-    echo "string version?"
-    # 11.5 | 11.0
-    read string_version
-    echo "hippie version?"
-    read hippie_version
-    echo "whitelist used?"
-    read whitelist
-    name_dir=`date +%d_%m_%Y`
-    mkdir ./report/HTMLs/$name_dir
-    # Create preprocess file
-    echo -e " String version:\t$string_version\nHippie version:\t$hippie_version\nWhitelist:\t$whitelist " > ./report/HTMLs/$name_dir/info_preprocess
-    # Copy net2json
-    cp ./net2json ./report/HTMLs/$name_dir/
-  else 
-    echo "Reports to check available"
-  fi
+  # if [ -z "$check" ] ; then
+  #   name_dir=`date +%d_%m_%Y`
+  #   mkdir ./report/HTMLs/$name_dir
+  #   # Copy net2json
+  #   cp ./net2json ./report/HTMLs/$name_dir/
+  # else 
+  #   echo "Reports to check available"
+  # fi
   
   ##################
   # Obtaining HTMLS #
-  report_html -t ./report/templates/kernel_report.py -d `ls $report_folder/kernel_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_kernel$html_name"
+  #report_html -t ./report/templates/kernel_report.py -d `ls $report_folder/kernel_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_kernel$html_name"
   report_html -t ./report/templates/ranking_report.py -d `ls $report_folder/ranking_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_algQuality$html_name"
 
   if [ -z "$check" ] ; then

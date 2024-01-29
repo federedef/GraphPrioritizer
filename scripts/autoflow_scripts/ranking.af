@@ -57,7 +57,7 @@ rank_genes_with_leave_one_out){
     	fi
 
 		# Extracting positive values
-		awk '{if($6==1 && $3!=1) print $0}' tagged_ranks.txt | cut -f 1-6 > positive_genes
+		awk '{if($6==1 && $3!=1) print $0}' tagged_ranks.txt | cut -f 1-5 > positive_genes
 		number_of_positive_genes=`wc -l positive_genes | cut -f1 -d " "`
 
 		echo -e "positive_coverage\t${number_of_positive_genes}" > pos_cov
@@ -143,7 +143,7 @@ rank_genes_with_kfold_cv){
 			rank_metrics.py -r positive_genes -e "ranks" > prerank_list
 			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' prerank_list > $output_name_cdf
 
-			cut -f 3,5 positive_genes | awk '{OFS="\t";}{print $2,$1}' | sort > individual_group_posrank
+			cut -f 3,6 positive_genes | awk '{OFS="\t";}{print $2,$1}' | sort > individual_group_posrank
 			awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' individual_group_posrank > $output_name_group_vs_posrank
 		else 
 			echo -e "positive_coverage\t0" > prerank_list
