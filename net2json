@@ -7,7 +7,7 @@
             "write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
             "write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_1'"
         ],
-        "Integrated_layers": "phenotype biological_process string_ppi_textmining string_ppi_coexpression gene_hgncGroup",
+        "Integrated_layers": [
             "phenotype",
             "biological_process",
             "string_ppi_textmining",

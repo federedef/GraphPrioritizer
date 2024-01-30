@@ -190,6 +190,8 @@
         def edges2mermaid(edges, phase2nodeid = None):
                 mermaid_edges = ""
                 all_nodes = {}
+                print("eyyyyyyyy")
+                print(phase2nodeid)
 
                 edges = list(set(edges))
 
@@ -215,6 +217,14 @@
                 mermaid_edges = mermaid_edges.replace("'","")
                 return mermaid_edges
 
+        def adding_href(mermaid_edges, nodes):
+                mermaid_edges_with_href = mermaid_edges
+                for node in nodes:
+                        mermaid_edges_with_href += f"  click {node} href \"#{node}\";\n"
+                return mermaid_edges_with_href
+
+
+
 
 %>
 
@@ -239,8 +249,10 @@
 
         <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue; text-decoration: underline;"> Individual Processing Graph Flow </h3>
         <div>
-        <%
-                edges=edges2mermaid(*get_edge_non_integrated(net2json))
+        <%      
+                edges, phase2nodeid = get_edge_non_integrated(net2json)
+                edges=edges2mermaid(edges, phase2nodeid)
+                edges=adding_href(edges, phase2nodeid["layer"])
                 graph=f"""---\nTitle: Flux\nconfig:\n  theme: dark\n---\ngraph LR;\n{edges}"""
         %>
                 ${ plotter.mermaid_chart(graph)}
@@ -252,13 +264,14 @@
                 table = plotter.hash_vars["parsed_final_stats_by_steps"]
                 ids = list(set([ row[1] for i,row in enumerate(table) if i > 0]))
                 ids.sort()
+                print(ids)
             %>
 
             % for elem in ids:
                 <% key = "parsed_final_stats_by_steps_" + elem %>
                 <% subtable = [row for i, row in enumerate(table) if i == 0 or row[1] == elem] %>
                 <% plotter.hash_vars[key] = subtable %>
-                <p style="text-align:center; font-size: 24px;"><b> ${parsed_string(elem)} </p>
+                <p style="text-align:center; font-size: 24px;" id="${re.sub('_sim','',elem)}"><b> ${parsed_string(elem)} </p>
                 <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
                 ${plotter.barplot(id=key, fields= [2,6] , header= True, height= '400px', width= '400px', x_label= 'Density Element Not None', var_attr= [2],
                                         title = "Density matrix",

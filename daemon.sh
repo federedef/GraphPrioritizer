@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+ #!/usr/bin/env bash
 . ~soft_bio_267/initializes/init_autoflow 
 
 #Input variables.
