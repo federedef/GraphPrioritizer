@@ -20,8 +20,9 @@ report_folder=$output_folder/report
 annotations=" disease phenotype molecular_function biological_process cellular_component"
 annotations+=" string_ppi hippie_ppi"
 annotations+=" string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
-annotations+=" DepMap_effect_pearson DepMap_effect_spearman kim_coess_gene"
-annotations+=" pathway gene_TF gene_hgncGroup gene_PS"
+annotations+=" DepMap_effect_pearson DepMap_effect_spearman DepMap_Kim"
+annotations+=" pathway gene_hgncGroup"
+annotations+=" gene_TF gene_PS"
 
 integrated_annotations="disease phenotype molecular_function biological_process cellular_component string_ppi_exp pathway gene_TF gene_hgncGroup DepMap_effect_pearson gene_PS"
 integrated_annotations="string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
@@ -39,6 +40,8 @@ echo "$annotations"
 
 kernels_varflow=`echo $kernels | tr " " ";"`
 annotations_varflow=`echo $annotations | tr " " ";"`
+
+. ~soft_bio_267/initializes/init_python
 
 if [ "$exec_mode" == "download_layers" ] ; then
 
@@ -700,6 +703,10 @@ elif [ "$exec_mode" == "report" ] ; then
   #   add_header ${headers[$table]} $input_path $output_path
   # done
 
+  # # Adding control pos
+  # echo -e "Seed Name\tGenes" > $report_folder/ranking_report/control_pos
+  # desaggregate_column_data -x 2 -i control_pos >> $report_folder/ranking_report/control_pos
+
   # if [ -z "$check" ] ; then
   #   name_dir=`date +%d_%m_%Y`
   #   mkdir ./report/HTMLs/$name_dir
@@ -711,11 +718,11 @@ elif [ "$exec_mode" == "report" ] ; then
   
   ##################
   # Obtaining HTMLS #
-  #report_html -t ./report/templates/kernel_report.py -d `ls $report_folder/kernel_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_kernel$html_name"
+  #report_html -t ./report/templates/kernel_report.py -d `ls $report_folder/kernel_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_layer_building$html_name"
   report_html -t ./report/templates/ranking_report.py -d `ls $report_folder/ranking_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_algQuality$html_name"
 
   if [ -z "$check" ] ; then
-    mv ./report_kernel$html_name.html ./report/HTMLs/$name_dir/
+    mv ./report_layer_building$html_name.html ./report/HTMLs/$name_dir/
     mv ./report_algQuality$html_name.html ./report/HTMLs/$name_dir/
   fi
 

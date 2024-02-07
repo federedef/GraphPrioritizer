@@ -20,7 +20,7 @@
             "molecular_function",
             "biological_process",
             "cellular_component",
-            "string_ppi",
+            "string_ppi_combined",
             "hippie_ppi",
             "string_ppi_textmining",
             "string_ppi_database",
@@ -31,11 +31,9 @@
             "string_ppi_neighborhood",
             "DepMap_effect_pearson",
             "DepMap_effect_spearman",
-            "kim_coess_gene",
+            "DepMap_Kim",
             "pathway",
-            "gene_TF",
-            "gene_hgncGroup",
-            "gene_PS"
+            "gene_hgncGroup"
         ],
         "Embeddings": [
             "ka",
@@ -44,7 +42,12 @@
             "el",
             "node2vec",
             "raw_sim"
-        ]
+        ],
+        "integration_types": [
+        "mean",
+        "integration_mean_by_presence",
+        "median",
+        "max"]
     },
     "biological_process": {
         "Filter": [],
@@ -140,7 +143,7 @@
             "write_stats_from_matrix ('associations',('gene','gene'),'jaccard') 'stats_from_matrix_jaccard_1'"
         ]
     },
-    "kim_coess_gene": {
+    "DepMap_Kim": {
         "Filter": [],
         "Format": "pair",
         "Layers": "gene,HGNC:",
@@ -204,7 +207,7 @@
             "write_stats_from_matrix ('semantic_sims',('gene','gene'),'lin') 'stats_from_matrix_semLin_1'"
         ]
     },
-    "string_ppi": {
+    "string_ppi_combined": {
         "Filter": [],
         "Format": "pair",
         "Layers": "gene,HGNC:",

@@ -48,12 +48,12 @@
                 parsed_data = " ".join(words)
                 return parsed_data
 
-        def parse_data(table, blacklist = ["sim"]):
+        def parse_data(table, blacklist = ["sim"], column = "all"):
                 parsed_table = []
                 for i,row in enumerate(table):
                         parsed_table.append(row)
                         for j,data in enumerate(row):
-                                if type(data) == str:
+                                if type(data) == str and not data.startswith("HGNC:"):
                                         parsed_table[i][j] = parsed_string(data, blacklist)
                                 else:
                                         continue
@@ -103,15 +103,15 @@
 
     <h1 style="text-align:center; background-color:#ecf0f1, color: powderblue; "> Analysis of the algorithm: From rankings to prioritized genes.</h1>
         % if plotter.hash_vars.get('non_integrated_rank_size_auc_by_group') is not None: 
-                <div style="width:90%; background-color:#FFFFFF; margin:50 auto; align-content: center;">
+                <div>
                         <%
                                 graph=f"""
                                 ---
                                 title: Menche Benchmarking Flux
                                 config:
                                  theme: dark
-                               ---
-                               graph LR;
+                                ---
+                                graph LR;
                                  A[Seed Gene]
                                  B[10-fold CV]
                                  C[Iteration 1]
@@ -122,34 +122,37 @@
                                  J[Positives]
                                  G[median ROC-AUC]
                                  A --> B 
-                                 B-->C
-                                 B-->D
-                                 B-->E
-                                 B-->F
-                                 C-->J
-                                 D-->J
-                                 E-->J
-                                 F-->J
-                                 C-->I
-                                 D-->I
-                                 E-->I
-                                 F-->I
-                                 I-->G
-                                 J-->G
-                        """
+                                 B --> C
+                                 B --> D
+                                 B --> E
+                                 B --> F
+                                 C --> J
+                                 D --> J
+                                 E --> J
+                                 F --> J
+                                 C --> I
+                                 D --> I
+                                 E --> I
+                                 F --> I
+                                 I --> G
+                                 J --> G
+                                 style I fill:#FF503E
+                                 style J fill:#9EFF8F
+
+                                """
                         %>
-                        ${ plotter.mermaid_chart(graph)}
-                </div>                                
+                        ${plotter.mermaid_chart(graph)}
+                </div>    
         % else:
-                <div style="width:90%; background-color:#FFFFFF; margin:50 auto; align-content: center;">
+                <div>
                         <%
                                 graph=f"""
                                 ---
                                 title: Zampieri Benchmarking Flux
                                 config:
                                  theme: dark
-                               ---
-                               graph LR;
+                                ---
+                                graph LR;
                                  A[Seed Gene]
                                  B[leave one out]
                                  C[LOO-1]
@@ -173,11 +176,21 @@
                                  J --> G
                                  I --> G
                                  J --> H
-                        """
+                                """
                         %>
                         ${ plotter.mermaid_chart(graph)}
                 </div>
         % endif
+
+        <div style="overflow: hidden";>
+                <p style="text-align:center;"><b>Table 1.</b> Seed Groups. </p> 
+                <div style="overflow: hidden";>
+                        % if plotter.hash_vars.get('control_pos') is not None:
+                                ${plotter.table(id='control_pos', header=True,  text= True, row_names = True, fields= [0,1], styled='dt', border= 2, attrib = {
+                                        'class' : "table table-striped table-dark"})}
+                        % endif
+                </div>
+        </div>
 
         <h2 style="text-align:center; background-color:#ecf0f1, color: powderblue;"> Ranking section </h2>
 
@@ -190,7 +203,7 @@
                                  x_label = 'Number of control candidate genes present',
                                  height = '400px', width= '400px',
                                  var_attr = [1,2],
-                                 title = "Control Coverage by Layers before Integration",
+                                 title = "Control Coverage by Layers \n before Integration",
                                  config = {
                                         'showLegend' : True,
                                         'graphOrientation' : 'horizontal',
@@ -203,7 +216,7 @@
                         % if plotter.hash_vars.get('parsed_integrated_rank_pos_cov') is not None: 
                                 ${plotter.barplot(id= "parsed_integrated_rank_pos_cov", fields= [1,3] , header= True, responsive= False,
                                         height= '400px', width= '400px', x_label= 'Number of control candidate genes present' , var_attr= [1,2],
-                                        title = "Control Coverage by Layers after Integration",
+                                        title = "Control Coverage by Layers \n after Integration",
                                         config = {
                                                 'showLegend' : True,
                                                 'graphOrientation' : 'horizontal',
@@ -218,7 +231,7 @@
                 <div style="margin-right: 10px;">
                                  % if plotter.hash_vars.get('non_integrated_rank_size_auc_by_group') is not None: 
                                         ${plotter.boxplot(id= 'non_integrated_rank_size_auc_by_group', header= True, row_names= False, default= False, fields= [5],  var_attr= [0,1,2,3], group = ["kernel"],
-                                           title= "Distribution of ROC-AUCs in Dataset by Embeddings and seeds before Integration",
+                                           title= "Distribution of ROC-AUCs in Dataset by Embeddings and seeds \n before Integration",
                                                 x_label= "ROC-AUCs",
                                                 config= {
                                                         "graphOrientation": "vertical",
@@ -237,7 +250,7 @@
                 <div style="margin-left: 10px;">
                                  % if plotter.hash_vars.get('integrated_rank_size_auc_by_group') is not None: 
                                         ${plotter.boxplot(id= 'integrated_rank_size_auc_by_group', header= True, row_names= False, default= False, fields= [5],  var_attr= [0,1,2], group = ["kernel"],
-                                           title= "Distribution of ROC-AUCs in Dataset by Embeddings and seeds after Integration",
+                                           title= "Distribution of ROC-AUCs in Dataset by Embeddings and seeds \n after Integration",
                                                 x_label= "ROC-AUCs",
                                                 config= {
                                                         "graphOrientation": "vertical",
@@ -259,7 +272,7 @@
                 <div style="margin-left: 10px;">
                                  % if plotter.hash_vars.get('non_integrated_rank_auc_by_groupIteration') is not None: 
                                         ${plotter.boxplot(id= 'non_integrated_rank_auc_by_groupIteration', header= True, group = "kernel",row_names= False, default= False, fields= [4],  var_attr= [0,1,2,3], 
-                                           title= "Distribution of ROC-AUCs by iteration in dataset before integration",
+                                           title= "Distribution of ROC-AUCs by iteration in dataset \n before integration",
                                                 x_label= "ROC-AUCs",
                                                 config= {
                                                         "graphOrientation": "vertical",
