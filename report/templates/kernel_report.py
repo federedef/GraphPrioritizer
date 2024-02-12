@@ -445,7 +445,13 @@
 
                 {"integrated_layers": integrated_layers, "embeddings": embeddings, "integration_types": integration_types}
                 phase2nodeid = get_phase2nodeid_integrated(net2json)
-                custom_edges = {("Similarity <br> Matrix","Ranker"):"-->",("Seeds","Ranker"):"-->",("embeddings_id","integration_types_id"): "-->", ("integrated_layers_id","embeddings_id"): "-->", ("integration_types_id","Ranker"): "-->"}      
+                custom_edges = {
+                ("integration_types_id","Similarity <br> Matrix"): "-->",
+                ("Similarity <br> Matrix","Ranker"):"-->",
+                ("Seeds","Ranker"):"-->",
+                ("embeddings_id","integration_types_id"): "-->", 
+                ("integrated_layers_id","embeddings_id"): "-->", 
+                ("integration_types_id","Ranker"): "-->"}      
                 custom_colours = {"Seeds": "#B7E4FF", "Similarity <br> Matrix": "#95B9F3", "Ranker":"#FFA8A8"}
                 subgraphs = {"integrated_layers": "Selected layers","embeddings": "Embeddings", "integration_types": "Integration"}   
                 mermaid_body = add_subgraphs(phase2nodeid, subgraphs)
@@ -455,7 +461,7 @@
                 #mermaid_body += edges2mermaid(itertools.product(phase2nodeid["integration_types"],["ranker"]), type_edge = "-->")
                 #edges=edges2mermaid(get_edge_integrated(net2json))
                 print(mermaid_body)
-                graph=f"""---\nTitle: Flux\nconfig:\n  theme: base\n---\ngraph LR;\n{mermaid_body}"""
+                graph=f"""---\nTitle: Flux\nconfig:\n  theme: base\n---\nflowchart TB;\n{mermaid_body}"""
         %>
                 ${ plotter.mermaid_chart(graph)}
                 <% text=f""" Invididual raw and embedding networks were selected based on performance. Those 
