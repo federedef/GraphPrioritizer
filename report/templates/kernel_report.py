@@ -178,18 +178,18 @@
                                 for process in processes:
                                         edges.append((layer,process))
                                         # process 2 filter
-                                        edges.append((process, "Adjacency <br> Matrix"))
+                                        edges.append((process, "GSM"))
                                         if info["Filter"] != []:
                                                 filt = parse_filter(info["Filter"])
                                         else:
                                                 filt = "No filter"
-                                        edges.append(("Adjacency <br> Matrix", filt))
+                                        edges.append(("GSM", filt))
                                         # filter 2 normalize
                                         edges.append((filt, normalize_adj))
                                         # normalize 2 embedding
                                         for embedding in embeddings:
                                                 edges.append((normalize_adj,embedding))
-                                                edges.append((embedding,"Similarity <br> Matrix"))
+                                                edges.append((embedding,"eGSM"))
                                                 phase2nodeid["embedding"].add(embedding)
                                         phase2nodeid["database"].add(database)
                                         phase2nodeid["layer"].add(layer)
@@ -221,23 +221,30 @@
         # Getting and parsing mermaid from edges and phase2nodeid
 
         id_node = lambda node: re.sub("_|-|,|\(|\)|\[|\]|<br>| ","_",node)
-        name_node = lambda node: " ".join([word.capitalize() for word in node.split("_")])
 
-        def edges2mermaid(edges, type_edge = "-->"):
+        def name_node(node, name_config="capitalize"):
+                if name_config == "capitalize":
+                        name_node = " ".join([word.capitalize() for word in node.split("_")])
+                elif name_config == "upper":
+                        name_node = " ".join([word.upper() for word in node.split("_")])
+                return name_node
+
+
+        def edges2mermaid(edges, type_edge = "-->", name_config= "capitalize"):
                 # style: color and shape.
                 mermaid_edges = ""
                 all_nodes = {}
                 edges = list(set(edges))
                 for edge in edges:
-                        mermaid_edges += edge2mermaid(edge, type_edge)
+                        mermaid_edges += edge2mermaid(edge, type_edge, None, name_config)
                 mermaid_edges = mermaid_edges.replace("'","")
                 return mermaid_edges
 
-        def edge2mermaid(edge, type_edge="-->", direction=None):
+        def edge2mermaid(edge, type_edge="-->", direction=None, name_config = "capitalize"):
                 id1 = id_node(edge[0])
                 id2 = id_node(edge[1])
-                edge1 = name_node(edge[0])
-                edge2 = name_node(edge[1])
+                edge1 = name_node(edge[0], name_config)
+                edge2 = name_node(edge[1], name_config)
                 mermaid_edge = f"  {id1}(\"{edge1}\") {type_edge} {id2}(\"{edge2}\");\n"
                 if direction:
                         mermaid_edge = f"  subgraph {'_'.join(edge)}\n    direction {direction}\n    {mermaid_edge}  end\n"
@@ -274,7 +281,7 @@
                                 id2 = id_node(edge[1])
                                 edge1 = name_node(edge[0])
                                 edge2 = name_node(edge[1])
-                                mermaid_edges += f"    {id1}[(\"{edge1}\")] --> {id2}(\"{edge2}\");\n"
+                                mermaid_edges += f"    {id1}[(\"{edge1}\")] -- GR --> {id2}(\"{edge2}\");\n"
                         mermaid_edges += f"  end\n"
                 return mermaid_edges
 
@@ -313,7 +320,7 @@
 
         <div style="overflow: hidden";>
                 ${make_title("table", "annotation_descriptor", 
-                        "Number of annotations by gene. Showing the minimum (Min), maximum (Max), average and standrad deviation from each source.")}
+                        "Number of relations by gene. Showing the minimum (Min), maximum (Max), average and standard deviation from each source.")}
                 <div style="overflow: hidden";>
                         % if plotter.hash_vars.get('parsed_annotations_metrics') is not None:
                                 ${ plotter.table(id='parsed_annotations_metrics', header=True,  text= True, row_names = True, fields= [0,5,4,6,8], styled='dt', border= 2, attrib = {
@@ -322,26 +329,30 @@
                 </div>
         </div>
 
-        <% text=""" First, we extract the data from different databases. 
-        Then each source is used directly (raw) or processed by Projection (Jaccard, Counts), Semantic Similarity
-         (Lin) or Correlation (Pearson, Spearman). Finally, after possible filter and normalization by degree, every adjacency matrix is processing by diferrent embedding methods: 
-         Commute time kernel (Ct), random forest Kernel (rf), exponential laplacian kernel (El), kernelized Adjacency Matrix (Ka), Node2vec and Raw Similarity Matrix (Raw Sim).""" %>
+        <% text=f""" First, we extract the Gene Relations (GR) from different databases. 
+        Then each GR is used directly (Raw) or processed (purple boxes) by Projection (Jaccard, Counts), Semantic Similarity
+         (Lin) or Correlation (Pearson, Spearman) to obtain a Gene Similarity Matrix (GSM). Finally, after possible filtering and normalization by degree, every GSM is embedded (eGSM) by diferrent methods: 
+         Commute time kernel (Ct), random forest Kernel (rf), exponential laplacian kernel (El), kernelized Adjacency Matrix (Ka), Node2vec (Node2vec) and Raw Similarity Matrix (Raw Sim). """ %>
         <h3 style="text-align:center; background-color:#ecf0f1, color: powderblue; text-decoration: underline;", id="workflow_indv_layers"> Workflow of all studied resources </h3>
         <div>
         <%   
                 colours = {"process": "#BF7AE7"}
-                subgraphs = {"normalize": "Normalize Adjacency<br>Matrix", "embedding": "Embedding"}   
-                custom_edges = { ("Similarity <br> Matrix", "Ranker"):"-->",("Seeds","Ranker"):"-->"}
-                custom_colours = {"Seeds": "#B7E4FF", "Similarity <br> Matrix": "#95B9F3", "Ranker":"#FFA8A8"}
+                subgraphs = {"normalize": "Adjacency Matrix <br> Normalization", "embedding": "Embedding"}   
+                custom_edges = { ("eGSM", "Ranker"):"-->",("Seeds","Ranker"):"-->"}
+                custom_colours = {"Seeds": "#B7E4FF", "eGSM": "#95B9F3", "Ranker":"#FFA8A8", "GSM": "#95B9F3"}
                 edges, phase2nodeid = get_edge_non_integrated(net2json)
                 mermaid_body = get_database_subgraphs(edges, phase2nodeid)
-                mermaid_body += edges2mermaid([edge for edge in edges if edge[0] not in phase2nodeid["database"]])
+                mermaid_body += edges2mermaid([edge for edge in edges if edge[0] not in phase2nodeid["database"]], "-->", "upper")
+                print(50*"ey\n")
+                print(edges2mermaid([edge for edge in edges if edge[0] not in phase2nodeid["database"]], "-->", "upper"))
+                print(50*"ey\n")
                 mermaid_body += add_style(phase2nodeid, colours)
                 mermaid_body += add_subgraphs(phase2nodeid, subgraphs)
                 mermaid_body += adding_href(phase2nodeid["layer"])
                 mermaid_body += adding_custom_edges(custom_edges, custom_colours, custom_directions)
                 mermaid_body += f"  style normalize_id text-align:center\n"
                 mermaid_body = re.sub("No filter", " ", mermaid_body)
+                print(mermaid_body)
                 print(mermaid_body)
                 graph=f"""---\nTitle: Flux\nconfig:\n  theme: base\n---\ngraph LR;\n{mermaid_body}"""
                 print(graph)

@@ -3,6 +3,7 @@
         import warnings
         import pandas as pd
         import re
+        warnings.simplefilter(action='ignore', category=FutureWarning)
 
         # Text
         #######
@@ -27,7 +28,9 @@
                         html_title = f"<p style='text-align:center;'> <b> {type.capitalize()} {plotter.add_figure(key)} </b> {sentence} </p>"
                 return html_title
 
-        warnings.simplefilter(action='ignore', category=FutureWarning)
+        # Parse tables
+        ##############
+
 
         def order_columns(name, column):
                 tab_header = plotter.hash_vars[name].pop(0)
@@ -42,24 +45,6 @@
                 col_names = plotter.hash_vars[var_name][0]
                 col_names.append("size")
                 return [col_names] + concatenated_df.values.tolist()
-
-        def plot_with_facet(data, plotter_list, plot_type="", x='fpr', y='tpr', col=None, hue=None, col_wrap=4, suptitle=None, top=0.7, labels = None, x_label=None, y_label=None):
-                if plot_type == "scatterplot":
-                        g = plotter_list["sns"].FacetGrid(data, col_wrap=col_wrap, col=col, hue=hue, aspect=1).map(plotter_list["sns"].scatterplot, x, y)
-                elif plot_type == "lineplot":
-                        g = plotter_list["sns"].FacetGrid(data, col_wrap=col_wrap, col=col, hue=hue, aspect=1).map(plotter_list["sns"].lineplot, x, y)
-                elif plot_type == "ecdf":   
-                        g = plotter_list["sns"].FacetGrid(data, col_wrap=col_wrap, col=col, hue=hue, aspect=1).map(plotter_list["sns"].ecdfplot, x)
-                elif plot_type == "lmplot":
-                        g = plotter_list["sns"].lmplot(data=data, x=x, y=y, hue=hue, col=col, col_wrap=col_wrap)
-
-                if x_label: g.set_xlabels(x_label)
-                if y_label: g.set_ylabels(y_label)
-                g.add_legend()
-                g.set_titles(col_template="{col_name}")
-                if suptitle is not None:
-                        g.fig.subplots_adjust(top=top)
-                        g.fig.suptitle(suptitle,fontsize=20)
 
         def parsed_string(data, blacklist = ["sim"]):
                 words = []
@@ -82,11 +67,6 @@
                                         continue
                 return parsed_table
                 
-        def order_columns(name, column):
-                tab_header = plotter.hash_vars[name].pop(0)
-                plotter.hash_vars[name].sort(key=lambda x: x[column])
-                plotter.hash_vars[name].insert(0, tab_header)
-
         def parse_table(name, blacklist=["sim"], include_header = False):
                 if not include_header:
                         tab_header = plotter.hash_vars[name].pop(0)
@@ -94,6 +74,31 @@
                         plotter.hash_vars[name].insert(0, tab_header)
                 else:
                         plotter.hash_vars[name] = parse_data(plotter.hash_vars[name])
+
+        # Parse plot
+        ############
+
+        def plot_with_facet(data, plotter_list, plot_type="", x='fpr', y='tpr', col=None, hue=None, col_wrap=4, suptitle=None, top=0.7, labels = None, x_label=None, y_label=None):
+                if plot_type == "scatterplot":
+                        g = plotter_list["sns"].FacetGrid(data, col_wrap=col_wrap, col=col, hue=hue, aspect=1).map(plotter_list["sns"].scatterplot, x, y)
+                elif plot_type == "lineplot":
+                        g = plotter_list["sns"].FacetGrid(data, col_wrap=col_wrap, col=col, hue=hue, aspect=1).map(plotter_list["sns"].lineplot, x, y)
+                elif plot_type == "ecdf":   
+                        g = plotter_list["sns"].FacetGrid(data, col_wrap=col_wrap, col=col, hue=hue, aspect=1).map(plotter_list["sns"].ecdfplot, x)
+                elif plot_type == "lmplot":
+                        g = plotter_list["sns"].lmplot(data=data, x=x, y=y, hue=hue, col=col, col_wrap=col_wrap)
+
+                if x_label: g.set_xlabels(x_label)
+                if y_label: g.set_ylabels(y_label)
+                g.add_legend()
+                g.set_titles(col_template="{col_name}")
+                if suptitle is not None:
+                        g.fig.subplots_adjust(top=top)
+                        g.fig.suptitle(suptitle,fontsize=20)     
+%>
+<%
+        # Parsing tables
+        ################
 
         for table in plotter.hash_vars.keys():
                 parse_table(table)
@@ -119,8 +124,11 @@
                 plotter.hash_vars["non_integrated_rank_group_vs_posrank"] = get_medianrank_size('non_integrated_rank_group_vs_posrank', groupby = ['annot_kernel','annot','kernel','group_seed'], value = 'rank')
         if plotter.hash_vars.get('integrated_rank_group_vs_posrank') is not None:
                 plotter.hash_vars["integrated_rank_group_vs_posrank"] = get_medianrank_size('integrated_rank_group_vs_posrank', groupby = ['integration_kernel','integration','kernel','group_seed'], value = 'rank')
-                
-        
+        if plotter.hash_vars.get('non_integrated_rank_size_auc_by_group'):
+                plotter.hash_vars['non_integrated_rank_medianauc'] = get_medianrank_size('non_integrated_rank_size_auc_by_group', groupby = ["sample","annot","kernel","seed","pos_cov"], value = 'auc')
+        if plotter.hash_vars.get('integrated_rank_size_auc_by_group'):
+                plotter.hash_vars["integrated_rank_medianauc"] = get_medianrank_size("integrated_rank_size_auc_by_group", groupby = ["sample","method","kernel","seed","pos_cov"], value = 'auc')
+
 %>
 <div style="width:90%; background-color:#FFFFFF; margin:50 auto; align-content: center;">
 
@@ -150,7 +158,7 @@
                                  G[<span style="color:#000000">ROC</span>]
                                  cdf[<span style="color:#000000">CDF</span>]
                                  Coverage[<span style="color:#000000">Coverage</span>]
-                                 ORPHA --Aggregated groups \n n&ge;20--> A
+                                 ORPHA --Aggregated groups <br> n&ge;20--> A
                                  S --> B 
                                  A --> A
                                  A --> S
@@ -207,7 +215,7 @@
                                  G[<span style="color:#000000">ROC</span>]
                                  cdf[<span style="color:#000000">CDF</span>]
                                  Coverage[<span style="color:#000000">Coverage</span>]
-                                 ORPHA --Aggregated groups \n n&ge;30--> A
+                                 ORPHA --Aggregated groups <br> n&ge;30--> A
                                  S --> B 
                                  A --> A
                                  A --> S
@@ -333,8 +341,8 @@
 
         <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
                 <div style="margin-right: 10px;">
-                                 % if plotter.hash_vars.get('non_integrated_rank_size_auc_by_group') is not None: 
-                                        ${plotter.boxplot(id= 'non_integrated_rank_size_auc_by_group', header= True, row_names= False, default= False, fields= [5],  var_attr= [0,1,2,3], group = ["kernel"],
+                                 % if plotter.hash_vars.get('non_integrated_rank_medianauc') is not None: 
+                                        ${plotter.boxplot(id= 'non_integrated_rank_medianauc', header= True, row_names= False, default= False, fields= [5],  var_attr= [0,1,2,3], group = ["kernel"],
                                            title= "(A) Median ROC-AUCs 10-fold-CV \n before Integration",
                                                 x_label= "ROC-AUCs",
                                                 config= {
@@ -354,8 +362,8 @@
                                 % endif
                 </div>
                 <div style="margin-left: 10px;">
-                                 % if plotter.hash_vars.get('integrated_rank_size_auc_by_group') is not None: 
-                                        ${plotter.boxplot(id= 'integrated_rank_size_auc_by_group', header= True, row_names= False, default= False, fields= [5],  var_attr= [0,1,2], group = ["kernel"],
+                                 % if plotter.hash_vars.get('integrated_rank_medianauc') is not None: 
+                                        ${plotter.boxplot(id= 'integrated_rank_medianauc', header= True, row_names= False, default= False, fields= [5],  var_attr= [0,1,2], group = ["kernel"],
                                            title= "(B) Median ROC-AUCs 10-fold-CV \n after Integration",
                                                 x_label= "median ROC-AUCs",
                                                 config= {
@@ -475,8 +483,8 @@
         ${make_title("figure", "rank_size", f"""Rank vs Size in each individual (A) or integrated (B) layers.""")}
 
         <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
-                % if plotter.hash_vars.get('non_integrated_rank_size_auc_by_group') is not None: 
-                   ${plotter.scatter2D(id= 'non_integrated_rank_size_auc_by_group', header= True, 
+                % if plotter.hash_vars.get('non_integrated_rank_medianauc') is not None: 
+                   ${plotter.scatter2D(id= 'non_integrated_rank_medianauc', header= True, 
                         fields = [4,5], x_label = 'Real Group Size', y_label = 'median AUROC', 
                         title= " (A) Median-AUROC vs Real Group Size before Integration", 
                         var_attr= [0,1,2,3], add_densities = True, config= {
@@ -487,8 +495,8 @@
                                 "titleScaleFontFactor": 0.3
                                 })}
                 % endif 
-                % if plotter.hash_vars.get('integrated_rank_size_auc_by_group') is not None: 
-                    ${plotter.scatter2D(id= 'integrated_rank_size_auc_by_group', header= True,
+                % if plotter.hash_vars.get('integrated_rank_medianauc') is not None: 
+                    ${plotter.scatter2D(id= 'integrated_rank_medianauc', header= True,
                      fields = [4,5], x_label = 'Real Group Size', y_label = 'median AUROC',
                       title= " (B) Median-AUROC vs Real Group Size after Integration", 
                       var_attr= [0,1,2,3], add_densities = True, config= {
@@ -502,20 +510,20 @@
         </div>
         ${make_title("figure", "roc_size", f"""Median-AUROC vs Size in each individual (A) or integrated (B) layers.""")}
 
-        % if plotter.hash_vars.get('non_integrated_rank_auc_by_groupIteration') is not None: 
+        % if plotter.hash_vars.get('non_integrated_rank_size_auc_by_group') is not None: 
 
                 <%
-                        table = plotter.hash_vars["non_integrated_rank_auc_by_groupIteration"]
+                        table = plotter.hash_vars["non_integrated_rank_size_auc_by_group"]
                         ids = list(set([ row[1] for i,row in enumerate(table) if i > 0]))
                         ids.sort()
                 %>
 
                 % for elem in ids:
-                        <% key = "non_integrated_rank_auc_by_groupIteration" + elem %>
+                        <% key = "non_integrated_rank_size_auc_by_group" + elem %>
                         <% subtable = [row for i, row in enumerate(table) if i == 0 or row[1] == elem] %>
                         <% plotter.hash_vars[key] = subtable %>
                         <% txt = [] %>
-                        <% txt.append(plotter.boxplot(id= key, header= True, group = "kernel", row_names= False, default= False, fields= [4],  var_attr= [0,1,2,3], 
+                        <% txt.append(plotter.boxplot(id= key, header= True, group = "kernel", row_names= False, default= False, fields= [5],  var_attr= [0,1,2,3], 
                                         x_label= "ROC-AUCs",
                                         title="",
                                         config= {
@@ -537,6 +545,43 @@
                 % endfor
 
         % endif 
+
+        % if plotter.hash_vars.get('integrated_rank_size_auc_by_group') is not None: 
+
+                <%
+                        table = plotter.hash_vars["integrated_rank_size_auc_by_group"]
+                        ids = list(set([ row[1] for i,row in enumerate(table) if i > 0]))
+                        ids.sort()
+                %>
+
+                % for elem in ids:
+                        <% key = "integrated_rank_size_auc_by_group" + elem %>
+                        <% subtable = [row for i, row in enumerate(table) if i == 0 or row[1] == elem] %>
+                        <% plotter.hash_vars[key] = subtable %>
+                        <% txt = [] %>
+                        <% txt.append(plotter.boxplot(id= key, header= True, group = "kernel", row_names= False, default= False, fields= [5],  var_attr= [0,1,2,3], 
+                                        x_label= "ROC-AUCs",
+                                        title="",
+                                        config= {
+                                                "graphOrientation": "vertical",
+                                                "colorBy" : "seed",
+                                                "groupingFactors" :
+                                                 ["seed"],
+                                                "jitter": True,
+                                                "showBoxplotIfViolin": True,
+                                                "showBoxplotOriginalData": True,
+                                                "showLegend": False,
+                                                "showViolinBoxplot": True,
+                                                "smpLabelScaleFontFactor": 0.3,
+                                                "smpLabelRotate":45,
+                                                "setMinX": 0})) %>
+                        <% txt.append(make_title("figure",f"figure_dragon_{elem}", f"""Distributioon of ROC AUCs obtained on 10-fold-CV by
+                         each seed and embedding for {elem} individual layer.")"""))%>
+                        ${collapsable_data(f"{elem}: ROC-AUCs by seed (click me)", f"dragon_plot_{elem}", "\n".join(txt))}
+                % endfor
+
+        % endif 
+
 </div>
 
 

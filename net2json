@@ -44,10 +44,11 @@
             "raw_sim"
         ],
         "integration_types": [
-        "mean",
-        "integration_mean_by_presence",
-        "median",
-        "max"]
+            "mean",
+            "integration_mean_by_presence",
+            "median",
+            "max"
+        ]
     },
     "biological_process": {
         "Filter": [],
