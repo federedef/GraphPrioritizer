@@ -18,7 +18,7 @@ report_folder=$output_folder/report
 
 # Custom variables.
 annotations=" disease phenotype molecular_function biological_process cellular_component"
-annotations+=" string_ppi hippie_ppi"
+annotations+=" string_ppi_combined hippie_ppi"
 annotations+=" string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
 annotations+=" DepMap_effect_pearson DepMap_effect_spearman DepMap_Kim"
 annotations+=" pathway gene_hgncGroup"
@@ -438,9 +438,6 @@ elif [ "$exec_mode" == "kernels" ] ; then
   fi
 
   # update net2json
-  annot=`echo $annotations | tr -s " " "," | awk '{print "["$0"]"}'`
-  modify_json.py -k "data_process;layers2process" -v "$annot" -jp net2json
-  # update net2json
   embeddings=`echo $kernels | tr -s " " "," | awk '{print "["$0"]"}'`
   modify_json.py -k "data_process;Embeddings" -v "$embeddings" -jp net2json
 
@@ -487,6 +484,10 @@ elif [ "$exec_mode" == "ranking" ] ; then
   fi
   mkdir -p $output_folder/rankings
   benchmark=$2 # menche or zampieri
+
+  # update net2json
+  annot=`echo $annotations | tr -s " " "," | awk '{print "["$0"]"}'`
+  modify_json.py -k "data_process;layers2process" -v "$annot" -jp net2json
   
   cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path
   for annotation in $annotations ; do 
@@ -713,8 +714,8 @@ elif [ "$exec_mode" == "report" ] ; then
   
   ##################
   # Obtaining HTMLS #
-  report_html -t ./report/templates/kernel_report.py -d `ls $report_folder/kernel_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_layer_building$html_name"
-  #report_html -t ./report/templates/ranking_report.py -d `ls $report_folder/ranking_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_algQuality$html_name"
+  #report_html -t ./report/templates/kernel_report.py -c ./report/templates/css -d `ls $report_folder/kernel_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_layer_building$html_name"
+  report_html -t ./report/templates/ranking_report.py -c ./report/templates/css -d `ls $report_folder/ranking_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_algQuality$html_name"
 
   if [ -z "$check" ] ; then
     mv ./report_layer_building$html_name.html ./report/HTMLs/$name_dir/
