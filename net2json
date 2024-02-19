@@ -33,7 +33,9 @@
             "DepMap_effect_spearman",
             "DepMap_Kim",
             "pathway",
-            "gene_hgncGroup"
+            "gene_hgncGroup",
+            "gene_TF",
+            "gene_PS"
         ],
         "Embeddings": [
             "ka",

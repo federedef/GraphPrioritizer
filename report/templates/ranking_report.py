@@ -568,7 +568,7 @@ ${plotter.create_title(txt, id='perf_by_seed_size', hlevel=2, indexable=True, cl
                         "colorBy":"kernel",
                         'segregateVariablesBy' : 'annot',
                         "titleFontStyle": "italic",
-                        "titleScaleFontFactor": 0.3
+                        "varLabelFontSize": 5
                         })}
         % endif 
         % if plotter.hash_vars.get('integrated_rank_group_vs_posrank') is not None: 
