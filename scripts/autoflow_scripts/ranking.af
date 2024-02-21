@@ -167,6 +167,8 @@ rank_genes_with_kfold_cv){
 		grep -v -w "-" size_auc_by_group > tmp
 		mv tmp size_auc_by_group
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ /,"_",$0); print tracker,$1,$2,$3}' size_auc_by_group > $output_name_size_auc_by_group
+		# Removing null positive cases but with auroc
+		grep -w -v '' $output_name_size_auc_by_group > tmp && mv tmp $output_name_size_auc_by_group
 
 	else 
 		exit 0

@@ -12,11 +12,11 @@
         def bold(txt):
                 return f"<b>{txt}</b>"
 
-        def collapsable_data(click_title, click_id, txt):
+        def collapsable_data(click_title, click_id, container_id, txt):
                 collapsable_txt = f"""
-                {plotter.create_title(click_title, id=None, indexable=False, clickable=True, t_id=click_id)}\n
+                {plotter.create_title(click_title, id=click_id, indexable=False, clickable=True, t_id=container_id)}\n
                 <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
-                        {plotter.create_collapsable_container(click_id, txt)}
+                        {plotter.create_collapsable_container(container_id, txt)}
                 </div>"""
                 return collapsable_txt
 
@@ -415,7 +415,7 @@ ${plotter.create_title(txt, id='workflow_indv_layers', hlevel=2, indexable=True,
         mermaid_body += get_subgraphs_for_neighbor(edges, phase2nodeid["database"]) # subgraph the neighboor
         mermaid_body += phases2subpgrahs(phase2nodeid, subgraphs)
         mermaid_body += adding_href(phase2nodeid["layer"])
-        mermaid_body += adding_custom_edges(custom_edges, custom_colours, None, "as_is")
+        #mermaid_body += adding_custom_edges(custom_edges, custom_colours, None, "as_is")
         mermaid_body += f"  style normalize_id text-align:center\n"
         mermaid_body = re.sub("No filter", " ", mermaid_body)
         graph=f"""---\nTitle: Flux\nconfig:\n  theme: base\n---\ngraph LR;\n{mermaid_body}"""
@@ -433,6 +433,7 @@ ${plotter.create_title(txt, id="indv_process_graph_steps", hlevel=2, indexable=T
         ids.sort()
     %>
 
+    <% macro_click_txt = [] %>
     % for elem in ids:
         <%
 
@@ -505,9 +506,11 @@ ${plotter.create_title(txt, id="indv_process_graph_steps", hlevel=2, indexable=T
         </b> {parsed_string(elem)} descriptive stats during network processing. Number of nodes (A), density (B) and summary of edge values (C) on the network. 
         Labels on x axis indicate diffente stages during the network building: {adding_text} </p>""" %>
         <% click_back="""<a href="#workflow_indv_layers">Back to Workflow</a>""" %>
-        <p id="${re.sub('_sim','',elem)}"></p>
-        ${collapsable_data(f"{parsed_string(elem)}", 'clickme_id'+key, "\n".join([figure1,figure2,figure3,text,click_back]))}
+        <%macro_txt = collapsable_data(f"{parsed_string(elem)}", re.sub('_sim','',elem), f"{elem}_container" ,"\n".join([f"<p id={re.sub('_sim','',elem)}></p>",figure1,figure2,figure3,text,click_back]))%>
+        <% macro_click_txt.append(macro_txt) %>
     % endfor
+    ${collapsable_data("All individual process summary", 'clickme_id'+"general", 'container'+"general","\n".join(macro_click_txt))}
+
 
 <% txt="Selection and Integration of individual networks Workflow" %>
 ${plotter.create_title(txt, id="sel_int_workflow", hlevel=2, indexable=True, clickable=False)}
@@ -518,12 +521,9 @@ ${plotter.create_title(txt, id="sel_int_workflow", hlevel=2, indexable=True, cli
         phase2nodeid = get_phase2nodeid_integrated(net2json)
         custom_edges = {
         ("integration_types_id","Integrated <br> eGSM"): "-->",
-        ("Integrated <br> eGSM","Ranker"):"-->",
-        ("Seeds","Ranker"):"-->",
         ("embeddings_id","integration_types_id"): "-->", 
-        ("integrated_layers_id","embeddings_id"): "-->", 
-        ("integration_types_id","Ranker"): "-->"}      
-        custom_colours = {"Seeds": "#B7E4FF", "Integrated <br> eGSM": "#95B9F3", "Ranker":"#FFA8A8"}
+        ("integrated_layers_id","embeddings_id"): "-->"}      
+        custom_colours = { "Integrated <br> eGSM": "#95B9F3"}
         subgraphs = {"integrated_layers": "Selected layers","embeddings": "Embeddings", "integration_types": "Integration"}   
         mermaid_body = nodes2mermaid_by_phase(phase2nodeid, 
         {
@@ -544,91 +544,92 @@ ${plotter.create_title(txt, id="sel_int_workflow", hlevel=2, indexable=True, cli
 
 <% txt="Embedding Process" %>
 ${plotter.create_title(txt, id="emb_process", hlevel=2, indexable=True, clickable=False)}
-<div style="overflow: hidden;">
-        ${make_title("table", "unc_emb_matrix",
-                f"""Summary metrics for each eGSM obtained by every source and embedding. Showing metrics on size
-                 ({italic("Matrix Dimensions")}, {italic("Matrix Elements")}) and density 
-                 ({italic("Matrix Elements Non Zero")}, {italic("Matrix non zero density")}) matrix.""")}
-        % if plotter.hash_vars.get('parsed_uncomb_kernel_metrics') is not None:
-                        ${plotter.table(id='parsed_uncomb_kernel_metrics', text= True, header=True, row_names = True, fields= [1,2,3,4,5,6], styled='dt', cell_align= ['left', 'left', 'center', 'center', 'center', 'center'], border= 2,attrib= {
-                                'style' : 'margin-left: auto; margin-right:auto;',
-                                'cellspacing' : 0,
-                                'cellpadding' : 2})}
-        % endif
-        ${make_title("table", "c_emb_matrix",
-                f"""Summary metrics for each eGSM obtained after integration step. Showing metrics on size
-                 ({italic("Matrix Dimensions")}, {italic("Matrix Elements")}) and density 
-                 ({italic("Matrix Elements Non Zero")}, {italic("Matrix non zero density")}) matrix.""")}
-        % if plotter.hash_vars.get('parsed_comb_kernel_metrics') is not None:
-                        ${plotter.table(id='parsed_comb_kernel_metrics', text= True, header=True, row_names = True, fields= [1,2,3,4,5,6], styled='dt', cell_align= ['left', 'left', 'center', 'center', 'center', 'center'], border= 2,attrib= {
-                                'style' : 'margin-left: auto; margin-right:auto;',
-                                'cellspacing' : 0,
-                                'cellpadding' : 2})}
-        % endif
-        
 
-</div>
+
 
 <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
         % if plotter.hash_vars.get('parsed_uncomb_kernel_metrics') is not None:
-                        ${ plotter.scatter2D(id= 'parsed_uncomb_kernel_metrics', title= "(A) Size vs Density on eGSM", header= True, fields = [4,6], x_label = 'Size', y_label = 'Density', var_attr=[1,2], alpha = 0.3,
-                     config= {
-                        'showLegend' : True,
-                        "colorBy":"Net",
-                        "segregateVariablesBy":"Kernel",
-                        "titleFontStyle": "italic",
-                        "titleScaleFontFactor": 0.3,
-                        })}
+                        ${plotter.barplot(id='parsed_uncomb_kernel_metrics', fields= [2,6] , header= True, height= '400px', width= '400px', x_label= 'Matrix Non Zero Density (%)', var_attr= [1,2],
+                                title = "(A) Individual eGSM",
+                                config = {
+                                        'showLegend' : True,
+                                        'graphOrientation' : 'horizontal',
+                                        'colorBy' : 'Kernel',
+                                        "segregateSamplesBy": ["Net"],
+                                        "axisTickScaleFontFactor": 0.2,
+                                        'setMinX': 0,
+                                        "titleFontStyle": "italic",
+                                        "titleScaleFontFactor": 0.3
+                                        })}
         % endif
-
         % if plotter.hash_vars.get('parsed_comb_kernel_metrics') is not None:
-                        ${ plotter.scatter2D(id= 'parsed_comb_kernel_metrics', title= "(B) Size vs Density on eGSM", header= True, fields = [4,6], x_label = 'Size', y_label = 'Density', var_attr=[1,2], alpha = 0.3,
-                     config= {
-                        'showLegend' : True,
-                        "colorBy":"Integration",
-                        "segregateVariablesBy":"Kernel",
-                        "titleFontStyle": "italic",
-                        "titleScaleFontFactor": 0.3,
-                        })}
-
+                        ${plotter.barplot(id='parsed_comb_kernel_metrics', fields= [2,6] , header= True, height= '400px', width= '400px', x_label= 'Matrix Non Zero Density (%)', var_attr= [1,2],
+                                title = "(B) Integrated eGSM",
+                                config = {
+                                        'showLegend' : True,
+                                        'graphOrientation' : 'horizontal',
+                                        'colorBy' : 'Kernel',
+                                        'segregateSamplesBy': "Integration",
+                                        'setMinX': 0,
+                                        "titleFontStyle": "italic",
+                                        "titleScaleFontFactor": 0.3
+                                        })}
         % endif
-</div>
-        ${make_title("figure", "figure_sizeVSdensity", "Size vs Density on eGSM before (A) and after (B) integration step, respectively.  The plots are categorised according to the embedding methods used, with colours representing individual graphs in (A) or integration methods in (B).")}
 
+        ${make_title("figure","density_summ", f"""Summary of eGSM density (%) before (A) and after (B) integration.
+        Both plots are segreggated by {italic("individual graph source")} (A) or {italic("integration method")} (B), coloured by embedding process.""")}
+</div>
 
 <% txt = [] %>
 % if plotter.hash_vars.get('parsed_uncomb_kernel_metrics') is not None:
-                <% txt.append(plotter.barplot(id='parsed_uncomb_kernel_metrics', fields= [2,6] , header= True, height= '400px', width= '400px', x_label= 'Density (%)', var_attr= [1,2],
-                        title = "(A) Individual eGSM",
-                        config = {
-                                'showLegend' : True,
-                                'graphOrientation' : 'horizontal',
-                                'colorBy' : 'Kernel',
-                                "segregateSamplesBy": ["Net"],
-                                "axisTickScaleFontFactor": 0.2,
-                                'setMinX': 0,
-                                "titleFontStyle": "italic",
-                                "titleScaleFontFactor": 0.3
-                                })) %>
+        <% txt.append(make_title("table", "unc_emb_matrix",
+                f"""Summary metrics for each eGSM obtained by every source and embedding. Showing metrics on size
+                ({italic("Matrix Dimensions")}, {italic("Matrix Elements")}) and density 
+                ({italic("Matrix Elements Non Zero")}, {italic("Matrix non zero density")}) matrix.""")) %>
+        <% txt.append(plotter.table(id='parsed_uncomb_kernel_metrics', text= True, header=True, row_names = True, fields= [1,2,3,4,5,6], styled='dt', cell_align= ['left', 'left', 'center', 'center', 'center', 'center'], border= 2,attrib= {
+                        'style' : 'margin-left: auto; margin-right:auto;',
+                        'cellspacing' : 0,
+                        'cellpadding' : 2})) %>
+        ${collapsable_data("Individual eGSM Matrix Sumary", None, "individual_egsm_matrix_summ", "\n".join(txt))}
 % endif
 % if plotter.hash_vars.get('parsed_comb_kernel_metrics') is not None:
-                <% txt.append(plotter.barplot(id='parsed_comb_kernel_metrics', fields= [2,6] , header= True, height= '400px', width= '400px', x_label= 'Density (%)', var_attr= [1,2],
-                        title = "(B) Integrated eGSM",
-                        config = {
-                                'showLegend' : True,
-                                'graphOrientation' : 'horizontal',
-                                'colorBy' : 'Kernel',
-                                'segregateSamplesBy': "Integration",
-                                'setMinX': 0,
-                                "titleFontStyle": "italic",
-                                "titleScaleFontFactor": 0.3
-                                })) %>
+        <% txt = [] %>
+        <% txt.append(make_title("table", "c_emb_matrix",
+                f"""Summary metrics for each eGSM obtained after integration step. Showing metrics on size
+                ({italic("Matrix Dimensions")}, {italic("Matrix Elements")}) and density 
+                ({italic("Matrix Elements Non Zero")}, {italic("Matrix non zero density")}) matrix."""))%>
+        <% txt.append(plotter.table(id='parsed_comb_kernel_metrics', text= True, header=True, row_names = True, fields= [1,2,3,4,5,6], styled='dt', cell_align= ['left', 'left', 'center', 'center', 'center', 'center'], border= 2,attrib= {
+                        'style' : 'margin-left: auto; margin-right:auto;',
+                        'cellspacing' : 0,
+                        'cellpadding' : 2})) %>
+        ${collapsable_data("Integrated eGSM Matrix Sumary", None, "integrated_egsm_matrix_summ", "\n".join(txt))}
 % endif
 
-<% txt.append(make_title("figure","density_summ", f"""Summary of eGSM density (%) before (A) and after (B) integration.
- Both plots are segreggated by {italic("individual graph source")} (A) or {italic("integration method")} (B), coloured by embedding process.""")) %>
-${collapsable_data("Density summary", "dens_summ", "\n".join(txt))}
+<% txt = [] %>
+% if plotter.hash_vars.get('parsed_uncomb_kernel_metrics') is not None:
+                <% txt.append(plotter.scatter2D(id= 'parsed_uncomb_kernel_metrics', title= "(A) Size vs Density on eGSM", header= True, fields = [4,6], x_label = 'Number of posible relations', y_label = 'Matriz Non Zero Density', var_attr=[1,2], alpha = 0.3,
+                config= {
+                'showLegend' : True,
+                "colorBy":"Net",
+                "segregateVariablesBy":"Kernel",
+                "titleFontStyle": "italic",
+                "titleScaleFontFactor": 0.3,
+                })) %>
+% endif
 
+% if plotter.hash_vars.get('parsed_comb_kernel_metrics') is not None:
+                <% txt.append(plotter.scatter2D(id= 'parsed_comb_kernel_metrics', title= "(B) Size vs Density on eGSM", header= True, fields = [4,6], x_label = 'Number of posible relations', y_label = 'Matrix Non Zero Density', var_attr=[1,2], alpha = 0.3,
+                config= {
+                'showLegend' : True,
+                "colorBy":"Integration",
+                "segregateVariablesBy":"Kernel",
+                "titleFontStyle": "italic",
+                "titleScaleFontFactor": 0.3,
+                })) %>
+
+% endif
+<%txt.append(make_title("figure", "figure_sizeVSdensity", "Size vs Density on eGSM before (A) and after (B) integration step, respectively.  The plots are categorised according to the embedding methods used, with colours representing individual graphs in (A) or integration methods in (B)."))%>
+${collapsable_data("Density vs Size", None, "dens_size", "\n".join(txt))}
 
 
 <% txt = [] %>
@@ -664,4 +665,4 @@ ${collapsable_data("Density summary", "dens_summ", "\n".join(txt))}
 <% txt.append(make_title("figure","summ_matrix_values", f"""Summary of eGSM values 
                 before (A) and after (B) integration. Both plots are segreggated by embedding type
                  and x axis label points to {italic("individual graph source")} (A) or {italic("integration method")} (B).""")) %>
-${collapsable_data("Embedding values Summary", "embd_values_summ", "\n".join(txt))}
+${collapsable_data("Embedding values Summary", None, "embd_values_summ", "\n".join(txt))}

@@ -11,11 +11,11 @@
         def italic(txt):
                 return f"<i>{txt}</i>"
 
-        def collapsable_data(click_title, click_id, txt):
+        def collapsable_data(click_title, click_id, container_id, txt, indexable=False, hlevel=1):
                 collapsable_txt = f"""
-                {plotter.create_title(click_title, id=None, indexable=False, clickable=True, t_id=click_id)}\n
+                {plotter.create_title(click_title, id=click_id, indexable=indexable, clickable=True, hlevel=hlevel, t_id=container_id)}\n
                 <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
-                        {plotter.create_collapsable_container(click_id, txt)}
+                        {plotter.create_collapsable_container(container_id, txt)}
                 </div>"""
                 return collapsable_txt
 
@@ -260,7 +260,7 @@ ${plotter.create_title(txt, id='workflow_bench', hlevel=2, indexable=True, click
          Then, leave one out is performed for each seed, obtaining positives and using genes in others seeds as negatives.""")}    
 % endif
 
-<% txt="Positive Genes Coverage" %>
+<% txt="Genes Coverage" %>
 ${plotter.create_title(txt, id='pos_cov', hlevel=2, indexable=True, clickable=False)}
 
 <div style="overflow: hidden";>
@@ -269,7 +269,7 @@ ${plotter.create_title(txt, id='pos_cov', hlevel=2, indexable=True, clickable=Fa
                         <% txt = [make_title("table","table_seedgroups", "Seed groups.")] %>
                         <% txt.append(plotter.table(id='control_pos', header=True,  text= True, row_names = True, fields= [0,1], styled='dt', border= 2, attrib = {
                                 'class' : "table table-striped table-dark"}))%>
-                        ${collapsable_data("Positive control (click me)", "positive_control_table", "\n".join(txt))}
+                        ${collapsable_data("Positive control", None, "positive_control_table", "\n".join(txt))}
                 % endif
 
         </div>
@@ -402,7 +402,7 @@ ${make_title("figure", "rank_boxplot", f"""Rank distributions in each individual
         </div>
 </div>
 ${make_title("figure", "roc_boxplot", f"""Median AUROC distributions in each individual (A)
- or integrated (B) eGSM. In both plots, y axis ({italic("median ROC-AUCs")}) represent the median of the 10-fold-CV ROC-AUCs for each seed.""")}
+ or integrated (B) eGSM. In both plots, y axis ({italic("median AUROCs")}) represent the median of the 10-fold-CV AUROCs for each seed.""")}
 
 <% txt="Curve Distribution of Performance Metrics" %>
 ${plotter.create_title(txt, id='curv_gen_per_metrics', hlevel=3, indexable=True, clickable=False)}
@@ -443,43 +443,36 @@ ${make_title("figure", "cdf_curve", f"""CDF curves by each individual (A)
 </div>
 ${make_title("figure", "roc_curve", f"""ROC curve by each individual (A) or integrated (B) eGSM.""")}
 
-<div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
-        <div style="margin-right: 10px;">
-                % if plotter.hash_vars.get("parsed_non_integrated_rank_summary") is not None: 
-                        ${plotter.line(id= "parsed_non_integrated_rank_summary", fields= [0, 7, 13, 8], header= True, row_names= True,
-                                responsive= False,
-                                height= '400px', width= '400px', x_label= 'AUROC',
-                                title= "(A) Individual eGSM",
-                                config= {
-                                        'showLegend' : True,
-                                        'graphOrientation' : 'vertical',
-                                        "titleFontStyle": "italic",
-                                        "titleScaleFontFactor": 0.3
-                                        })}
-                % endif
-        </div>
-        <div style="margin-left: 10px;">
-                % if plotter.hash_vars.get('parsed_integrated_rank_summary') is not None: 
-                        ${plotter.line(id= "parsed_integrated_rank_summary", fields=  [0, 7, 13, 8], header= True, row_names= True,
-                                responsive= False,
-                                height= '400px', width= '400px', x_label= 'AUROC',
-                                title= "(B) Integrated eGSM",
-                                config= {
-                                        'showLegend' : True,
-                                        'graphOrientation' : 'vertical',
-                                        "titleFontStyle": "italic",
-                                        "titleScaleFontFactor": 0.3,
-                                        })}
-                % endif
-        </div>
-</div>
-${make_title("figure", "roc_ic", f"""AUROC confidence interval (CI) in each individual (A) or integrated (B) eGSM. IC was obtained by a 1000 iteration bootstrap.""")}
+<% txt = [] %>
+% if plotter.hash_vars.get("parsed_non_integrated_rank_summary") is not None: 
+        <% txt.append(plotter.line(id= "parsed_non_integrated_rank_summary", fields= [0, 7, 13, 8], header= True, row_names= True,
+                responsive= False,
+                height= '400px', width= '400px', x_label= 'AUROC',
+                title= "(A) Individual eGSM",
+                config= {
+                        'showLegend' : True,
+                        'graphOrientation' : 'vertical',
+                        "titleFontStyle": "italic",
+                        "titleScaleFontFactor": 0.3
+                        })) %>
+% endif
+% if plotter.hash_vars.get('parsed_integrated_rank_summary') is not None: 
+        <% txt.append(plotter.line(id= "parsed_integrated_rank_summary", fields=  [0, 7, 13, 8], header= True, row_names= True,
+                responsive= False,
+                height= '400px', width= '400px', x_label= 'AUROC',
+                title= "(B) Integrated eGSM",
+                config= {
+                        'showLegend' : True,
+                        'graphOrientation' : 'vertical',
+                        "titleFontStyle": "italic",
+                        "titleScaleFontFactor": 0.3,
+                        }))%>
+% endif
+<% txt.append(make_title("figure", "roc_ic", f"""AUROC confidence interval (CI) in each individual (A) or integrated (B) eGSM. IC was obtained by a 1000 iteration bootstrap.""")) %>
+${collapsable_data("AUROC Condifence Intervals", "auroc_ci_click", "auroc_ci_collaps","\n".join(txt))}
 
 <% txt="Performance by seed" %>
 ${plotter.create_title(txt, id='perf_by_seed', hlevel=2, indexable=True, clickable=False)}
-
-<% txt="Individual eGSM" %>
-${plotter.create_title(txt, id='indv_perf_by_seed', hlevel=3, indexable=True, clickable=False)}
 
 % if plotter.hash_vars.get('non_integrated_rank_size_auc_by_group') is not None: 
 
@@ -488,7 +481,7 @@ ${plotter.create_title(txt, id='indv_perf_by_seed', hlevel=3, indexable=True, cl
                 ids = list(set([ row[1] for i,row in enumerate(table) if i > 0]))
                 ids.sort()
         %>
-
+        <% macro_click_txt = [] %>
         % for elem in ids:
                 <% key = "non_integrated_rank_size_auc_by_group" + elem %>
                 <% subtable = [row for i, row in enumerate(table) if i == 0 or row[1] == elem] %>
@@ -512,13 +505,11 @@ ${plotter.create_title(txt, id='indv_perf_by_seed', hlevel=3, indexable=True, cl
                                         "setMinX": 0})) %>
                 <% txt.append(make_title("figure",f"figure_dragon_{elem}", f"""Distributioon of AUROC obtained on 10-fold-CV by
                  each seed and individual eGSM for {elem}")"""))%>
-                ${collapsable_data(f"{elem}: AUROC by seed (click me)", f"dragon_plot_{elem}", "\n".join(txt))}
+                <% macro_click_txt.append(collapsable_data(f"{elem}: AUROC by seed", None, f"dragon_plot_{elem}", "\n".join(txt))) %>
         % endfor
+        ${collapsable_data("Individual eGSM", 'clickme_id'+"general", 'container'+"general","\n".join(macro_click_txt), True, hlevel=3)}
 
 % endif 
-
-<% txt="Integrated eGSM" %>
-${plotter.create_title(txt, id='int_perf_by_seed', hlevel=3, indexable=True, clickable=False)}
 
 % if plotter.hash_vars.get('integrated_rank_size_auc_by_group') is not None: 
 
@@ -527,7 +518,7 @@ ${plotter.create_title(txt, id='int_perf_by_seed', hlevel=3, indexable=True, cli
                 ids = list(set([ row[1] for i,row in enumerate(table) if i > 0]))
                 ids.sort()
         %>
-
+        <% macro_click_txt = [] %>
         % for elem in ids:
                 <% key = "integrated_rank_size_auc_by_group" + elem %>
                 <% subtable = [row for i, row in enumerate(table) if i == 0 or row[1] == elem] %>
@@ -551,9 +542,9 @@ ${plotter.create_title(txt, id='int_perf_by_seed', hlevel=3, indexable=True, cli
                                         "setMinX": 0})) %>
                 <% txt.append(make_title("figure",f"figure_dragon_{elem}", f"""Distributioon of AUROC obtained on 10-fold-CV by
                  each seed and integrated eGSM for {elem}")"""))%>
-                ${collapsable_data(f"{elem}: ROC-AUCs by seed (click me)", f"dragon_plot_{elem}", "\n".join(txt))}
+                <% macro_click_txt.append(collapsable_data(f"{elem}: AUROCs by seed", None, f"dragon_plot_{elem}", "\n".join(txt))) %>
         % endfor
-
+        ${collapsable_data("Integrated eGSM", 'clickme_id'+"general2", 'container'+"general2","\n".join(macro_click_txt), True, hlevel=3)}
 % endif 
 
 <% txt="Performance by Seed Size" %>

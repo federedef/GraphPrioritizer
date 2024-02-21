@@ -28,7 +28,7 @@ integrated_annotations="disease phenotype molecular_function biological_process 
 integrated_annotations="string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
 integrated_annotations="phenotype biological_process string_ppi_textmining string_ppi_coexpression gene_hgncGroup"
 integrated_annotations="phenotype biological_process string_ppi_textmining string_ppi_coexpression gene_hgncGroup"
-kernels="ka rf ct el node2vec raw_sim"
+kernels="ka rf el node2vec raw_sim"
 integration_types="mean integration_mean_by_presence median max"
 net2custom=$input_path'/net2json' 
 control_pos=$input_path'/control_pos'
@@ -605,113 +605,113 @@ elif [ "$exec_mode" == "report" ] ; then
   html_name=$2
   check=$3
   
-  # #################################
-  # Setting up the report section #
-  find $report_folder/ -mindepth 2 -delete
-  find $output_folder/ -maxdepth 1 -type f -delete
+  # # #################################
+  # # Setting up the report section #
+  # find $report_folder/ -mindepth 2 -delete
+  # find $output_folder/ -maxdepth 1 -type f -delete
 
-  mkdir -p $report_folder/kernel_report
-  mkdir -p $report_folder/ranking_report
-  mkdir -p $report_folder/img
+  # mkdir -p $report_folder/kernel_report
+  # mkdir -p $report_folder/ranking_report
+  # mkdir -p $report_folder/img
 
-  declare -A original_folders
-  original_folders[annotations_metrics]='similarity_kernels'
-  original_folders[final_stats_by_steps]='similarity_kernels'
-  original_folders[uncomb_kernel_metrics]='similarity_kernels'
-  original_folders[comb_kernel_metrics]='integrations'
+  # declare -A original_folders
+  # original_folders[annotations_metrics]='similarity_kernels'
+  # original_folders[final_stats_by_steps]='similarity_kernels'
+  # original_folders[uncomb_kernel_metrics]='similarity_kernels'
+  # original_folders[comb_kernel_metrics]='integrations'
 
-  original_folders[non_integrated_rank_summary]="rankings/$html_name"
-  original_folders[non_integrated_rank_measures]="rankings/$html_name"
-  original_folders[non_integrated_rank_cdf]="rankings/$html_name"
-  original_folders[non_integrated_rank_pos_cov]="rankings/$html_name"
-  original_folders[non_integrated_rank_positive_stats]="rankings/$html_name"
-  original_folders[non_integrated_rank_size_auc_by_group]="rankings/$html_name"
-  original_folders[non_integrated_rank_group_vs_posrank]="rankings/$html_name"
+  # original_folders[non_integrated_rank_summary]="rankings/$html_name"
+  # original_folders[non_integrated_rank_measures]="rankings/$html_name"
+  # original_folders[non_integrated_rank_cdf]="rankings/$html_name"
+  # original_folders[non_integrated_rank_pos_cov]="rankings/$html_name"
+  # original_folders[non_integrated_rank_positive_stats]="rankings/$html_name"
+  # original_folders[non_integrated_rank_size_auc_by_group]="rankings/$html_name"
+  # original_folders[non_integrated_rank_group_vs_posrank]="rankings/$html_name"
 
-  original_folders[integrated_rank_summary]="integrated_rankings/$html_name"
-  original_folders[integrated_rank_measures]="integrated_rankings/$html_name"
-  original_folders[integrated_rank_cdf]="integrated_rankings/$html_name"
-  original_folders[integrated_rank_pos_cov]="integrated_rankings/$html_name"
-  original_folders[integrated_rank_positive_stats]="integrated_rankings/$html_name"
-  original_folders[integrated_rank_size_auc_by_group]="integrated_rankings/$html_name"
-  original_folders[integrated_rank_group_vs_posrank]="integrated_rankings/$html_name"
+  # original_folders[integrated_rank_summary]="integrated_rankings/$html_name"
+  # original_folders[integrated_rank_measures]="integrated_rankings/$html_name"
+  # original_folders[integrated_rank_cdf]="integrated_rankings/$html_name"
+  # original_folders[integrated_rank_pos_cov]="integrated_rankings/$html_name"
+  # original_folders[integrated_rank_positive_stats]="integrated_rankings/$html_name"
+  # original_folders[integrated_rank_size_auc_by_group]="integrated_rankings/$html_name"
+  # original_folders[integrated_rank_group_vs_posrank]="integrated_rankings/$html_name"
   
-  # Here the data is collected from executed folders.
-  for file in "${!original_folders[@]}" ; do
-    original_folder=${original_folders[$file]}
-    count=`find $output_folder/$original_folder -maxdepth 4 -mindepth 4 -name $file | wc -l`
-    if [ "$count" -gt "0" ] ; then
-      echo "$file"
-      cat $output_folder/$original_folder/*/*/$file > $output_folder/$file
-    fi
-  done 
+  # # Here the data is collected from executed folders.
+  # for file in "${!original_folders[@]}" ; do
+  #   original_folder=${original_folders[$file]}
+  #   count=`find $output_folder/$original_folder -maxdepth 4 -mindepth 4 -name $file | wc -l`
+  #   if [ "$count" -gt "0" ] ; then
+  #     echo "$file"
+  #     cat $output_folder/$original_folder/*/*/$file > $output_folder/$file
+  #   fi
+  # done 
 
 
-  ##########################
-  # Processing all metrics #
-  declare -A references_kernel_report
-  references_kernel_report[annotations_metrics]='Net'
-  references_kernel_report[final_stats_by_steps]='Net_Step,Net,Step'
-  references_kernel_report[uncomb_kernel_metrics]='Sample,Net,Kernel'
-  references_kernel_report[comb_kernel_metrics]='Sample,Integration,Kernel'
+  # ##########################
+  # # Processing all metrics #
+  # declare -A references_kernel_report
+  # references_kernel_report[annotations_metrics]='Net'
+  # references_kernel_report[final_stats_by_steps]='Net_Step,Net,Step'
+  # references_kernel_report[uncomb_kernel_metrics]='Sample,Net,Kernel'
+  # references_kernel_report[comb_kernel_metrics]='Sample,Integration,Kernel'
 
-  for metric in ${!references_kernel_report[@]} ; do 
-    if [ -s $output_folder/$metric ] ; then
-      echo "$output_folder/$metric"
-      create_metric_table $output_folder/$metric ${references_kernel_report[$metric]} $report_folder/kernel_report/parsed_${metric} 
-    fi
-  done 
+  # for metric in ${!references_kernel_report[@]} ; do 
+  #   if [ -s $output_folder/$metric ] ; then
+  #     echo "$output_folder/$metric"
+  #     create_metric_table $output_folder/$metric ${references_kernel_report[$metric]} $report_folder/kernel_report/parsed_${metric} 
+  #   fi
+  # done 
 
-  declare -A references_ranking_report
-  references_ranking_report[non_integrated_rank_summary]='Sample,Net,Kernel'
-  references_ranking_report[non_integrated_rank_pos_cov]='Sample,Net,Kernel'
-  references_ranking_report[non_integrated_rank_positive_stats]='Sample,Net,Kernel,group_seed'
-  references_ranking_report[integrated_rank_summary]='Sample,Integration,Kernel'
-  references_ranking_report[integrated_rank_pos_cov]='Sample,Integration,Kernel'
-  references_ranking_report[integrated_rank_positive_stats]='Sample,Integration,Kernel,group_seed'
+  # declare -A references_ranking_report
+  # references_ranking_report[non_integrated_rank_summary]='Sample,Net,Kernel'
+  # references_ranking_report[non_integrated_rank_pos_cov]='Sample,Net,Kernel'
+  # references_ranking_report[non_integrated_rank_positive_stats]='Sample,Net,Kernel,group_seed'
+  # references_ranking_report[integrated_rank_summary]='Sample,Integration,Kernel'
+  # references_ranking_report[integrated_rank_pos_cov]='Sample,Integration,Kernel'
+  # references_ranking_report[integrated_rank_positive_stats]='Sample,Integration,Kernel,group_seed'
 
-  for metric in ${!references_ranking_report[@]} ; do 
-    if [ -s $output_folder/$metric ] ; then
-      echo "$output_folder/$metric"
-      create_metric_table $output_folder/$metric ${references_ranking_report[$metric]} $report_folder/ranking_report/parsed_${metric} 
-    fi
-  done 
+  # for metric in ${!references_ranking_report[@]} ; do 
+  #   if [ -s $output_folder/$metric ] ; then
+  #     echo "$output_folder/$metric"
+  #     create_metric_table $output_folder/$metric ${references_ranking_report[$metric]} $report_folder/ranking_report/parsed_${metric} 
+  #   fi
+  # done 
 
-  ##################
-  # Adding headers #
+  # ##################
+  # # Adding headers #
 
-  declare -A headers
-  headers[non_integrated_rank_size_auc_by_group]="sample\tannot\tkernel\tseed\tpos_cov\tauc"
-  headers[integrated_rank_size_auc_by_group]="sample\tmethod\tkernel\tseed\tpos_cov\tauc"
-  headers[non_integrated_rank_measures]="annot_kernel\tannot\tkernel\trank\tacc\ttpr\tfpr\tprec\trec"
-  headers[integrated_rank_measures]="integration_kernel\tintegration\tkernel\trank\tacc\ttpr\tfpr\tprec\trec"
-  headers[non_integrated_rank_cdf]="annot_kernel\tannot\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"
-  headers[integrated_rank_cdf]="integration_kernel\tintegration\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"
-  headers[non_integrated_rank_group_vs_posrank]="annot_kernel\tannot\tkernel\tgroup_seed\trank"
-  headers[integrated_rank_group_vs_posrank]="integration_kernel\tintegration\tkernel\tgroup_seed\trank"
+  # declare -A headers
+  # headers[non_integrated_rank_size_auc_by_group]="sample\tannot\tkernel\tseed\tpos_cov\tauc"
+  # headers[integrated_rank_size_auc_by_group]="sample\tmethod\tkernel\tseed\tpos_cov\tauc"
+  # headers[non_integrated_rank_measures]="annot_kernel\tannot\tkernel\trank\tacc\ttpr\tfpr\tprec\trec"
+  # headers[integrated_rank_measures]="integration_kernel\tintegration\tkernel\trank\tacc\ttpr\tfpr\tprec\trec"
+  # headers[non_integrated_rank_cdf]="annot_kernel\tannot\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"
+  # headers[integrated_rank_cdf]="integration_kernel\tintegration\tkernel\tcandidate\tscore\trank\tcummulative_frec\tgroup_seed"
+  # headers[non_integrated_rank_group_vs_posrank]="annot_kernel\tannot\tkernel\tgroup_seed\trank"
+  # headers[integrated_rank_group_vs_posrank]="integration_kernel\tintegration\tkernel\tgroup_seed\trank"
 
-  for table in ${!headers[@]}; do
-    input_path=$output_folder/$table
-    output_path=$report_folder/ranking_report/$table
-    add_header ${headers[$table]} $input_path $output_path
-  done
+  # for table in ${!headers[@]}; do
+  #   input_path=$output_folder/$table
+  #   output_path=$report_folder/ranking_report/$table
+  #   add_header ${headers[$table]} $input_path $output_path
+  # done
 
-  # Adding control pos
-  echo -e "Seed Name\tGenes" > $report_folder/ranking_report/control_pos
-  desaggregate_column_data -x 2 -i control_pos >> $report_folder/ranking_report/control_pos
+  # # Adding control pos
+  # echo -e "Seed Name\tGenes" > $report_folder/ranking_report/control_pos
+  # desaggregate_column_data -x 2 -i control_pos >> $report_folder/ranking_report/control_pos
 
-  if [ -z "$check" ] ; then
-    name_dir=`date +%d_%m_%Y`
-    mkdir ./report/HTMLs/$name_dir
-    # Copy net2json
-    cp ./net2json ./report/HTMLs/$name_dir/
-  else 
-    echo "Reports to check available"
-  fi
+  # if [ -z "$check" ] ; then
+  #   name_dir=`date +%d_%m_%Y`
+  #   mkdir ./report/HTMLs/$name_dir
+  #   # Copy net2json
+  #   cp ./net2json ./report/HTMLs/$name_dir/
+  # else 
+  #   echo "Reports to check available"
+  # fi
   
-  #################
-  # Obtaining HTMLS #
-  report_html -t ./report/templates/kernel_report.py -c ./report/templates/css -d `ls $report_folder/kernel_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_layer_building$html_name"
+  # #################
+  # # Obtaining HTMLS #
+  #report_html -t ./report/templates/kernel_report.py -c ./report/templates/css -d `ls $report_folder/kernel_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_layer_building$html_name"
   report_html -t ./report/templates/ranking_report.py -c ./report/templates/css -d `ls $report_folder/ranking_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_algQuality$html_name"
 
   if [ -z "$check" ] ; then
