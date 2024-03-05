@@ -384,7 +384,7 @@ ${plotter.create_title(txt, id='rel_prop', hlevel=2, indexable=True, clickable=F
 <% text=f""" First, we extract the Gene Relations (GR) from different databases. Each GR is then either used directly (Raw) 
 or processed (purple boxes) using Projection (Jaccard, Counts), Semantic Similarity (Lin), or Correlation (Pearson, Spearman)
  to obtain a Gene Similarity Matrix (GSM). Finally, after possible filtering and normalization by degree, each GSM is embedded (eGSM)
-  using different methods. The following kernels were used: Commute time kernel (Ct), random forest Kernel (rf),
+  using different methods. The following Embeddings were used: Commute time kernel (Ct), random forest Kernel (rf),
    exponential Laplacian kernel (El), kernelized Adjacency Matrix (Ka), Node2vec (Node2vec) and Raw Similarity Matrix (Raw Sim). """ %>
 <% txt="Workflow of all studied resources" %>
 ${plotter.create_title(txt, id='workflow_indv_layers', hlevel=2, indexable=True, clickable=False)}
@@ -393,10 +393,11 @@ ${plotter.create_title(txt, id='workflow_indv_layers', hlevel=2, indexable=True,
 <%      
         net2json = load_json("./net2json")
         annotations = net2json["data_process"]["layers2process"]
-        subgraphs = {"normalize": "Adjacency Matrix <br> Normalization", "embedding": "Embedding"}   
+        subgraphs = {"normalize": "Adjacency Matrix <br> Normalization", "embedding": "Embedding", "control_embedding": "Control"}   
         custom_edges = { ("eGSM", "Ranker"):"-->",("Seeds","Ranker"):"-->"}
         custom_colours = {"Seeds": "#B7E4FF", "Ranker":"#FFA8A8"}
         edges, phase2nodeid = get_edge_non_integrated(net2json) # Parse connections from json
+        print(phase2nodeid)
         # building mermaid body
         # load nodes
         mermaid_body = nodes2mermaid_by_phase(phase2nodeid, 
@@ -412,6 +413,9 @@ ${plotter.create_title(txt, id='workflow_indv_layers', hlevel=2, indexable=True,
         mermaid_body += add_style_by_phase(phase2nodeid, {"process": "#BF7AE7","matrix_result": "#95B9F3"})
         # load edges
         mermaid_body += edges2mermaid(select_edges(edges, select_nodes_from_classes(["layer","process","filter","matrix_result","normalize","embedding"], phase2nodeid)), "-->", "upper") 
+        all_embeddings = {'el', 'node2vec', 'ka', 'rf', 'raw_sim'}
+        phase2nodeid["embedding"] =  all_embeddings.intersection({'el', 'node2vec', 'ka', 'rf'})
+        phase2nodeid["control_embedding"] = all_embeddings.intersection({'raw_sim'})
         mermaid_body += get_subgraphs_for_neighbor(edges, phase2nodeid["database"]) # subgraph the neighboor
         mermaid_body += phases2subpgrahs(phase2nodeid, subgraphs)
         mermaid_body += adding_href(phase2nodeid["layer"])
@@ -554,7 +558,7 @@ ${plotter.create_title(txt, id="emb_process", hlevel=2, indexable=True, clickabl
                                 config = {
                                         'showLegend' : True,
                                         'graphOrientation' : 'horizontal',
-                                        'colorBy' : 'Kernel',
+                                        'colorBy' : 'Embedding',
                                         "segregateSamplesBy": ["Net"],
                                         "axisTickScaleFontFactor": 0.2,
                                         'setMinX': 0,
@@ -568,7 +572,7 @@ ${plotter.create_title(txt, id="emb_process", hlevel=2, indexable=True, clickabl
                                 config = {
                                         'showLegend' : True,
                                         'graphOrientation' : 'horizontal',
-                                        'colorBy' : 'Kernel',
+                                        'colorBy' : 'Embedding',
                                         'segregateSamplesBy': "Integration",
                                         'setMinX': 0,
                                         "titleFontStyle": "italic",
@@ -611,7 +615,7 @@ ${plotter.create_title(txt, id="emb_process", hlevel=2, indexable=True, clickabl
                 config= {
                 'showLegend' : True,
                 "colorBy":"Net",
-                "segregateVariablesBy":"Kernel",
+                "segregateVariablesBy":"Embedding",
                 "titleFontStyle": "italic",
                 "titleScaleFontFactor": 0.3,
                 })) %>
@@ -622,7 +626,7 @@ ${plotter.create_title(txt, id="emb_process", hlevel=2, indexable=True, clickabl
                 config= {
                 'showLegend' : True,
                 "colorBy":"Integration",
-                "segregateVariablesBy":"Kernel",
+                "segregateVariablesBy":"Embedding",
                 "titleFontStyle": "italic",
                 "titleScaleFontFactor": 0.3,
                 })) %>
@@ -641,7 +645,7 @@ ${collapsable_data("Density vs Size", None, "dens_size", "\n".join(txt))}
                 config= {
                         'showLegend' : True,
                         'graphOrientation' : 'vertical',
-                        'segregateSamplesBy' : 'Kernel',
+                        'segregateSamplesBy' : 'Embedding',
                         "smpLabelRotate": 45,
                         "titleFontStyle": "italic",
                         "titleScaleFontFactor": 0.3
@@ -655,7 +659,7 @@ ${collapsable_data("Density vs Size", None, "dens_size", "\n".join(txt))}
                 config= {
                         'showLegend' : True,
                         'graphOrientation' : 'vertical',
-                        'segregateSamplesBy' : 'Kernel',
+                        'segregateSamplesBy' : 'Embedding',
                         "smpLabelRotate": 45,
                         "titleFontStyle": "italic",
                         "titleScaleFontFactor": 0.3,

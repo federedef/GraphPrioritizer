@@ -17,6 +17,7 @@ get_similarity){
 		node_files=`grep -P -w '^Node_list' net_params | cut -f 2 | awk -v prefix="$input_path/input_processed/" '{print prefix $0}' | tr -s '\n' ','`
 		network_file=$input_path/input_processed/$source
 	else 
+		echo -e "$whitelist" > whitelist
 		node_files=`grep -P -w '^Node_list' net_params | cut -f 2 | awk -v prefix="$input_path/input_processed/whitelist/" '{print prefix $0}' | tr -s '\n' ','`
 		network_file=$input_path/input_processed/whitelist/$source
 	fi
@@ -162,7 +163,7 @@ stats_kernels_[$kernels_varflow]){
 	if [ -s kernel_metrics ] ; then
 		rm kernel_metrics
 	fi
-	ln -s !calc_kernel_*!/tracker
+	echo -e "$annotation_(*)\t$annotation\t(*)" > tracker
 	?
 	text2binary_matrix -i !calc_kernel_*!/kernel_matrix_bin.npy -o kernel_matrix_undo -t bin -s kernel_metrics
 	if [ -s kernel_metrics ] ; then

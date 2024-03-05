@@ -37,7 +37,7 @@
                 plotter.hash_vars[name].sort(key=lambda x: x[column])
                 plotter.hash_vars[name].insert(0, tab_header)
 
-        def get_medianrank_size(var_name, groupby = ['annot_kernel','annot','kernel','group_seed'], value = 'rank'):
+        def get_medianrank_size(var_name, groupby = ['annot_Embedding','annot','Embedding','group_seed'], value = 'rank'):
                 df = pd.DataFrame(plotter.hash_vars[var_name][1:], columns = plotter.hash_vars[var_name][0])
                 median_by_attributes = df.groupby(groupby)[value].median().reset_index()
                 len_by_attributes = df.groupby(groupby)[value].size().reset_index()
@@ -121,13 +121,19 @@
                 order_columns('parsed_annotation_grade_metrics',0)
 
         if plotter.hash_vars.get('non_integrated_rank_group_vs_posrank') is not None:
-                plotter.hash_vars["non_integrated_rank_group_vs_posrank"] = get_medianrank_size('non_integrated_rank_group_vs_posrank', groupby = ['annot_kernel','annot','kernel','group_seed'], value = 'rank')
+                plotter.hash_vars["non_integrated_rank_group_vs_posrank"] = get_medianrank_size('non_integrated_rank_group_vs_posrank', groupby = ['annot_Embedding','annot','Embedding','group_seed'], value = 'rank')
         if plotter.hash_vars.get('integrated_rank_group_vs_posrank') is not None:
-                plotter.hash_vars["integrated_rank_group_vs_posrank"] = get_medianrank_size('integrated_rank_group_vs_posrank', groupby = ['integration_kernel','integration','kernel','group_seed'], value = 'rank')
+                plotter.hash_vars["integrated_rank_group_vs_posrank"] = get_medianrank_size('integrated_rank_group_vs_posrank', groupby = ['integration_Embedding','integration','Embedding','group_seed'], value = 'rank')
         if plotter.hash_vars.get('non_integrated_rank_size_auc_by_group'):
-                plotter.hash_vars['non_integrated_rank_medianauc'] = get_medianrank_size('non_integrated_rank_size_auc_by_group', groupby = ["sample","annot","kernel","seed","pos_cov"], value = 'auc')
+                plotter.hash_vars['non_integrated_rank_medianauc'] = get_medianrank_size('non_integrated_rank_size_auc_by_group', groupby = ["sample","annot","Embedding","seed","pos_cov"], value = 'auc')
         if plotter.hash_vars.get('integrated_rank_size_auc_by_group'):
-                plotter.hash_vars["integrated_rank_medianauc"] = get_medianrank_size("integrated_rank_size_auc_by_group", groupby = ["sample","method","kernel","seed","pos_cov"], value = 'auc')
+                plotter.hash_vars["integrated_rank_medianauc"] = get_medianrank_size("integrated_rank_size_auc_by_group", groupby = ["sample","method","Embedding","seed","pos_cov"], value = 'auc')
+
+        bench_type = ""
+        if plotter.hash_vars.get('non_integrated_rank_size_auc_by_group') is not None:
+                bench_type = "menche"
+        else:
+                bench_type = "zampieri"
 
 %>
 <% plotter.set_header() %>
@@ -144,55 +150,64 @@ ${plotter.create_title(txt, id='workflow_bench', hlevel=2, indexable=True, click
         <div>
                 <%
                         graph=f"""
-                        ---
-                        title: Menche Benchmarking Flux
-                        config:
-                         theme: dark
-                         themeVariables:
-                          lineColor: "#717171"
-                        ---
-                        graph LR;
-                         ORPHA[(OrphaNet)]
-                         A[Seeds]
-                         S((<span style="color:#000000">seed</span>))
-                         B[10-fold CV]
-                         C[Iteration 1]
-                         D[Iteraction 2]
-                         E[...]
-                         F[Iteration 10]
-                         I[<span style="color:#8B0000">Negative</span>]
-                         J[<span style="color:#023020">Positive</span>]
-                         G[<span style="color:#000000">ROC</span>]
-                         cdf[<span style="color:#000000">CDF</span>]
-                         Coverage[<span style="color:#000000">Coverage</span>]
-                         ORPHA --Aggregated groups <br> n&ge;20--> A
-                         S --> B 
-                         A --> A
-                         A --> S
-                         subgraph Iterations
-                         C
-                         D 
-                         E 
-                         F    
-                         end
-                         subgraph Ranker
-                         B --> C
-                         B --> D
-                         B --> E
-                         B --> F
-                         end
-                         Iterations --> J
-                         Iterations --> I
-                         I --> G
-                         J --> G
-                         J --> cdf
-                         J --> Coverage
-                         style I fill:#FF503E
-                         style J fill:#84D677
-                         style cdf fill:#A0A0A0
-                         style G fill:#A0A0A0
-                         style S fill:#A0A0A0
-                         style Coverage fill:#A0A0A0
+                        graph LR
+                        Database[(<span style="color:#21002E">OrphaNet</span>)]
+                        Seeds[<span style="color:#21002E"><b>Seeds</b><br>G1<br>G2<br>G3<br>...<br>Gn</span>]
+                        Seed{{{{<span style="color:#263285">Gi</span>}}}}
+                        Input><span style="color:#263285"><b>Input</b></span>]
+                        It1[Iteration 1]
+                        It2[Iteraction 2]
+                        Iti[...]
+                        Itn[Iteration 10]
+                        N[<span style="color:#500000">Negative</span>]
+                        P[<span style="color:#023020">Positive</span>]
+                        ROC[<span style="color:#000000">ROC</span>]
+                        cdf[<span style="color:#000000">CDF</span>]
+                        Coverage[<span style="color:#000000">Coverage</span>]
+                        eGSM_ind{{{{<span style="color:#263285">eGSM</span>}}}}
+                        Database --get groups <br> n&ge;20--> Seeds
+                        Seed --> Input
+                        eGSM_ind --> Input
+                        Seeds --Iterate by <br> seed--> Seed
+                        subgraph Iterations [<b>Ranker</b> <br> <u><i>10-fold CV</i></u>]
+                        It1
+                        It2
+                        Iti
+                        Itn    
+                        end
+                        subgraph p_metrics [<b><u>Performance  metrics</b></u>]
+                        N 
+                        P 
+                        ROC 
+                        cdf
+                        Coverage
+                        end
+                        Input --> It1
+                        Input --> It2
+                        Input --> Iti
+                        Input --> Itn
+                        Iterations --> P
+                        Iterations --> N
+                        N --> ROC
+                        P --> ROC
+                        P --> cdf
+                        P --> Coverage
+                        style P fill:#C0EAB9,stroke:#0D3E05,stroke-width:3px
+                        style N fill:#FF8C80,stroke:#8C1F14,stroke-width:3px
+                        style cdf fill:#A0A0A0,stroke:#333,stroke-width:2px
+                        style ROC fill:#A0A0A0,stroke:#333,stroke-width:2px
+                        style Coverage fill:#A0A0A0,stroke:#333,stroke-width:2px
+                        style Database fill:#D089ED ,stroke:#333,stroke-width:2px
+                        style Seeds fill:#D089ED ,stroke:#333,stroke-width:2px
+                        style Seed fill:#D9E7FF,stroke:#263285,stroke-width:2px
+                        style eGSM_ind fill:#D9E7FF,stroke:#263285,stroke-width:2px
+                        style Input fill:#D9E7FF,stroke:#263285,stroke-width:2px
+                        style Iterations stroke:#333,stroke-width:2px,text-align:center
+                        style p_metrics fill:#F3F3F3,stroke:#333,stroke-width:2px,text-align:center
+                        style It1 fill:#F5F5F5,stroke:#333,stroke-width:2px
+                        style It2 fill:#F5F5F5,stroke:#333,stroke-width:2px
+                        style Iti fill:#F5F5F5,stroke:#333,stroke-width:2px
+                        style Itn fill:#F5F5F5,stroke:#333,stroke-width:2px
                         """
                 %>
                 ${plotter.mermaid_chart(graph)}
@@ -203,55 +218,64 @@ ${plotter.create_title(txt, id='workflow_bench', hlevel=2, indexable=True, click
         <div>
                 <%
                         graph=f"""
-                        ---
-                        title: Zampieri Benchmarking Flux
-                        config:
-                         theme: dark
-                         themeVariables:
-                          lineColor: "#717171"
-                        ---
-                        graph LR;
-                         ORPHA[(OMIM)]
-                         A[Seeds]
-                         S((<span style="color:#000000">seed</span>))
-                         B[Leave One Out]
-                         C[Iteration 1]
-                         D[Iteraction 2]
-                         E[...]
-                         F[Iteration n]
-                         I[<span style="color:#8B0000">Negative</span>]
-                         J[<span style="color:#023020">Positive</span>]
-                         G[<span style="color:#000000">ROC</span>]
-                         cdf[<span style="color:#000000">CDF</span>]
-                         Coverage[<span style="color:#000000">Coverage</span>]
-                         ORPHA --Aggregated groups <br> n&ge;30--> A
-                         S --> B 
-                         A --> A
-                         A --> S
-                         subgraph Iterations
-                         C
-                         D 
-                         E 
-                         F    
-                         end
-                         subgraph Ranker
-                         B --> C
-                         B --> D
-                         B --> E
-                         B --> F
-                         end
-                         Iterations --> J
-                         Iterations --> I
-                         I --> G
-                         J --> G
-                         J --> cdf
-                         J --> Coverage
-                         style I fill:#FF503E
-                         style J fill:#84D677
-                         style cdf fill:#A0A0A0
-                         style G fill:#A0A0A0
-                         style S fill:#A0A0A0
-                         style Coverage fill:#A0A0A0
+                        graph LR
+                        Database[(<span style="color:#21002E">OMIM</span>)]
+                        Seeds[<span style="color:#21002E"><b>Seeds</b><br>G1<br>G2<br>G3<br>...<br>Gn</span>]
+                        Seed{{{{<span style="color:#263285">Gi</span>}}}}
+                        Input><span style="color:#263285"><b>Input</b></span>]
+                        It1[LOO-1]
+                        It2[LOO-2]
+                        Iti[...]
+                        Itn[LOO-n]
+                        N[<span style="color:#500000">Negative</span>]
+                        P[<span style="color:#023020">Positive</span>]
+                        ROC[<span style="color:#000000">ROC</span>]
+                        cdf[<span style="color:#000000">CDF</span>]
+                        Coverage[<span style="color:#000000">Coverage</span>]
+                        eGSM_ind{{{{<span style="color:#263285">eGSM</span>}}}}
+                        Database --get groups <br> n&ge;30--> Seeds
+                        Seed --> Input
+                        eGSM_ind --> Input
+                        Seeds --Iterate by <br> seed--> Seed
+                        subgraph Iterations [<b>Ranker</b> <br> <u><i>Leave One Out</i></u>]
+                        It1
+                        It2
+                        Iti
+                        Itn    
+                        end
+                        subgraph p_metrics [<b><u>Performance  metrics</b></u>]
+                        N 
+                        P 
+                        ROC 
+                        cdf
+                        Coverage
+                        end
+                        Input --> It1
+                        Input --> It2
+                        Input --> Iti
+                        Input --> Itn
+                        Iterations --> P
+                        Iterations --> N
+                        N --> ROC
+                        P --> ROC
+                        P --> cdf
+                        P --> Coverage
+                        style P fill:#C0EAB9,stroke:#0D3E05,stroke-width:3px
+                        style N fill:#FF8C80,stroke:#8C1F14,stroke-width:3px
+                        style cdf fill:#A0A0A0,stroke:#333,stroke-width:2px
+                        style ROC fill:#A0A0A0,stroke:#333,stroke-width:2px
+                        style Coverage fill:#A0A0A0,stroke:#333,stroke-width:2px
+                        style Database fill:#D089ED ,stroke:#333,stroke-width:2px
+                        style Seeds fill:#D089ED ,stroke:#333,stroke-width:2px
+                        style Seed fill:#D9E7FF,stroke:#263285,stroke-width:2px
+                        style eGSM_ind fill:#D9E7FF,stroke:#263285,stroke-width:2px
+                        style Input fill:#D9E7FF,stroke:#263285,stroke-width:2px
+                        style Iterations stroke:#333,stroke-width:2px,text-align:center
+                        style p_metrics fill:#F3F3F3,stroke:#333,stroke-width:2px,text-align:center
+                        style It1 fill:#F5F5F5,stroke:#333,stroke-width:2px
+                        style It2 fill:#F5F5F5,stroke:#333,stroke-width:2px
+                        style Iti fill:#F5F5F5,stroke:#333,stroke-width:2px
+                        style Itn fill:#F5F5F5,stroke:#333,stroke-width:2px
                         """
                 %>
                 ${ plotter.mermaid_chart(graph)}
@@ -287,10 +311,12 @@ ${plotter.create_title(txt, id='pos_cov', hlevel=2, indexable=True, clickable=Fa
                          config = {
                                 'showLegend' : True,
                                 'graphOrientation' : 'horizontal',
-                                'colorBy' : 'Kernel',
+                                'colorBy' : 'Embedding',
                                 'setMinX': 0,
                                 "titleFontStyle": "italic",
-                                "titleScaleFontFactor": 0.3
+                                "titleScaleFontFactor": 0.3,
+                                "axisTickScaleFontFactor": 0.2,
+                                "segregateSamplesBy": "Net"
                                 })}
         % endif
         </div>
@@ -302,7 +328,7 @@ ${plotter.create_title(txt, id='pos_cov', hlevel=2, indexable=True, clickable=Fa
                                 config = {
                                         'showLegend' : True,
                                         'graphOrientation' : 'horizontal',
-                                        'colorBy' : 'Kernel',
+                                        'colorBy' : 'Embedding',
                                         'setMinX': 0,
                                         "titleFontStyle": "italic",
                                         "titleScaleFontFactor": 0.3
@@ -320,53 +346,49 @@ ${plotter.create_title(txt, id='gen_per_metrics', hlevel=2, indexable=True, clic
 <% txt="Summary Distribution of Performance Metrics" %>
 ${plotter.create_title(txt, id='sum_gen_per_metrics', hlevel=3, indexable=True, clickable=False)}
 
-<div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
-        <div style="margin-right: 10px;">
-                        % if plotter.hash_vars.get('non_integrated_rank_cdf') is not None: 
-                                ${plotter.boxplot(id= 'non_integrated_rank_cdf', header= True, row_names= False, default= False, fields= [5],  var_attr= [0,1,2], group = "kernel",
-                                   title= "(A) Individual eGSM",
-                                        x_label= "Normalized rank",
-                                        config= {
-                                                "graphOrientation": "vertical",
-                                                "colorBy" : "kernel",
-                                                "groupingFactors" :
-                                                ["kernel"],
-                                                "titleFontStyle": "italic",
-                                                "titleScaleFontFactor": 0.3,
-                                                "segregateSamplesBy": "annot"})}
-                        % endif
-        </div>
-        <div style="margin-left: 10px;">
-                        % if plotter.hash_vars.get('integrated_rank_cdf') is not None: 
-                                ${plotter.boxplot(id= 'integrated_rank_cdf', header= True, row_names= False, default= False, fields = [5], var_attr= [0,1,2], group= "kernel", 
-                                        title= "(B) Integrated eGSM",
-                                        xlabel= "Normalized rank",
-                                        config= {
-                                                "graphOrientation": "vertical",
-                                                "colorBy" : "kernel",
-                                                "xAxisTitle": "Normalized rank",
-                                                "groupingFactors" :
-                                                ["kernel"],
-                                                "titleFontStyle": "italic",
-                                                "titleScaleFontFactor": 0.3,
-                                                "segregateSamplesBy": "integration"})}
-                        % endif
-        </div>
-</div>
-${make_title("figure", "rank_boxplot", f"""Rank distributions in each individual (A)
- or integrated (B) eGSM. In both plots, y axis ({italic("Normalized ranks")}) represent the rank normalized on 0-1 range.""")}
+<%
+txt = []
+if plotter.hash_vars.get('non_integrated_rank_cdf') is not None: 
+        txt.append(plotter.boxplot(id= 'non_integrated_rank_cdf', header= True, row_names= False, default= False, fields= [5],  var_attr= [0,1,2], group = "Embedding",
+           title= "(A) Individual eGSM",
+                x_label= "Normalized rank",
+                config= {
+                        "graphOrientation": "vertical",
+                        "colorBy" : "Embedding",
+                        "groupingFactors" :
+                        ["Embedding"],
+                        "titleFontStyle": "italic",
+                        "titleScaleFontFactor": 0.3,
+                        "segregateSamplesBy": "annot"}))
+if plotter.hash_vars.get('integrated_rank_cdf') is not None: 
+        txt.append(plotter.boxplot(id= 'integrated_rank_cdf', header= True, row_names= False, default= False, fields = [5], var_attr= [0,1,2], group= "Embedding", 
+                title= "(B) Integrated eGSM",
+                xlabel= "Normalized rank",
+                config= {
+                        "graphOrientation": "vertical",
+                        "colorBy" : "Embedding",
+                        "xAxisTitle": "Normalized rank",
+                        "groupingFactors" :
+                        ["Embedding"],
+                        "titleFontStyle": "italic",
+                        "titleScaleFontFactor": 0.3,
+                        "segregateSamplesBy": "integration"}))
+txt.append(make_title("figure", "rank_boxplot", f"""Rank distributions in each individual (A)
+ or integrated (B) eGSM. In both plots, y axis ({italic("Normalized ranks")}) represent the rank normalized on 0-1 range."""))
+%>
+${collapsable_data("Normalized Rank Boxplot", "norm_rank_click", "norm_rank_collaps","\n".join(txt))}
 
 <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
         <div style="margin-right: 10px;">
                          % if plotter.hash_vars.get('non_integrated_rank_medianauc') is not None: 
-                                ${plotter.boxplot(id= 'non_integrated_rank_medianauc', header= True, row_names= False, default= False, fields= [5],  var_attr= [0,1,2,3], group = ["kernel"],
+                                ${plotter.boxplot(id= 'non_integrated_rank_medianauc', header= True, row_names= False, default= False, fields= [5],  var_attr= [0,1,2,3], group = ["Embedding"],
                                    title= "(A) Individual eGSM",
                                         x_label= "median AUROC",
                                         config= {
                                                 "graphOrientation": "vertical",
-                                                "colorBy" : "kernel",
+                                                "colorBy" : "Embedding",
                                                 "groupingFactors" :
-                                                ["kernel"],
+                                                ["Embedding"],
                                                 "segregateSamplesBy": "annot",
                                                 "jitter": True,
                                                 "showBoxplotIfViolin": True,
@@ -380,14 +402,14 @@ ${make_title("figure", "rank_boxplot", f"""Rank distributions in each individual
         </div>
         <div style="margin-left: 10px;">
                          % if plotter.hash_vars.get('integrated_rank_medianauc') is not None: 
-                                ${plotter.boxplot(id= 'integrated_rank_medianauc', header= True, row_names= False, default= False, fields= [5],  var_attr= [0,1,2], group = ["kernel"],
+                                ${plotter.boxplot(id= 'integrated_rank_medianauc', header= True, row_names= False, default= False, fields= [5],  var_attr= [0,1,2], group = ["Embedding"],
                                    title= "(B) Integrated eGSM",
                                         x_label= "median AUROC",
                                         config= {
                                                 "graphOrientation": "vertical",
-                                                "colorBy" : "kernel",
+                                                "colorBy" : "Embedding",
                                                 "groupingFactors" :
-                                                ["kernel"],
+                                                ["Embedding"],
                                                 "segregateSamplesBy": "method",
                                                 "jitter": True,
                                                 "showBoxplotIfViolin": True,
@@ -401,51 +423,63 @@ ${make_title("figure", "rank_boxplot", f"""Rank distributions in each individual
                         % endif
         </div>
 </div>
-${make_title("figure", "roc_boxplot", f"""Median AUROC distributions in each individual (A)
+% if bench_type == "menche":
+        ${make_title("figure", "roc_boxplot", f"""Median AUROC distributions in each individual (A)
  or integrated (B) eGSM. In both plots, y axis ({italic("median AUROCs")}) represent the median of the 10-fold-CV AUROCs for each seed.""")}
+% endif
 
 <% txt="Curve Distribution of Performance Metrics" %>
 ${plotter.create_title(txt, id='curv_gen_per_metrics', hlevel=3, indexable=True, clickable=False)}
 
-<div style="overflow: hidden; text-align:center">
-        % if plotter.hash_vars.get("non_integrated_rank_cdf") is not None: 
-                ${ plotter.static_plot_main( id="non_integrated_rank_cdf", header=True, row_names=False, var_attr=[0,1,2,3], fields =[4,5,6],
-                                plotting_function= lambda data, plotter_list: plot_with_facet(plot_type="ecdf",data=data, 
-                                        plotter_list=plotter_list, x="rank", col="annot", 
-                                        hue="kernel", col_wrap=4, 
-                                        suptitle="A", x_label="Normalized Rank", y_label="TPR", top=0.9))}
-        % endif
-        % if plotter.hash_vars.get("integrated_rank_cdf") is not None: 
-                ${ plotter.static_plot_main( id="integrated_rank_cdf", header=True, row_names=False, var_attr=[0,1,2,3], fields =[4,5,6],
-                                plotting_function= lambda data, plotter_list: plot_with_facet(plot_type="ecdf",data=data, plotter_list=plotter_list, x="rank", 
-                                        col="integration", hue="kernel", col_wrap=2, suptitle="B", x_label="Normalized Rank", y_label="TPR", top=0.8))}
-        % endif
-</div>
-${make_title("figure", "cdf_curve", f"""CDF curves by each individual (A)
+<%
+txt = []
+if plotter.hash_vars.get("non_integrated_rank_cdf") is not None: 
+        txt.append(plotter.static_plot_main( id="non_integrated_rank_cdf", header=True, row_names=False, var_attr=[0,1,2,3], fields =[4,5,6],
+                        plotting_function= lambda data, plotter_list: plot_with_facet(plot_type="ecdf",data=data, 
+                                plotter_list=plotter_list, x="rank", col="annot", 
+                                hue="Embedding", col_wrap=4, 
+                                suptitle="A", x_label="Normalized Rank", y_label="TPR", top=0.9)))
+if plotter.hash_vars.get("integrated_rank_cdf") is not None: 
+        txt.append(plotter.static_plot_main( id="integrated_rank_cdf", header=True, row_names=False, var_attr=[0,1,2,3], fields =[4,5,6],
+                        plotting_function= lambda data, plotter_list: plot_with_facet(plot_type="ecdf",data=data, plotter_list=plotter_list, x="rank", 
+                                col="integration", hue="Embedding", col_wrap=2, suptitle="B", x_label="Normalized Rank", y_label="TPR", top=0.8)))
+txt.append(make_title("figure", "cdf_curve", f"""CDF curves by each individual (A)
  or integrated (B) eGSM. In both plots, y axis represent 
- the true positive rate ({italic("TPR")}) and x axis ({italic("Normalized Rank")}) the rank normalized from 0 to 1.""")}
+ the true positive rate ({italic("TPR")}) and x axis ({italic("Normalized Rank")}) the rank normalized from 0 to 1."""))
+txt.append("""<a href="https://academic.oup.com/bib/article/23/2/bbac019/6521702#330302198"> Xiao Yuan et al. Evaluation of
+ phenotype-driven gene prioritization methods for Mendelian diseases, Briefings in Bioinformatics, Volume 23, Issue 2, March 2022, bbac019 </a>""")
+%>
+${collapsable_data("CDF Curves", "cdf_click", "cdf_collaps","\n".join(txt))}
 
-<div style="overflow: hidden; text-align:center">
-        % if plotter.hash_vars.get("non_integrated_rank_measures") is not None: 
-                 ${ plotter.static_plot_main( id="non_integrated_rank_measures", header=True, row_names=False, var_attr=[0,1,2,3], fields =[4,5,6],
+
+<%
+txt = []
+if plotter.hash_vars.get("non_integrated_rank_measures") is not None: 
+        txt.append(plotter.static_plot_main( id="non_integrated_rank_measures", header=True, row_names=False, var_attr=[0,1,2,3], fields =[4,5,6],
                                 plotting_function= lambda data, plotter_list: plot_with_facet(plot_type="lineplot", data=data,
                                         plotter_list=plotter_list, x='fpr', y='tpr', col='annot', 
-                                        hue='kernel', col_wrap=4, suptitle="A", 
-                                        top=0.9, x_label="FPR", y_label="TPR"))}
-        % endif
-        % if plotter.hash_vars.get("integrated_rank_measures") is not None: 
-                 ${ plotter.static_plot_main( id="integrated_rank_measures", header=True, row_names=False, var_attr=[0,1,2,3], fields =[4,5,6], 
+                                        hue='Embedding', col_wrap=4, suptitle="A", 
+                                        top=0.9, x_label="FPR", y_label="TPR")))
+
+if plotter.hash_vars.get("integrated_rank_measures") is not None: 
+        txt.append(plotter.static_plot_main( id="integrated_rank_measures", header=True, row_names=False, var_attr=[0,1,2,3], fields =[4,5,6], 
                                 plotting_function= lambda data, plotter_list: plot_with_facet(plot_type="lineplot",data=data, 
                                         plotter_list=plotter_list, x='fpr', y='tpr', col='integration', 
-                                        hue='kernel', col_wrap=2, suptitle="B", 
-                                        top=0.8, labels = 'kernel', x_label="FPR", y_label="TPR"))}
-        % endif
-</div>
-${make_title("figure", "roc_curve", f"""ROC curve by each individual (A) or integrated (B) eGSM.""")}
+                                        hue='Embedding', col_wrap=2, suptitle="B", 
+                                        top=0.8, labels = 'Embedding', x_label="FPR", y_label="TPR")))
+txt.append(make_title("figure", "roc_curve", f"""ROC curve by each individual (A) or integrated (B) eGSM."""))
+%>
+% if bench_type == "menche":
+        ${collapsable_data("ROC Curves", "roc_curves_click", "roc_curves_collaps","\n".join(txt))}
+% else:
+        ${"\n".join(txt)}
+% endif
+
 
 <% txt = [] %>
 % if plotter.hash_vars.get("parsed_non_integrated_rank_summary") is not None: 
-        <% txt.append(plotter.line(id= "parsed_non_integrated_rank_summary", fields= [0, 7, 13, 8], header= True, row_names= True,
+        <% parse_table('parsed_non_integrated_rank_summary', blacklist=["sim"], include_header=True) %>
+        <% txt.append(plotter.line(id= "parsed_non_integrated_rank_summary", fields= [1, 7, 13, 8], header= True, row_names= True, var_attr=[0,2],
                 responsive= False,
                 height= '400px', width= '400px', x_label= 'AUROC',
                 title= "(A) Individual eGSM",
@@ -453,11 +487,16 @@ ${make_title("figure", "roc_curve", f"""ROC curve by each individual (A) or inte
                         'showLegend' : True,
                         'graphOrientation' : 'vertical',
                         "titleFontStyle": "italic",
-                        "titleScaleFontFactor": 0.3
+                        "titleScaleFontFactor": 0.3,
+                        'setMinX': 0,
+                        'setMaxX': 1,
+                        "smpLabelRotate": 45,
+                        "segregateSamplesBy": "Embedding"
                         })) %>
 % endif
 % if plotter.hash_vars.get('parsed_integrated_rank_summary') is not None: 
-        <% txt.append(plotter.line(id= "parsed_integrated_rank_summary", fields=  [0, 7, 13, 8], header= True, row_names= True,
+        <% parse_table('parsed_integrated_rank_summary', blacklist=["sim"], include_header=True) %>
+        <% txt.append(plotter.line(id= "parsed_integrated_rank_summary", fields=  [2, 7, 13, 8], header= True, row_names= True, var_attr = [0,1],
                 responsive= False,
                 height= '400px', width= '400px', x_label= 'AUROC',
                 title= "(B) Integrated eGSM",
@@ -466,16 +505,20 @@ ${make_title("figure", "roc_curve", f"""ROC curve by each individual (A) or inte
                         'graphOrientation' : 'vertical',
                         "titleFontStyle": "italic",
                         "titleScaleFontFactor": 0.3,
-                        }))%>
+                        'setMinX': 0,
+                        'setMaxX': 1,
+                        "smpLabelRotate": 45,
+                        "segregateSamplesBy": "Integration"
+                        })) %>
 % endif
-<% txt.append(make_title("figure", "roc_ic", f"""AUROC confidence interval (CI) in each individual (A) or integrated (B) eGSM. IC was obtained by a 1000 iteration bootstrap.""")) %>
+<% txt.append(make_title("figure", "roc_ic", f"""AUROC Confidence Interval (CI) in each individual (A) or integrated (B) eGSM. CI was obtained by a 1000 iteration bootstrap.""")) %>
 ${collapsable_data("AUROC Condifence Intervals", "auroc_ci_click", "auroc_ci_collaps","\n".join(txt))}
 
-<% txt="Performance by seed" %>
-${plotter.create_title(txt, id='perf_by_seed', hlevel=2, indexable=True, clickable=False)}
 
 % if plotter.hash_vars.get('non_integrated_rank_size_auc_by_group') is not None: 
 
+        <% txt="Performance by seed" %>
+        ${plotter.create_title(txt, id='perf_by_seed', hlevel=2, indexable=True, clickable=False)}
         <%
                 table = plotter.hash_vars["non_integrated_rank_size_auc_by_group"]
                 ids = list(set([ row[1] for i,row in enumerate(table) if i > 0]))
@@ -487,7 +530,7 @@ ${plotter.create_title(txt, id='perf_by_seed', hlevel=2, indexable=True, clickab
                 <% subtable = [row for i, row in enumerate(table) if i == 0 or row[1] == elem] %>
                 <% plotter.hash_vars[key] = subtable %>
                 <% txt = [] %>
-                <% txt.append(plotter.boxplot(id= key, header= True, group = "kernel", row_names= False, default= False, fields= [5],  var_attr= [0,1,2,3], 
+                <% txt.append(plotter.boxplot(id= key, header= True, group = "Embedding", row_names= False, default= False, fields= [5],  var_attr= [0,1,2,3], 
                                 x_label= "AUROC",
                                 title="",
                                 config= {
@@ -524,7 +567,7 @@ ${plotter.create_title(txt, id='perf_by_seed', hlevel=2, indexable=True, clickab
                 <% subtable = [row for i, row in enumerate(table) if i == 0 or row[1] == elem] %>
                 <% plotter.hash_vars[key] = subtable %>
                 <% txt = [] %>
-                <% txt.append(plotter.boxplot(id= key, header= True, group = "kernel", row_names= False, default= False, fields= [5],  var_attr= [0,1,2,3], 
+                <% txt.append(plotter.boxplot(id= key, header= True, group = "Embedding", row_names= False, default= False, fields= [5],  var_attr= [0,1,2,3], 
                                 x_label= "AUROC",
                                 title="",
                                 config= {
@@ -551,30 +594,36 @@ ${plotter.create_title(txt, id='perf_by_seed', hlevel=2, indexable=True, clickab
 ${plotter.create_title(txt, id='perf_by_seed_size', hlevel=2, indexable=True, clickable=False)}
 
 
-<div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
-        % if plotter.hash_vars.get('non_integrated_rank_group_vs_posrank') is not None: 
-           ${plotter.scatter2D(id= 'non_integrated_rank_group_vs_posrank', header= True, fields = [5,4], x_label = 'Real Group Size', y_label = 'median rank', 
+<%
+txt=[]
+if plotter.hash_vars.get('non_integrated_rank_group_vs_posrank') is not None: 
+           txt.append(plotter.scatter2D(id= 'non_integrated_rank_group_vs_posrank', header= True, fields = [5,4], x_label = 'Real Group Size', y_label = 'median rank', 
                 title= " (A) Individual eGSM", var_attr= [0,1,2,3], add_densities = True, config= {
                         'showLegend' : True,
-                        "colorBy":"kernel",
+                        "colorBy":"Embedding",
                         'segregateVariablesBy' : 'annot',
                         "titleFontStyle": "italic",
                         "varLabelFontSize": 5
-                        })}
-        % endif 
-        % if plotter.hash_vars.get('integrated_rank_group_vs_posrank') is not None: 
-           ${plotter.scatter2D(id= 'integrated_rank_group_vs_posrank', header= True, fields = [5,4], x_label = 'Real Group Size', y_label = 'median rank', 
+                        }))
+if plotter.hash_vars.get('integrated_rank_group_vs_posrank') is not None: 
+        txt.append(plotter.scatter2D(id= 'integrated_rank_group_vs_posrank', header= True, fields = [5,4], x_label = 'Real Group Size', y_label = 'median rank', 
                 title= " (B) Integrated eGSM", var_attr= [0,1,2,3], add_densities = True, config= {
                         'showLegend' : True,
-                        "colorBy":"kernel",
+                        "colorBy":"Embedding",
                         'segregateVariablesBy' : 'integration',
                         "titleFontStyle": "italic",
                         "titleScaleFontFactor": 0.3
-                        })} 
-        % endif 
-</div>
-${make_title("figure", "rank_size", f"""Rank vs Size in each individual (A) or integrated (B) eGSM.""")}
+                        }))
+txt.append(make_title("figure", "rank_size", f"""Rank vs Size in each individual (A) or integrated (B) eGSM."""))
+%>
+% if bench_type == "menche":
+        ${collapsable_data("Normalized Ranks vs Size", "norm_rank_vs_size_click", "norm_rank_vs_size_collaps","\n".join(txt))}
+% else:
+        ${"\n".join(txt)}
+% endif
 
+
+% if plotter.hash_vars.get("non_integrated_rank_medianauc") is not None or plotter.hash_vars.get("integrated_rank_medianauc") is not None:
 <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
         % if plotter.hash_vars.get('non_integrated_rank_medianauc') is not None: 
            ${plotter.scatter2D(id= 'non_integrated_rank_medianauc', header= True, 
@@ -582,7 +631,7 @@ ${make_title("figure", "rank_size", f"""Rank vs Size in each individual (A) or i
                 title= " (A) Individual eGSM.", 
                 var_attr= [0,1,2,3], add_densities = True, config= {
                         'showLegend' : True,
-                        "colorBy":"kernel",
+                        "colorBy":"Embedding",
                         'segregateVariablesBy' : 'annot',
                         "titleFontStyle": "italic",
                         "titleScaleFontFactor": 0.3
@@ -594,7 +643,7 @@ ${make_title("figure", "rank_size", f"""Rank vs Size in each individual (A) or i
               title= " (B) Integrated eGSM.", 
               var_attr= [0,1,2,3], add_densities = True, config= {
                         'showLegend' : True,
-                        "colorBy":"kernel",
+                        "colorBy":"Embedding",
                         'segregateVariablesBy' : 'method',
                         "titleFontStyle": "italic",
                         "titleScaleFontFactor": 0.3
@@ -602,6 +651,7 @@ ${make_title("figure", "rank_size", f"""Rank vs Size in each individual (A) or i
         % endif 
 </div>
 ${make_title("figure", "roc_size", f"""Median AUROC vs Size in each individual (A) or integrated (B) eGSM.""")}
+% endif
 
 
 
