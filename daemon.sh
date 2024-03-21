@@ -16,19 +16,28 @@ export control_genes_folder=$input_path/control_genes
 export output_folder=$SCRATCH/executions/GraphPrioritizer
 report_folder=$output_folder/report
 
+# v1: disease phenotype molecular_function biological_process cellular_component string_ppi_combined hippie_ppi DepMap_effect_pearson DepMap_effect_spearman DepMap_Kim pathway gene_hgncGroup
 # Custom variables.
 annotations=" disease phenotype molecular_function biological_process cellular_component"
 annotations+=" string_ppi_combined hippie_ppi"
 annotations+=" string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
 annotations+=" DepMap_effect_pearson DepMap_effect_spearman DepMap_Kim"
 annotations+=" pathway gene_hgncGroup"
+#annotations="phenotype biological_process string_ppi_textmining string_ppi_coexpression gene_hgncGroup"
 #annotations+=" gene_TF gene_PS"
+#annotations="phenotype"
 
-integrated_annotations="disease phenotype molecular_function biological_process cellular_component string_ppi_exp pathway gene_TF gene_hgncGroup DepMap_effect_pearson gene_PS"
+integrated_annotations="disease phenotype molecular_function biological_process cellular_component string_ppi_combined pathway gene_TF gene_hgncGroup DepMap_effect_pearson gene_PS"
 integrated_annotations="string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
 integrated_annotations="phenotype biological_process string_ppi_textmining string_ppi_coexpression gene_hgncGroup"
 integrated_annotations="phenotype biological_process string_ppi_textmining string_ppi_coexpression gene_hgncGroup"
-kernels="ka rf el node2vec raw_sim"
+integrated_annotations="phenotype molecular_function biological_process cellular_component hippie_ppi pathway gene_hgncGroup DepMap_effect_pearson"
+# v1: integrated_annotations="phenotype molecular_function biological_process cellular_component DepMap_Kim hippie_ppi pathway gene_hgncGroup string_ppi_combined"
+# v1.2: integrated_annotations="phenotype molecular_function biological_process cellular_component DepMap_Kim hippie_ppi pathway gene_hgncGroup"
+# v2: "string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
+# v3: "biological_process phenotype string_ppi_textmining string_ppi_coexpression pathway gene_hgncGroup"
+integrated_annotations="biological_process phenotype string_ppi_textmining string_ppi_coexpression pathway gene_hgncGroup disease"
+kernels="rf el node2vec raw_sim"
 integration_types="mean integration_mean_by_presence median max"
 net2custom=$input_path'/net2json' 
 control_pos=$input_path'/control_pos'
@@ -457,7 +466,7 @@ elif [ "$exec_mode" == "kernels" ] ; then
       echo $process_type
       net2json_parser.py --net_id $annotation --json_path $net2custom
       echo "Performing kernels without umap $annotation"
-      AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation} -L $add_opt #-A "exclude:sr133,sr014,sr030"
+      AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation}  -L $add_opt #-A "exclude=sr133,sr014,sr030" -n bc -A "reservation:nuevos_nodos"
 
   done
 
@@ -516,9 +525,9 @@ elif [ "$exec_mode" == "ranking" ] ; then
         \\$geneseeds=$input_path/geneseeds
         " | tr -d [:space:]`
 
-        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/rankings/$benchmark/ranking_${kernel}_${annotation} -m 60gb -t 0-05:00:00 -L $3 #-A "exclude:sr060" 
+        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -n cal -o $output_folder/rankings/$benchmark/ranking_${kernel}_${annotation} -m 30gb -t 0-03:59:59 -L $3 #-A "exclude=sr060" 
       fi
-      sleep 1
+      sleep 2
 
     done
   done
@@ -552,8 +561,8 @@ elif [ "$exec_mode" == "integrate" ] ; then
       \\$kernels_varflow=${kernels_varflow},
       \\$ugot_path=$ugot_path
       " | tr -d [:space:]`
-
-      AutoFlow -w $autoflow_scripts/integrate.af -V $autoflow_vars -o $output_folder/integrations/${integration_type} -m 60gb -t 0-05:00:00 -L $add_opt 
+      # -n bc -A "reservation:nuevos_nodos"
+      AutoFlow -w $autoflow_scripts/integrate.af -V $autoflow_vars -o $output_folder/integrations/${integration_type} -n cal -m 60gb -t 0-02:00:00 -L $add_opt 
 
   done
 
@@ -589,8 +598,8 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
         \\$benchmark=$benchmark,
         \\$geneseeds=$input_path/geneseeds
         " | tr -d [:space:]`
-
-        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -o $output_folder/integrated_rankings/$benchmark/ranking_${kernel}_${integration_type} -m 60gb -L -t 0-05:00:00 $3
+        #-n bc -A "reservation:nuevos_nodos"
+        AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -n cal -o $output_folder/integrated_rankings/$benchmark/ranking_${kernel}_${integration_type} -m 30gb -t 0-03:59:59 -L $3
       fi
       sleep 1
 
@@ -607,7 +616,8 @@ elif [ "$exec_mode" == "report" ] ; then
   source ~soft_bio_267/initializes/init_R
   source $input_path/scripts/aux_scripts/aux_daemon.sh
   html_name=$2
-  check=$3
+  save=$3
+  interested_layers="biological_process phenotype string_ppi_textmining string_ppi_coexpression pathway gene_hgncGroup"
   
   # #################################
   # Setting up the report section #
@@ -650,9 +660,39 @@ elif [ "$exec_mode" == "report" ] ; then
     fi
   done 
 
+  #Here data is selected with just the selected layers of interest
+  for file in "annotations_metrics" "final_stats_by_steps" "uncomb_kernel_metrics"; do
+    echo "Selecting $file"
+    # echo `wc -l $output_folder/$file`
+    # echo -e "`echo $interested_layers | tr -s ' ' '\n'`"
+    # cut -f 2 $output_folder/$file | uniq | sort | uniq
+    grep -e "`echo $interested_layers | tr -s ' ' '\n'`" $output_folder/$file > tmp
+    echo "-------------------"
+    grep -e "string_ppi_textmining" tmp | wc -l
+    echo "------------"
+    # echo `wc -l tmp`
+    # cut -f 2 tmp | uniq | sort | uniq
+    mv tmp $output_folder/$file
+    echo `wc -l $output_folder/$file`
+  done
+  for file in `find $output_folder/non_integrated_* -maxdepth 0 -type f -printf "%f\n"`; do
+    echo "Selecting $file"
+    # echo `wc -l $output_folder/$file`
+    # echo -e "`echo $interested_layers | tr -s ' ' '\n'`"
+    # cut -f 2 $output_folder/$file | uniq | sort | uniq
+    grep -w -F -f <(echo $interested_layers | tr -s ' ' '\n') $output_folder/$file > tmp
+    echo "-------------------"
+    grep -e "string_ppi_textmining" tmp | wc -l
+    echo "------------"
+    # echo `wc -l tmp`
+    # cut -f 2 tmp | uniq | sort | uniq
+    mv tmp $output_folder/$file
+    echo `wc -l $output_folder/$file`
+  done
 
-  ##########################
-  # Processing all metrics #
+
+  # ##########################
+  # # Processing all metrics #
   declare -A references_kernel_report
   references_kernel_report[annotations_metrics]='Net'
   references_kernel_report[final_stats_by_steps]='Net_Step,Net,Step'
@@ -702,23 +742,31 @@ elif [ "$exec_mode" == "report" ] ; then
 
   # Adding control pos
   echo -e "Seed Name\tGenes" > $report_folder/ranking_report/control_pos
-  desaggregate_column_data -x 2 -i control_pos >> $report_folder/ranking_report/control_pos
+  desaggregate_column_data -x 2 -i ./control_genes/$html_name/disease_gens >> $report_folder/ranking_report/control_pos
 
-  if [ -z "$check" ] ; then
+  if [ ! -z "$save" ] ; then
     name_dir=`date +%d_%m_%Y`
     mkdir ./report/HTMLs/$name_dir
     # Copy net2json
     cp ./net2json ./report/HTMLs/$name_dir/
+    if [ "$save" == "all" ] ; then
+      mkdir -p $output_folder/saved_report/$name_dir/$html_name
+      cp -r $report_folder/ranking_report $output_folder/saved_report/$name_dir/$html_name
+      cp -r $report_folder/kernel_report $output_folder/saved_report/$name_dir/$html_name
+      echo "Add extra info on process" 
+      read info_proc 
+      echo "$info_proc" > $output_folder/saved_report/$name_dir/$html_name/info
+    fi
   else 
     echo "Reports to check available"
   fi
   
-  #################
+  ###################
   # Obtaining HTMLS #
   report_html -t ./report/templates/kernel_report.py -c ./report/templates/css --css_cdn https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css -d `ls $report_folder/kernel_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_layer_building$html_name"
   report_html -t ./report/templates/ranking_report.py -c ./report/templates/css --css_cdn https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css -d `ls $report_folder/ranking_report/* | tr -s [:space:] "," | sed 's/,*$//g'` -o "report_algQuality$html_name"
 
-  if [ -z "$check" ] ; then
+  if [ ! -z "$save" ] ; then
     mv ./report_layer_building$html_name.html ./report/HTMLs/$name_dir/
     mv ./report_algQuality$html_name.html ./report/HTMLs/$name_dir/
   fi
