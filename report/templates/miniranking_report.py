@@ -1,41 +1,16 @@
 <%
-        def make_title(type, id, sentence):
-                if type == "table":
-                        key = f"tab:{id}"
-                        html_title = f"<p style='text-align:center;'> <b> {type.capitalize()} {plotter.add_table(key)} </b> {sentence} </p>"
-                elif type == "figure":
-                        key = id
-                        html_title = f"<p style='text-align:center;'> <b> {type.capitalize()} {plotter.add_figure(key)} </b> {sentence} </p>"
-                return html_title
+        import pandas as pd
+        def get_size(var_name, groupby = ['annot_Embedding','annot','Embedding','group_seed'], value = 'rank'):
+                df = pd.DataFrame(plotter.hash_vars[var_name][1:], columns = plotter.hash_vars[var_name][0])
+                len_by_attributes = df.groupby(groupby)[value].size().reset_index()
+                len_by_attributes = len_by_attributes.sort_values(by=value)
+                col_names = plotter.hash_vars[var_name][0]
+                return [col_names] + len_by_attributes.values.tolist()
+
+        plotter.hash_vars["control_pos"] = get_size("control_pos", groupby=["Seed Name"], value = "Genes")
 %>
 <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
-        % if plotter.hash_vars.get('parsed_uncomb_kernel_metrics') is not None:
-                        ${plotter.barplot(id='parsed_uncomb_kernel_metrics', fields= [2,6] , header= True, height= '400px', width= '400px', x_label= 'Matrix Non Zero Density (%)', var_attr= [1,2],
-                                title = "(A) Individual eGSM",
-                                config = {
-                                        'showLegend' : True,
-                                        'graphOrientation' : 'horizontal',
-                                        'colorBy' : 'Embedding',
-                                        "segregateSamplesBy": ["Net"],
-                                        "axisTickScaleFontFactor": 0.2,
-                                        'setMinX': 0,
-                                        "titleFontStyle": "italic",
-                                        "titleScaleFontFactor": 0.3
-                                        })}
+        % if plotter.hash_vars.get('control_pos') is not None:
+                        ${plotter.barplot(id='control_pos', fields= [0,1], header= True, height= '400px',colorScale=True, width= '400px', x_label= 'Number of genes by seed', title= "")}
         % endif
-        % if plotter.hash_vars.get('parsed_comb_kernel_metrics') is not None:
-                        ${plotter.barplot(id='parsed_comb_kernel_metrics', fields= [2,6] , header= True, height= '400px', width= '400px', x_label= 'Matrix Non Zero Density (%)', var_attr= [1,2],
-                                title = "(B) Integrated eGSM",
-                                config = {
-                                        'showLegend' : True,
-                                        'graphOrientation' : 'horizontal',
-                                        'colorBy' : 'Embedding',
-                                        'segregateSamplesBy': "Integration",
-                                        'setMinX': 0,
-                                        "titleFontStyle": "italic",
-                                        "titleScaleFontFactor": 0.3
-                                        })}
-        % endif
-
-        ${make_title("figure","density_summ", "Summary of eGSM density")}
 </div>

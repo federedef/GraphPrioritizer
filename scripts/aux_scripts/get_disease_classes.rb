@@ -13,7 +13,7 @@ def load_disease_data(file)
 		line.chomp!
 		fields = line.split("\t")
 		dis_class = fields[2]
-		genes = fields.last.scan(/\((\d+)\)/).flatten
+		genes = fields[1].split(",")
 		query = disease_classes[dis_class]
 		if query.nil?
 			disease_classes[dis_class] = genes
