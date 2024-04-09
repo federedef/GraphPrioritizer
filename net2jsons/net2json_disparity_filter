@@ -1,0 +1,535 @@
+{
+    "data_process": {
+        "Data_version": "downgraded",
+        "Whitelist": "protein_coding",
+        "Normalize_adj": [
+            "normalize_matrix ('adjacency_matrices',('gene','gene')) by='rows_cols'",
+            "write_matrix ('adjacency_matrices',('gene','gene')) 'similarity_matrix_bin'",
+            "write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_1'"
+        ],
+        "Integrated_layers": [
+            "phenotype",
+            "biological_process",
+            "string_ppi_textmining",
+            "string_ppi_coexpression",
+            "gene_hgncGroup"
+        ],
+        "layers2process": [
+            "disease",
+            "phenotype",
+            "molecular_function",
+            "biological_process",
+            "cellular_component",
+            "string_ppi_combined",
+            "hippie_ppi",
+            "string_ppi_textmining",
+            "string_ppi_database",
+            "string_ppi_experimental",
+            "string_ppi_coexpression",
+            "string_ppi_cooccurence",
+            "string_ppi_fusion",
+            "string_ppi_neighborhood",
+            "DepMap_effect_pearson",
+            "DepMap_effect_spearman",
+            "DepMap_Kim",
+            "pathway",
+            "gene_hgncGroup"
+        ],
+        "Embeddings": [
+            "ka",
+            "rf",
+            "el",
+            "node2vec",
+            "raw_sim"
+        ],
+        "integration_types": [
+            "mean",
+            "integration_mean_by_presence",
+            "median",
+            "max"
+        ]
+    },
+    "biological_process": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "pair",
+        "Layers": "ont,GO:;gene,HGNC:",
+        "Node_list": "-",
+        "Ontology": "go.obo",
+        "Source": "biological_process",
+        "Database": "GO",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "get_similarity ['gene'] 'ont' sim_type='lin' add_to_object=True",
+            "write_matrix ('semantic_sims',('gene','gene'),'lin') 'similarity_matrix_bin'",
+            "write_stats_from_matrix ('semantic_sims',('gene','gene'),'lin') 'stats_from_matrix_semLin_1'"
+        ]
+    },
+    "cellular_component": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "pair",
+        "Layers": "ont,GO:;gene,HGNC:",
+        "Node_list": "-",
+        "Ontology": "go.obo",
+        "Source": "cellular_component",
+        "Database": "GO",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "get_similarity ['gene'] 'ont' sim_type='lin' add_to_object=True",
+            "write_matrix ('semantic_sims',('gene','gene'),'lin') 'similarity_matrix_bin'",
+            "write_stats_from_matrix ('semantic_sims',('gene','gene'),'lin') 'stats_from_matrix_semLin_1'"
+        ]
+    },
+    "disease": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "pair",
+        "Layers": "ont,MONDO:;gene,HGNC:",
+        "Node_list": "-",
+        "Ontology": "mondo.obo",
+        "Source": "disease",
+        "Database": "Mondo",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "get_similarity ['gene'] 'ont' sim_type='lin' add_to_object=True",
+            "write_matrix ('semantic_sims',('gene','gene'),'lin') 'similarity_matrix_bin'",
+            "write_stats_from_matrix ('semantic_sims',('gene','gene'),'lin') 'stats_from_matrix_semLin_1'"
+        ]
+    },
+    "gene_PS": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "pair",
+        "Layers": "gene,HGNC:;ps,PS",
+        "Node_list": "-",
+        "Ontology": "-",
+        "Source": "gene_PS",
+        "Database": "OMIM",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "get_association_values ['gene'] 'ps' 'counts' add_to_object=True",
+            "write_matrix ('associations',('gene','gene'),'counts') output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('associations',('gene','gene'),'counts') 'stats_from_matrix_counts_1'"
+        ]
+    },
+    "gene_TF": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "pair",
+        "Layers": "gene,HGNC:;TF,TF:",
+        "Node_list": "-",
+        "Ontology": "-",
+        "Source": "gene_TF",
+        "Database": "HTRIdb",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "get_association_values ['gene'] 'TF' 'jaccard' add_to_object=True",
+            "write_stats_from_matrix ('associations',('gene','gene'),'jaccard') 'stats_from_matrix_jaccard_1'",
+            "get_association_values ['gene'] 'TF' 'counts' add_to_object=True",
+            "write_stats_from_matrix ('associations',('gene','gene'),'counts') 'stats_from_matrix_counts_2'",
+            "mat_vs_mat_operation ('associations',('gene','gene'),'jaccard') ('associations',('gene','gene'),'counts') operation='filter' options={'cutoff':2,'cutoff_type':'greater'} add_to_object=True",
+            "write_matrix ('associations',('gene','gene'),'jaccard') output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('associations',('gene','gene'),'jaccard') 'stats_from_matrix_filterJaccardByCounts_3'"
+        ]
+    },
+    "gene_hgncGroup": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "pair",
+        "Layers": "gene,HGNC:;group,GROUP:",
+        "Node_list": "-",
+        "Ontology": "-",
+        "Source": "gene_hgncGroup",
+        "Database": "HGNC",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "get_association_values ['gene'] 'group' 'jaccard' add_to_object=True",
+            "write_matrix ('associations',('gene','gene'),'jaccard') output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('associations',('gene','gene'),'jaccard') 'stats_from_matrix_jaccard_1'"
+        ]
+    },
+    "DepMap_Kim": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "pair",
+        "Layers": "gene,HGNC:",
+        "Node_list": "-",
+        "Ontology": "-",
+        "Source": "KimCoess_gene",
+        "Database": "DepMap",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "generate_adjacency_matrix 'gene' 'gene'",
+            "write_matrix ('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_RawWeights_1'"
+        ]
+    },
+    "molecular_function": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "pair",
+        "Layers": "ont,GO:;gene,HGNC:",
+        "Node_list": "-",
+        "Ontology": "go.obo",
+        "Source": "molecular_function",
+        "Database": "GO",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "get_similarity ['gene'] 'ont' sim_type='lin' add_to_object=True",
+            "write_matrix ('semantic_sims',('gene','gene'),'lin') 'similarity_matrix_bin'",
+            "write_stats_from_matrix ('semantic_sims',('gene','gene'),'lin') 'stats_from_matrix_semLin_1'"
+        ]
+    },
+    "pathway": {
+        "Filter": [],
+        "Format": "pair",
+        "Layers": "gene,HGNC:;pathway,REACT:",
+        "Node_list": "-",
+        "Ontology": "-",
+        "Source": "pathway",
+        "Database": "Reactome",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "get_association_values ['gene'] 'pathway' 'jaccard' add_to_object=True",
+            "write_stats_from_matrix ('associations',('gene','gene'),'jaccard') 'stats_from_matrix_jaccard_1'",
+            "get_association_values ['gene'] 'pathway' 'counts' add_to_object=True",
+            "write_stats_from_matrix ('associations',('gene','gene'),'counts') 'stats_from_matrix_counts_2'",
+            "mat_vs_mat_operation ('associations',('gene','gene'),'jaccard') ('associations',('gene','gene'),'counts') operation='filter' options={'cutoff':3,'cutoff_type':'greater'} add_to_object=True",
+            "write_matrix ('associations',('gene','gene'),'jaccard') output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('associations',('gene','gene'),'jaccard') 'stats_from_matrix_filterJaccardByCounts_3'"
+        ]
+    },
+    "phenotype": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "pair",
+        "Layers": "ont,HP:;gene,HGNC:",
+        "Node_list": "-",
+        "Ontology": "hp.obo",
+        "Source": "phenotype",
+        "Database": "HPO",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "get_similarity ['gene'] 'ont' sim_type='lin' add_to_object=True",
+            "write_matrix ('semantic_sims',('gene','gene'),'lin') 'similarity_matrix_bin'",
+            "write_stats_from_matrix ('semantic_sims',('gene','gene'),'lin') 'stats_from_matrix_semLin_1'"
+        ]
+    },
+    "string_ppi_combined": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "pair",
+        "Layers": "gene,HGNC:",
+        "Node_list": "-",
+        "Ontology": "-",
+        "Source": "string_ppi_combined_score",
+        "Database": "String",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "generate_adjacency_matrix 'gene' 'gene'",
+            "write_matrix ('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_RawWeights_1'"
+        ]
+    },
+    "string_ppi_neighborhood": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "pair",
+        "Layers": "gene,HGNC:",
+        "Node_list": "-",
+        "Ontology": "-",
+        "Source": "string_ppi_neighborhood",
+        "Database": "String",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "generate_adjacency_matrix 'gene' 'gene'",
+            "write_matrix ('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_RawWeights_1'"
+        ]
+    },
+    "string_ppi_fusion": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "pair",
+        "Layers": "gene,HGNC:",
+        "Node_list": "-",
+        "Ontology": "-",
+        "Source": "string_ppi_fusion",
+        "Database": "String",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "generate_adjacency_matrix 'gene' 'gene'",
+            "write_matrix ('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_RawWeights_1'"
+        ]
+    },
+    "string_ppi_cooccurence": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "pair",
+        "Layers": "gene,HGNC:",
+        "Node_list": "-",
+        "Ontology": "-",
+        "Source": "string_ppi_cooccurence",
+        "Database": "String",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "generate_adjacency_matrix 'gene' 'gene'",
+            "write_matrix ('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_RawWeights_1'"
+        ]
+    },
+    "string_ppi_coexpression": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "pair",
+        "Layers": "gene,HGNC:",
+        "Node_list": "-",
+        "Ontology": "-",
+        "Source": "string_ppi_coexpression",
+        "Database": "String",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "generate_adjacency_matrix 'gene' 'gene'",
+            "write_matrix ('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_RawWeights_1'"
+        ]
+    },
+    "string_ppi_experimental": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "pair",
+        "Layers": "gene,HGNC:",
+        "Node_list": "-",
+        "Ontology": "-",
+        "Source": "string_ppi_experimental",
+        "Database": "String",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "generate_adjacency_matrix 'gene' 'gene'",
+            "write_matrix ('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_RawWeights_1'"
+        ]
+    },
+    "string_ppi_database": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "pair",
+        "Layers": "gene,HGNC:",
+        "Node_list": "-",
+        "Ontology": "-",
+        "Source": "string_ppi_database",
+        "Database": "String",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "generate_adjacency_matrix 'gene' 'gene'",
+            "write_matrix ('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_RawWeights_1'"
+        ]
+    },
+    "string_ppi_textmining": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "pair",
+        "Layers": "gene,HGNC:",
+        "Node_list": "-",
+        "Ontology": "-",
+        "Source": "string_ppi_textmining",
+        "Database": "String",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "generate_adjacency_matrix 'gene' 'gene'",
+            "write_matrix ('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_RawWeights_1'"
+        ]
+    },
+    "hippie_ppi": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "pair",
+        "Layers": "gene,HGNC:",
+        "Node_list": "-",
+        "Ontology": "-",
+        "Source": "hippie_ppi",
+        "Database": "HIPPIE",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "generate_adjacency_matrix 'gene' 'gene'",
+            "write_matrix ('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_RawWeights_1'"
+        ]
+    },
+    "DepMap_effect_pearson": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "matrix",
+        "Layers": "cell_line,ACH-;gene,HGNC:",
+        "Node_list": [
+            "DepMap_effect_rows",
+            "DepMap_effect_cols"
+        ],
+        "Source": "DepMap_effect",
+        "Database": "DepMap",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "get_association_values ['gene'] 'cell_line' 'correlation' add_to_object=True pvalue=0.1",
+            "write_matrix ('associations',('gene','gene'),'correlation') output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('associations',('gene','gene'),'correlation') output_filename='stats_from_matrix_PearsonCorr_1'"
+        ]
+    },
+    "DepMap_exprs_pearson": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "-",
+        "Layers": "-",
+        "Node_list": "-",
+        "Ontology": "-",
+        "Source": "DepMap_exprs",
+        "Database": "DepMap",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "get_association_values ['gene'] 'cell_line' 'correlation' add_to_object=True pvalue=0.1",
+            "write_matrix ('associations',('gene','gene'),'correlation') output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('associations',('gene','gene'),'correlation') output_filename='stats_from_matrix_PearsonCorr_1'"
+        ]
+    },
+    "DepMap_effect_spearman": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "matrix",
+        "Layers": "cell_line,ACH-;gene,HGNC:",
+        "Node_list": [
+            "DepMap_effect_rows",
+            "DepMap_effect_cols"
+        ],
+        "Source": "DepMap_effect",
+        "Database": "DepMap",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "get_association_values ['gene'] 'cell_line' 'correlation' add_to_object=True pvalue=0.1 corr_type='spearman'",
+            "write_matrix ('associations',('gene','gene'),'correlation') output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('associations',('gene','gene'),'correlation') output_filename='stats_from_matrix_SpearmanCorr_1'"
+        ]
+    },
+    "DepMap_exprs_spearman": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "-",
+        "Layers": "-",
+        "Node_list": "-",
+        "Ontology": "-",
+        "Source": "DepMap_exprs",
+        "Database": "DepMap",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "get_association_values ['gene'] 'cell_line' 'correlation' add_to_object=True pvalue=0.1 corr_type='spearman'",
+            "write_matrix ('associations',('gene','gene'),'correlation') output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('associations',('gene','gene'),'correlation')"
+        ]
+    },
+    "DepMap_effect_bicor": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "-",
+        "Layers": "-",
+        "Node_list": "-",
+        "Ontology": "-",
+        "Source": "DepMap_effect",
+        "Database": "DepMap",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "get_association_values ['gene'] 'cell_line' 'correlation' add_to_object=True pvalue=0.1",
+            "write_matrix ('associations',('gene','gene'),'correlation') output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('associations',('gene','gene'),'correlation')"
+        ]
+    },
+    "DepMap_exprs_bicor": {
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
+        ],
+        "Format": "-",
+        "Layers": "-",
+        "Node_list": "-",
+        "Ontology": "-",
+        "Source": "DepMap_exprs",
+        "Database": "DepMap",
+        "Build_graph": [
+            "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
+            "get_association_values ['gene'] 'cell_line' 'correlation' add_to_object=True pvalue=0.1",
+            "write_matrix ('associations',('gene','gene'),'correlation') output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix ('associations',('gene','gene'),'correlation')"
+        ]
+    }
+}
