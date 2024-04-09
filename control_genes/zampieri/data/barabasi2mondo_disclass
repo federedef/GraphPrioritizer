@@ -1,0 +1,20 @@
+Bone	bone disorder	MONDO:0005381
+Cancer	cancer	MONDO:0004992
+Cardiovascular	cardiovascular disorder	MONDO:0004995
+Connective_tissue_disorder	connective tissue disorder	MONDO:0003900
+Dermatological	skin disorder	MONDO:0005093
+Developmental	disorder of development or morphogenesis	MONDO:0021147
+Ear,Nose,Throat	otorhinolaryngologic disease	MONDO:0024623
+Endocrine	endocrine system disorder	MONDO:0005151
+Gastrointestinal	digestive system disorder	MONDO:0004335	?
+Hematological	hematologic disorder	MONDO:0005570
+Immunological	immune deficiency disease	MONDO:0009453
+Metabolic	metabolic disease	MONDO:0005066
+Muscular	muscle tissue disorder	MONDO:0003939
+Neurological	nervous system disorder	MONDO:0005071
+Nutritional	nutritional disorder	MONDO:0005137
+Ophthamological	disorder of visual system	MONDO:0024458
+Psychiatric	psychiatric disorder	MONDO:0002025
+Renal	kidney disorder MONDO:0005240	?
+Respiratory	respiratory system disorder	MONDO:0005087
+Skeletal	skeletal system disorder	MONDO:0005172
