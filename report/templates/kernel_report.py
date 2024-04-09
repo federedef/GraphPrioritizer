@@ -171,7 +171,6 @@
                 }
                 # source 2 layer
                 for layer, info in net2json.items():
-
                         if layer == "data_process":
                                 data_version = info["Data_version"]
                                 whitelist = info["Whitelist"]
@@ -192,7 +191,8 @@
                                         # process 2 filter
                                         edges.append((process, "GSM"))
                                         if info["Filter"] != []:
-                                                filt = parse_filter(info["Filter"])
+   
+                                                filt = extract_argument(info["Filter"][0].split(" "), "operation")
                                         else:
                                                 filt = "No filter"
                                         edges.append(("GSM", filt))
@@ -397,7 +397,6 @@ ${plotter.create_title(txt, id='workflow_indv_layers', hlevel=2, indexable=True,
         custom_edges = { ("eGSM", "Ranker"):"-->",("Seeds","Ranker"):"-->"}
         custom_colours = {"Seeds": "#B7E4FF", "Ranker":"#FFA8A8"}
         edges, phase2nodeid = get_edge_non_integrated(net2json) # Parse connections from json
-        print(phase2nodeid)
         # building mermaid body
         # load nodes
         mermaid_body = nodes2mermaid_by_phase(phase2nodeid, 
@@ -460,7 +459,8 @@ ${plotter.create_title(txt, id="indv_process_graph_steps", hlevel=2, indexable=T
                 "PearsonCorr": "Pearson correlation based on gene profiles from X",
                 "jaccard": "Jaccard Projection",
                 "counts": "Counts of intersected neighborhood Projection",
-                "kim_coess_gene": "raw intersection"
+                "kim_coess_gene": "raw intersection",
+                "DisparityFilter": "Disparity filter on graph"
                 }
                 processes = parse_individual_processing(re.sub("_sim","",elem))
                 adding_text = []
@@ -481,7 +481,7 @@ ${plotter.create_title(txt, id="indv_process_graph_steps", hlevel=2, indexable=T
                                         'setMinX': 0,
                                         "smpLabelRotate": 90,
                                         "titleFontStyle": "italic",
-                                        "titleScaleFontFactor": 0.3
+                                        "titleScaleFontFactor": 0.7
                                         }) %>
         <% figure2 = plotter.barplot(id=key, fields= [2,6] , header= True, height= '400px', width= '400px', x_label= 'Density (%)', var_attr= [2],
                                 title = "(B) Network Density",
@@ -492,7 +492,7 @@ ${plotter.create_title(txt, id="indv_process_graph_steps", hlevel=2, indexable=T
                                         'setMinX': 0,
                                         "smpLabelRotate": 90,
                                         "titleFontStyle": "italic",
-                                        "titleScaleFontFactor": 0.3
+                                        "titleScaleFontFactor": 0.7
                                         })%>
         <% figure3 = plotter.line(id= key, fields= [2, 7, 19, 20, 21], header= True, row_names= True,
                         responsive= False,
@@ -504,7 +504,7 @@ ${plotter.create_title(txt, id="indv_process_graph_steps", hlevel=2, indexable=T
                                 'colorBy' : 'Step',
                                 "smpLabelRotate": 90,
                                 "titleFontStyle": "italic",
-                                "titleScaleFontFactor": 0.3
+                                "titleScaleFontFactor": 0.7
                                 })%>
         <% text = f"""<p style="text-align:center;"><b> Figure {plotter.add_figure(key)} 
         </b> {parsed_string(elem)} descriptive stats during network processing. Number of nodes (A), density (B) and summary of edge values (C) on the network. 
@@ -560,10 +560,10 @@ ${plotter.create_title(txt, id="emb_process", hlevel=2, indexable=True, clickabl
                                         'graphOrientation' : 'horizontal',
                                         'colorBy' : 'Embedding',
                                         "segregateSamplesBy": ["Net"],
-                                        "axisTickScaleFontFactor": 0.2,
+                                        "axisTickScaleFontFactor": 0.7,
                                         'setMinX': 0,
                                         "titleFontStyle": "italic",
-                                        "titleScaleFontFactor": 0.3
+                                        "titleScaleFontFactor": 0.7
                                         })}
         % endif
         % if plotter.hash_vars.get('parsed_comb_kernel_metrics') is not None:
@@ -576,7 +576,7 @@ ${plotter.create_title(txt, id="emb_process", hlevel=2, indexable=True, clickabl
                                         'segregateSamplesBy': "Integration",
                                         'setMinX': 0,
                                         "titleFontStyle": "italic",
-                                        "titleScaleFontFactor": 0.3
+                                        "titleScaleFontFactor": 0.7
                                         })}
         % endif
 
@@ -591,7 +591,7 @@ ${plotter.create_title(txt, id="emb_process", hlevel=2, indexable=True, clickabl
                 ({italic("Matrix Dimensions")}, {italic("Matrix Elements")}) and density 
                 ({italic("Matrix Elements Non Zero")}, {italic("Matrix non zero density")}) matrix.""")) %>
         <% txt.append(plotter.table(id='parsed_uncomb_kernel_metrics', text= True, header=True, row_names = True, fields= [1,2,3,4,5,6], styled='dt', cell_align= ['left', 'left', 'center', 'center', 'center', 'center'], border= 2,attrib= {
-                        'style' : 'margin-left: auto; margin-right:auto;',
+                        'class': 'table table-striped table-hover',
                         'cellspacing' : 0,
                         'cellpadding' : 2})) %>
         ${collapsable_data("Individual eGSM Matrix Sumary", None, "individual_egsm_matrix_summ", "\n".join(txt))}
@@ -603,7 +603,7 @@ ${plotter.create_title(txt, id="emb_process", hlevel=2, indexable=True, clickabl
                 ({italic("Matrix Dimensions")}, {italic("Matrix Elements")}) and density 
                 ({italic("Matrix Elements Non Zero")}, {italic("Matrix non zero density")}) matrix."""))%>
         <% txt.append(plotter.table(id='parsed_comb_kernel_metrics', text= True, header=True, row_names = True, fields= [1,2,3,4,5,6], styled='dt', cell_align= ['left', 'left', 'center', 'center', 'center', 'center'], border= 2,attrib= {
-                        'style' : 'margin-left: auto; margin-right:auto;',
+                        'class': 'table table-striped',
                         'cellspacing' : 0,
                         'cellpadding' : 2})) %>
         ${collapsable_data("Integrated eGSM Matrix Sumary", None, "integrated_egsm_matrix_summ", "\n".join(txt))}
@@ -617,7 +617,7 @@ ${plotter.create_title(txt, id="emb_process", hlevel=2, indexable=True, clickabl
                 "colorBy":"Net",
                 "segregateVariablesBy":"Embedding",
                 "titleFontStyle": "italic",
-                "titleScaleFontFactor": 0.3,
+                "titleScaleFontFactor": 0.7,
                 })) %>
 % endif
 
@@ -628,7 +628,7 @@ ${plotter.create_title(txt, id="emb_process", hlevel=2, indexable=True, clickabl
                 "colorBy":"Integration",
                 "segregateVariablesBy":"Embedding",
                 "titleFontStyle": "italic",
-                "titleScaleFontFactor": 0.3,
+                "titleScaleFontFactor": 0.7,
                 })) %>
 
 % endif
@@ -648,12 +648,12 @@ ${collapsable_data("Density vs Size", None, "dens_size", "\n".join(txt))}
                         'segregateSamplesBy' : 'Embedding',
                         "smpLabelRotate": 45,
                         "titleFontStyle": "italic",
-                        "titleScaleFontFactor": 0.3
+                        "titleScaleFontFactor": 0.7
                         }))%>
 % endif
 % if plotter.hash_vars.get('parsed_comb_kernel_metrics') is not None:
                 <% txt.append(plotter.line(id= "parsed_comb_kernel_metrics", fields= [1, 19, 20, 21], var_attr= [2], header= True, row_names= True,
-                responsive= False,
+                responsive= False,      
                 height= '400px', width= '400px', x_label= 'Embedding \n Values',
                 title= "(B) Embedding values \nafter integration",
                 config= {
@@ -662,7 +662,7 @@ ${collapsable_data("Density vs Size", None, "dens_size", "\n".join(txt))}
                         'segregateSamplesBy' : 'Embedding',
                         "smpLabelRotate": 45,
                         "titleFontStyle": "italic",
-                        "titleScaleFontFactor": 0.3,
+                        "titleScaleFontFactor": 0.7
                         })) %>
 % endif
 

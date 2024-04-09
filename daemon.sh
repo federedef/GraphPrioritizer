@@ -36,7 +36,11 @@ integrated_annotations="phenotype molecular_function biological_process cellular
 # v1.2: integrated_annotations="phenotype molecular_function biological_process cellular_component DepMap_Kim hippie_ppi pathway gene_hgncGroup"
 # v2: "string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
 # v3: "biological_process phenotype string_ppi_textmining string_ppi_coexpression pathway gene_hgncGroup"
-integrated_annotations="biological_process phenotype string_ppi_textmining string_ppi_coexpression pathway gene_hgncGroup disease"
+#integrated_annotations="biological_process phenotype string_ppi_textmining string_ppi_coexpression pathway gene_hgncGroup"
+# v4: "phenotype string_ppi_textmining string_ppi_coexpression string_ppi_database string_ppi_experimental pathway gene_hgncGroup"
+# v5: "phenotype string_ppi_textmining string_ppi_coexpression string_ppi_database string_ppi_experimental"
+integrated_annotations="phenotype string_ppi_textmining string_ppi_coexpression string_ppi_database string_ppi_experimental"
+
 kernels="rf el node2vec raw_sim"
 integration_types="mean integration_mean_by_presence median max"
 net2custom=$input_path'/net2json' 
@@ -159,23 +163,27 @@ elif [ "$exec_mode" == "download_translators" ] ; then
   ## Obtain TRANSLATOR TABLES.
   mkdir -p ./translators
 
-  # Downloading ProtEnsemble_HGNC from STRING.
-  wget https://stringdb-static.org/download/protein.aliases.v11.5/9606.protein.aliases.v11.5.txt.gz -O ./translators/protein_aliases.v11.5.txt.gz
-  gzip -d translators/protein_aliases.v11.5.txt.gz
-  grep -w "Ensembl_HGNC_HGNC_ID" translators/protein_aliases.v11.5.txt | cut -f 1,2 > ./translators/ProtEnsemble_HGNC
-  rm ./translators/protein_aliases.v11.5.txt
+  # # Downloading ProtEnsemble_HGNC from STRING.
+  # wget https://stringdb-static.org/download/protein.aliases.v11.5/9606.protein.aliases.v11.5.txt.gz -O ./translators/protein_aliases.v11.5.txt.gz
+  # gzip -d translators/protein_aliases.v11.5.txt.gz
+  # grep -w "Ensembl_HGNC_HGNC_ID" translators/protein_aliases.v11.5.txt | cut -f 1,2 > ./translators/ProtEnsemble_HGNC
+  # rm ./translators/protein_aliases.v11.5.txt
 
-  # Downloading Ensemble_HGNC from BioMart
+  # # Downloading Ensemble_HGNC from BioMart
 
-  # TODO
+  # # TODO
 
-  # Downloading HGNC_symbol
-  wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./translators/HGNC_symbol
-  awk '{OFS="\t"}{print $2,$1}' ./translators/HGNC_symbol > ./translators/symbol_HGNC
-  awk '{FS="\t";OFS="\t"}{print $19,$1}' ./translators/HGNC_symbol > ./translators/entrez_HGNC
+  # # Downloading HGNC_symbol
+  # wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./translators/HGNC_symbol
+  # awk '{OFS="\t"}{print $2,$1}' ./translators/HGNC_symbol > ./translators/symbol_HGNC
+  # awk '{FS="\t";OFS="\t"}{print $19,$1}' ./translators/HGNC_symbol > ./translators/entrez_HGNC
 
   # The other direction symbol_HGNC
-  awk '{OFS="\t"}{print $2,$1}' ./translators/HGNC_symbol > ./translators/symbol_HGNC
+  #awk '{OFS="\t"}{print $2,$1}' ./translators/HGNC_symbol > ./translators/symbol_HGNC
+
+  # omim 2 text
+  wget https://data.omim.org/downloads/Vigwxa9YRaCz7jdsYnIfUQ/mimTitles.txt -O ./translators/mimTitles
+  grep -v "#" ./translators/mimTitles | cut -f 2,3 > tmp && mv tmp ./translators/mimTitles
 
 elif [ "$exec_mode" == "process_download" ] ; then
   source ~soft_bio_267/initializes/init_python
@@ -618,6 +626,7 @@ elif [ "$exec_mode" == "report" ] ; then
   html_name=$2
   save=$3
   interested_layers="biological_process phenotype string_ppi_textmining string_ppi_coexpression pathway gene_hgncGroup"
+  interested_layers=$annotations
   
   # #################################
   # Setting up the report section #

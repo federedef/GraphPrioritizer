@@ -1,4 +1,4 @@
-get_similarity){
+%get_similarity){
 	resources: -m '200gb' -t '4-00:00:00' -c 4
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
@@ -61,7 +61,7 @@ get_similarity){
 }
 
 
-filter_net){
+%filter_net){
 	resources: -m '20gb' -t '0-00:10:00'
 	source ~soft_bio_267/initializes/init_python
 	#source ~/dev_py/myvenv/bin/activate
@@ -97,7 +97,7 @@ filter_net){
     fi
 }
 
-normalize_adjMatrix){
+%normalize_adjMatrix){
 	resources: -m '60gb' -t '0-02:30:00'
 	source ~soft_bio_267/initializes/init_python
 	echo -e "$annotation_sim" > tracker
@@ -138,11 +138,11 @@ calc_kernel_[$kernels_varflow]){
 	?
 	if [ "(*)" == "node2vec" ] ; then
 		#nod2vec.py -i normalize_adjMatrix)/similarity_matrix_bin.npy 
-		netanalyzer -i normalize_adjMatrix)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin --both_repre_formats --embedding_add_options "'workers':16"                                                    
+		netanalyzer -i normalize_adjMatrix)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin --both_repre_formats --embedding_add_options "'workers':16" -z                                               
 	elif [ "(*)" == "raw_sim" ] ; then
 		ln -s normalize_adjMatrix)/similarity_matrix_bin.npy kernel_matrix_bin.npy
 	else
-		netanalyzer -i normalize_adjMatrix)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin
+		netanalyzer -i normalize_adjMatrix)/similarity_matrix_bin.npy -f bin -l 'genes' -k (*) -n kernel_matrix_bin.lst -u 'genes' -K ./kernel_matrix_bin -z
 	fi
 
 	if [ -s kernel_matrix_bin.npy ] ; then

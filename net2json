@@ -8,13 +8,11 @@
             "write_stats_from_matrix ('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_1'"
         ],
         "Integrated_layers": [
-            "biological_process",
             "phenotype",
             "string_ppi_textmining",
             "string_ppi_coexpression",
-            "pathway",
-            "gene_hgncGroup",
-            "disease"
+            "string_ppi_database",
+            "string_ppi_experimental"
         ],
         "layers2process": [
             "disease",
