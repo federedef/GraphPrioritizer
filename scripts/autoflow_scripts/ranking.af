@@ -3,8 +3,7 @@ rank_genes_with_leave_one_out){
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_python
 	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
-	#source ~/projects/GraphPrioritizer/myenv/bin/activate
-	source ~/projects/GraphPrioritizer/myenv/bin/activate
+	#source ~/dev_py/venv/bin/activate
 	source ~soft_bio_267/initializes/init_R
 	if [ $benchmark != "zampieri" ] ; then
 		exit 0
@@ -20,9 +19,9 @@ rank_genes_with_leave_one_out){
 	desaggregate_column_data -i $control_pos -x 2 |& awk '{OFS="\t"}{print $1,$2,1}' > tags_group
 	desaggregate_column_data -i $control_neg -x 2 |& awk '{OFS="\t"}{print $1,$2,0}' >> tags_group
 	?
-	ranker -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -l --minimum_size 2
+	ranker -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst --seed_presence remove --seed_nodes seed_by_group -l --minimum_size 2
 	cp ranked_genes_all_candidates processed_ranked_genes
-	ranker -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -f filter --minimum_size 2
+	ranker -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst --seed_presence remove --seed_nodes seed_by_group -f filter --minimum_size 2
 	cut -f 1,2,3,4,6 ranked_genes_all_candidates >> processed_ranked_genes
 
 	# Add tags to ranked_genes_all_candidates.
@@ -85,6 +84,7 @@ rank_genes_with_kfold_cv){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_python
+	#source ~/dev_py/venv/bin/activate
 	source ~soft_bio_267/initializes/init_R
 	if [ $benchmark != "menche" ] ; then
 		exit 0
@@ -97,7 +97,7 @@ rank_genes_with_kfold_cv){
 	## Obtaining tags for group-case
 	desaggregate_column_data -i $control_pos -x 2 |& awk '{OFS="\t"}{print $1,$2,1}' > tags
 	?
-	ranker -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst -s seed_by_group -l -K 10 --minimum_size 10
+	ranker -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst --seed_presence remove --seed_nodes seed_by_group -l -K 10 --minimum_size 10
 	awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/_iteration_[0-9]+$/,"",$6); print $0}' ranked_genes_all_candidates > processed_ranked_genes
 	# Add tags to ranked_genes_all_candidates.
 	add_tags2ranks.py -i processed_ranked_genes -g 5 -c 0 -t tags -o tagged_ranks.txt -n
@@ -108,13 +108,18 @@ rank_genes_with_kfold_cv){
     	# Obtaining measures for graphs
     	number_of_types_of_labels=`cut -f7 tagged_ranks.txt | sort | uniq | wc -l`
     	if [ $number_of_types_of_labels -ge 2 ] ; then
-    		ROCanalysis.R -i tagged_ranks.txt -s 3 -t 7 -S backupgenes -o "preobserved_all_genes" -m "ROC" -M "acc:tpr:fpr:prec:rec" -e -R
-			sed '1d' preobserved_all_genes_measures |  cut -f 2- > all_genes_measures
-			if [ -s all_genes_measures ] ; then
-				awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' all_genes_measures > $output_name_measures
-			else 
-			  	exit 0
-			fi
+			# -m -> graph method (necessary?)
+			# -M all measures to obtain or summarize
+			# -e Export graph values into a plain text file
+			# -R reverse_score_order
+			# Wach out: Is too big when using the seed_presence remove, as a conesquence of the number of positives proxi to the top. too tiny threshold jumps.
+    		# ROCanalysis.R -i tagged_ranks.txt -s 3 -t 7 -S backupgenes -o "preobserved_all_genes" -m "ROC" -M "acc:tpr:fpr:prec:rec" -e -R
+			# sed '1d' preobserved_all_genes_measures |  cut -f 2- > all_genes_measures
+			# if [ -s all_genes_measures ] ; then
+			# 	awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' all_genes_measures > $output_name_measures
+			# else 
+			#   	exit 0
+			# fi
 
 			# Obtaining summary of performance for all groups at onces
 			ROCanalysis.R -i tagged_ranks.txt -s 3 -t 7 -b 1000 -S backupgenes -o "preobserved_all_genes" -z -m "ROC" -M "acc:tpr:fpr:auc:f" -R

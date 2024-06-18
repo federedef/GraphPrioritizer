@@ -39,9 +39,7 @@ def filter_out_non_leafs_nodes(mondo_terms, ontology):
 def get_parent_and_childs_nodes_dict(mondo_terms, ontology):
     parent_to_childs_dict = {}
     for term in mondo_terms:
-        print(term)
         parents = ontology.get_direct_related(term, relation="ancestor")
-        print(parents)
         for parent in parents:
             query = parent_to_childs_dict.get(parent)
             if query is None:
@@ -62,7 +60,6 @@ def get_thresholded_childs_to_parents_dict(similarities, threshold, ontology, tx
     terms_to_collapse = {}
 
     for parent, childs in similarities.items():
-        print(parent)
         for child1, other_childs in childs.items():
             for child2, similarity in other_childs.items():     
                 # Watch out: This is selecting for childs with at least one similarity beyond the threshold.  
@@ -160,7 +157,8 @@ terms = [term for term in terms if term in term_to_txt.keys()]
 
 txt_to_term = {value: key for key, value in term_to_txt.items()}
 # Optional?
-leaf_terms = filter_out_non_leafs_nodes(list(set(terms)), ontology)
+#leaf_terms = filter_out_non_leafs_nodes(list(set(terms)), ontology)
+leaf_terms = list(set(terms))
 
 # Neccesary
 parent_to_childs_terms = get_parent_and_childs_nodes_dict(leaf_terms, ontology)

@@ -35,7 +35,7 @@
   else                                                                                                                                                  
   	if [ "$ontology" != "-" ] ; then
   		desaggregate_column_data -i $network_file -x 2 > ont_profs
-  		netanalyzer -i ont_profs -f $format -l $layers -T [cpu] -O "ont:$input_path/input_obo/$ontology" --dsl_script dsl 
+  		netanalyzer -i ont_profs -f $format -l $layers -T [cpu] -O "ont,$input_path/input_obo/$ontology" --dsl_script dsl 
   	else
   		netanalyzer -i $network_file -f $format -l $layers --dsl_script dsl
   	fi
@@ -44,6 +44,7 @@
   cp preproc_metrics original_preproc_metrics
   mv tmp preproc_metrics
   mv similarity_matrix_bin_rowIds similarity_matrix_bin.lst
+  standard_name_replacer -i similarity_matrix_bin.lst -I $translators/HGNC_symbol -c 1 > symbol_nodes.lst
 
   for file in `ls | grep "stats_from_matrix" | sort -k 5 -t "_" -n` ; do
     var=`echo -e "$file" | sed 's/stats_from_matrix_//' | sed 's/_[0-9]//'`
@@ -61,8 +62,8 @@
 }
 
 
-%filter_net){
-	resources: -m '20gb' -t '0-00:10:00'
+filter_net){
+	resources: -m '200gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_python
 	#source ~/dev_py/myvenv/bin/activate
 	echo -e "$annotation_sim" > tracker
@@ -81,6 +82,8 @@
 		echo "Not filtering matrix"
 		ln -sf get_similarity)/similarity_matrix_bin.npy ./similarity_matrix_bin.npy
     fi
+	#netanalyzer -i similarity_matrix_bin.npy -f "bin" -l "gene" -n similarity_matrix_bin.lst --both_repre_formats --graph_attributes "size,edge_density,transitivity,assorciativity"
+	#awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$1,$2}' graph_attributes.txt > graph_attr_by_net
 
 	# Looking for all possible stats from matrix files 
     for file in `ls | grep "stats_from_matrix" | sort -k 5 -t "_" -n` ; do
@@ -92,12 +95,14 @@
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$2); gsub(/ /,"_",$0); print tracker,$1,$2,$3}' stats_from_matrix >> stats_by_steps
 	fi
 
+	standard_name_replacer -i similarity_matrix_bin.lst -I $translators/HGNC_symbol -c 1 > symbol_nodes.lst
+
     if [ ! -s similarity_matrix_bin.npy ] ; then
     	exit 1
     fi
 }
 
-%normalize_adjMatrix){
+normalize_adjMatrix){
 	resources: -m '60gb' -t '0-02:30:00'
 	source ~soft_bio_267/initializes/init_python
 	echo -e "$annotation_sim" > tracker
@@ -106,6 +111,7 @@
 	#echo -e "normalize_matrix ('adjacency_matrices',('gene','gene')) by='min_max'" > dsl
 
 	cp filter_net)/similarity_matrix_bin.lst ./similarity_matrix_bin.lst
+	cp filter_net)/symbol_nodes.lst ./symbol_nodes.lst
 	cp filter_net)/stats_by_steps ./stats_by_steps
 	rm stats_from_matrix
 	rm final_stats_by_steps
@@ -147,6 +153,7 @@ calc_kernel_[$kernels_varflow]){
 
 	if [ -s kernel_matrix_bin.npy ] ; then
 		echo -e "$annotation_(*)\t$annotation\t(*)\t$kern_net_path" > ugot_path 
+		standard_name_replacer -i kernel_matrix_bin.lst -I $translators/HGNC_symbol -c 1 > symbol_nodes.lst
 	else 
   		exit 1
   	fi

@@ -18,7 +18,7 @@ integrate_kernel_[$kernels_varflow]){
 		rm ugot_path
 	fi
 	?
-	integrate_kernels -i $integration_type -t " $path_kernels " -n " $path_nodes " -o general_matrix --raw_values --cpu 16
+	integrate_kernels -i $integration_type -k " $path_kernels " -n " $path_nodes " -o general_matrix --raw_values --threads 16
 	text2binary_matrix -i general_matrix.npy -o general_matrix_undo -t bin -s generalkernel_metrics
 	if [ -s general_matrix_undo.npy ] ; then
 		rm general_matrix_undo.npy
