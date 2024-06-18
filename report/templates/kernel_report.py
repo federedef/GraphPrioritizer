@@ -2,6 +2,33 @@
         import json 
         import re
         import itertools   
+        import py_exp_calc.exp_calc as pxc
+
+        parse_name = {"string_ppi_combined": "STRING combined", 
+                "string_ppi_textmining":"STRING textmining",
+                "string_ppi_coexpression": "STRING coexpression",
+                "string_ppi_neighborhood": "STRING neighborhood",
+                "string_ppi_experimental": "STRING experiments",
+                "string_ppi_cooccurence": "STRING cooccurrence",
+                "phenotype": "HPO",
+                "disease":"Disease",
+                "pathway": "Pathway",
+                "DepMap_effect_pearson": "DepMap Pearson",
+                "string_ppi_database":"STRING databases",
+                "DepMap_effect_spearman":"DepMap Spearman",
+                "hippie_ppi": "Hippie",
+                "DepMap_Kim":"DepMap Kim",
+                "string_ppi_fusion":"STRING fusion",
+                "gene_hgncGroup": "HGNC group",
+                "integration_mean_by_presence": "IMP",
+                "mean": "Mean",
+                "max": "Max",
+                "median": "Median",
+                "el": "EL",
+                "raw_sim": "GSM",
+                "node2vec": "node2vec",
+                "rf": "RF"
+                }
 
         # Text
         #######
@@ -43,6 +70,22 @@
         # PARSING TABLES
         ################
 
+        def parse_heatmap_from_flat(data,nrow,ncol,nvalue,smp_attr,scale_factor=1):
+                pairs = {}
+                sample_attributes = {}
+                for row in data:
+                        if not pairs.get(row[nrow]):
+                                pairs[row[nrow]] = {}
+                        pairs[row[nrow]][row[ncol]] = row[nvalue]
+                        if smp_attr: sample_attributes[row[nrow]] = [row[attr] for attr in smp_attr]
+                mat, row, col = pxc.to_wmatrix_rectangular(pairs)
+                mat = scale_factor*mat
+                col_attrs = []
+                if smp_attr: col_attrs = [f"smp_attr_{i}" for i in range(0,len(smp_attr))]
+                table = [["-", *col_attrs, *col]]
+                for idx,elem in enumerate(row):
+                        table.append([elem,*sample_attributes[elem], *mat[idx,:].tolist()])
+                return table
 
         def parsed_string(data, blacklist = ["sim"]):
                 words = []
@@ -54,13 +97,16 @@
                 parsed_data = " ".join(words)
                 return parsed_data
 
-        def parse_data(table, blacklist = ["sim"]):
+        def parse_data(table, parse_name, blacklist = ["sim"]):
                 parsed_table = []
                 for i,row in enumerate(table):
                         parsed_table.append(row)
                         for j,data in enumerate(row):
                                 if type(data) == str:
-                                        parsed_table[i][j] = parsed_string(data, blacklist)
+                                        if parse_name.get(data):
+                                                parsed_table[i][j] = parse_name[data]
+                                        else:
+                                                parsed_table[i][j] = parsed_string(data, blacklist)
                                 else:
                                         continue
                 return parsed_table
@@ -81,29 +127,37 @@
                 plotter.hash_vars[name].sort(key=lambda x: x[column])
                 plotter.hash_vars[name].insert(0, tab_header)
 
-        def parse_table(name, blacklist=["sim"]):
-                plotter.hash_vars[name] = parse_data(plotter.hash_vars[name])
+        def parse_table(name, parse_name, blacklist=["sim"]):
+                plotter.hash_vars[name] = parse_data(plotter.hash_vars[name], parse_name)
                 plotter.hash_vars[name] = round_table(plotter.hash_vars[name])
+
+
+        def parse_layer_names(table, column, get_names):
+                data = []
+                for row in table:
+                        data.append(row)
+                        data[-1][column] = get_name[data[-1][column]]
+                return table
 
         if plotter.hash_vars.get('parsed_annotations_metrics') is not None:
                 order_columns('parsed_annotations_metrics',0)
-                parse_table('parsed_annotations_metrics')
+                parse_table('parsed_annotations_metrics', parse_name)
 
         if plotter.hash_vars.get('parsed_similarity_metrics') is not None:
                 order_columns('parsed_similarity_metrics',0)
-                parse_table('parsed_similarity_metrics')
+                parse_table('parsed_similarity_metrics', parse_name)
 
         if plotter.hash_vars.get('parsed_filtered_similarity_metrics') is not None:
                 order_columns('parsed_filtered_similarity_metrics',0)
-                parse_table('parsed_filtered_similarity_metrics')
+                parse_table('parsed_filtered_similarity_metrics', parse_name)
 
         if plotter.hash_vars.get('parsed_uncomb_kernel_metrics') is not None:
                 order_columns('parsed_uncomb_kernel_metrics',0)
-                parse_table('parsed_uncomb_kernel_metrics')
+                parse_table('parsed_uncomb_kernel_metrics', parse_name)
 
         if plotter.hash_vars.get('parsed_comb_kernel_metrics') is not None:
                 order_columns('parsed_comb_kernel_metrics',0)
-                parse_table('parsed_comb_kernel_metrics')
+                parse_table('parsed_comb_kernel_metrics', parse_name)
 
         # PARSIG JSONs
         ##############
@@ -343,7 +397,11 @@
                                 else:
                                         mermaid_txt += f"  {node_id}(\"{node_name}\")\n"
                 return mermaid_txt
-
+        
+        plotter.hash_vars["density_heatmap_uncomb"] = parse_heatmap_from_flat(plotter.hash_vars['parsed_uncomb_kernel_metrics'][1:],1,2,6,[22],100)
+        plotter.hash_vars["density_heatmap_uncomb"][0][1] = "Size"
+        plotter.hash_vars["density_heatmap_comb"] = parse_heatmap_from_flat(plotter.hash_vars['parsed_comb_kernel_metrics'][1:],1,2,6,[22],100)
+        plotter.hash_vars["density_heatmap_comb"][0][1] = "Size"
 %>
 <% plotter.set_header() %>
 
@@ -472,7 +530,7 @@ ${plotter.create_title(txt, id="indv_process_graph_steps", hlevel=2, indexable=T
         <% key = "parsed_final_stats_by_steps_" + elem %>
         <% subtable = [row for i, row in enumerate(table) if i == 0 or row[1] == elem] %>
         <% plotter.hash_vars[key] = subtable %>
-        <% figure1= plotter.barplot(id=key, fields= [2,22] , header= True, height= '400px', width= '400px', x_label= 'Number of nodes', var_attr= [2],
+        <% figure1= plotter.barplot(id=key, fields= [2,22] , header= True, height= '400px', width= '400px', x_label= 'Number of nodes', smp_attr= [2],
                                 title = "(A) Network Size",
                                 config = {
                                         'showLegend' : True,
@@ -483,7 +541,7 @@ ${plotter.create_title(txt, id="indv_process_graph_steps", hlevel=2, indexable=T
                                         "titleFontStyle": "italic",
                                         "titleScaleFontFactor": 0.7
                                         }) %>
-        <% figure2 = plotter.barplot(id=key, fields= [2,6] , header= True, height= '400px', width= '400px', x_label= 'Density (%)', var_attr= [2],
+        <% figure2 = plotter.barplot(id=key, fields= [2,6] , header= True, height= '400px', width= '400px', x_label= 'Density (%)', smp_attr= [2],
                                 title = "(B) Network Density",
                                 config = {
                                         'showLegend' : True,
@@ -552,33 +610,35 @@ ${plotter.create_title(txt, id="emb_process", hlevel=2, indexable=True, clickabl
 
 
 <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
-        % if plotter.hash_vars.get('parsed_uncomb_kernel_metrics') is not None:
-                        ${plotter.barplot(id='parsed_uncomb_kernel_metrics', fields= [2,6] , header= True, height= '400px', width= '400px', x_label= 'Matrix Non Zero Density (%)', var_attr= [1,2],
-                                title = "(A) Individual eGSM",
-                                config = {
-                                        'showLegend' : True,
-                                        'graphOrientation' : 'horizontal',
-                                        'colorBy' : 'Embedding',
-                                        "segregateSamplesBy": ["Net"],
-                                        "axisTickScaleFontFactor": 0.7,
-                                        'setMinX': 0,
-                                        "titleFontStyle": "italic",
-                                        "titleScaleFontFactor": 0.7
-                                        })}
-        % endif
-        % if plotter.hash_vars.get('parsed_comb_kernel_metrics') is not None:
-                        ${plotter.barplot(id='parsed_comb_kernel_metrics', fields= [2,6] , header= True, height= '400px', width= '400px', x_label= 'Matrix Non Zero Density (%)', var_attr= [1,2],
-                                title = "(B) Integrated eGSM",
-                                config = {
-                                        'showLegend' : True,
-                                        'graphOrientation' : 'horizontal',
-                                        'colorBy' : 'Embedding',
-                                        'segregateSamplesBy': "Integration",
-                                        'setMinX': 0,
-                                        "titleFontStyle": "italic",
-                                        "titleScaleFontFactor": 0.7
-                                        })}
-        % endif
+        <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
+                <div style="margin-right: 10px;">
+                        % if plotter.hash_vars.get('density_heatmap_uncomb') is not None:
+                                ${ plotter.heatmap(id = 'density_heatmap_uncomb', title="",header = True, row_names = True, smp_attr=[1],
+                                        config= {
+                                        "varTextRotate":45,
+                                        "smpOverlays":["Size"],
+                                        "smpOverlayProperties": {"Size":{"type":"Bar","thickness":200,"color":"Black"}},
+                                        "setMinX":0,
+                                        "setMaxX":1, 
+                                        "xAxisTitle": "Density", 
+                                        "samplesClustered":True,
+                                        "showSmpDendrogram":False}) }
+                        % endif
+                </div>
+                <div style="margin-left: 10px;"> 
+                        % if plotter.hash_vars.get('density_heatmap_comb') is not None: 
+                                ${ plotter.heatmap(id = 'density_heatmap_comb', header = True, title="", row_names = True, smp_attr=[1],
+                                        config= {
+                                        "smpOverlays":["Size"],
+                                        "smpOverlayProperties": {"Size":{"type":"Bar","thickness":30,"color":"Black"}},
+                                        "setMinX":0,
+                                        "setMaxX":1, 
+                                        "xAxisTitle": "Density", 
+                                        "samplesClustered":True,
+                                        "showSmpDendrogram":False}) }
+                        % endif
+                </div>
+        </div>
 
         ${make_title("figure","density_summ", f"""Summary of eGSM density (%) before (A) and after (B) integration.
         Both plots are segreggated by {italic("individual graph source")} (A) or {italic("integration method")} (B), coloured by embedding process.""")}
@@ -609,9 +669,63 @@ ${plotter.create_title(txt, id="emb_process", hlevel=2, indexable=True, clickabl
         ${collapsable_data("Integrated eGSM Matrix Sumary", None, "integrated_egsm_matrix_summ", "\n".join(txt))}
 % endif
 
+% if plotter.hash_vars.get("parsed_graph_attr_by_net"):
+        ${plotter.scatter3D(id= 'parsed_graph_attr_by_net', header= True, row_names = True, x_label = "Edge density (%)", y_label = 'Transitivity', z_label= "Assorciativity",
+                                                var_attr=[1], xAxis = "edge_density", yAxis="transitivity", zAxis="assorciativity", pointSize="size")}
+% endif
+
+% if plotter.hash_vars.get('parsed_graph_attr_by_net') is not None:
+
+                <%      
+                        get_name = {"string_ppi_combined_sim": "String-comb", "string_ppi_textmining_sim":"String-text",
+                         "string_ppi_coexpression_sim": "String-coex",
+                         "string_ppi_neighborhood_sim": "String-neighb",
+                         "string_ppi_experimental_sim": "String-exp",
+                         "string_ppi_cooccurence_sim": "string-coo",
+                         "phenotype_sim": "Phen",
+                         "disease_sim":"Dis",
+                         "pathway_sim": "Path",
+                         "DepMap_effect_pearson_sim": "DepMap-P",
+                         "string_ppi_database_sim":"String-dbs",
+                         "DepMap_effect_spearman_sim":"DepMap-S",
+                         "hippie_ppi_sim": "Hippie",
+                         "DepMap_Kim_sim":"DepMap-K",
+                         "string_ppi_fusion_sim":"String-fus",
+                         "gene_hgncGroup_sim": "HGNC-group"
+                         }
+                        for i, row in enumerate(plotter.hash_vars['parsed_graph_attr_by_net']):
+                                if i != 0: 
+                                        row[0] = get_name[row[0]]
+
+
+                %>
+                ${plotter.scatter2D(id= 'parsed_graph_attr_by_net', title= "Network topology", header= True, row_names = True, fields = [0,4,3], x_label = 'Assorciativity', y_label = 'transitivity', smp_attr=[1,2], alpha = 0.3, 
+                config= {
+                'showLegend' : True,
+                "colorBy":"edge_density",
+                "sizeBy":"size",
+                "titleFontStyle": "italic",
+                "titleScaleFontFactor": 0.7,
+                "dataTextFontStyle": "bold italic",
+                "showDataLabels": True,
+                "dataTextScaleFontFactor":0.65,
+                "setMaxX": 1,
+                "jitter": True,
+                "jitterFactor": 0.05,
+                "dataTextAlign": "center",
+                "dataTextRotate": 0,
+                "dataTextBaseline": "bottom"
+
+
+
+
+                })}
+
+% endif
+
 <% txt = [] %>
 % if plotter.hash_vars.get('parsed_uncomb_kernel_metrics') is not None:
-                <% txt.append(plotter.scatter2D(id= 'parsed_uncomb_kernel_metrics', title= "(A) Size vs Density on eGSM", header= True, fields = [4,6], x_label = 'Number of posible relations', y_label = 'Matriz Non Zero Density', var_attr=[1,2], alpha = 0.3,
+                <% txt.append(plotter.scatter2D(id= 'parsed_uncomb_kernel_metrics', title= "(A) Size vs Density on eGSM", header= True, fields = [4,6], x_label = 'Number of posible relations', y_label = 'Matriz Non Zero Density', smp_attr=[1,2], alpha = 0.3,
                 config= {
                 'showLegend' : True,
                 "colorBy":"Net",
@@ -622,7 +736,7 @@ ${plotter.create_title(txt, id="emb_process", hlevel=2, indexable=True, clickabl
 % endif
 
 % if plotter.hash_vars.get('parsed_comb_kernel_metrics') is not None:
-                <% txt.append(plotter.scatter2D(id= 'parsed_comb_kernel_metrics', title= "(B) Size vs Density on eGSM", header= True, fields = [4,6], x_label = 'Number of posible relations', y_label = 'Matrix Non Zero Density', var_attr=[1,2], alpha = 0.3,
+                <% txt.append(plotter.scatter2D(id= 'parsed_comb_kernel_metrics', title= "(B) Size vs Density on eGSM", header= True, fields = [4,6], x_label = 'Number of posible relations', y_label = 'Matrix Non Zero Density', smp_attr=[1,2], alpha = 0.3,
                 config= {
                 'showLegend' : True,
                 "colorBy":"Integration",
@@ -638,7 +752,7 @@ ${collapsable_data("Density vs Size", None, "dens_size", "\n".join(txt))}
 
 <% txt = [] %>
 % if plotter.hash_vars.get('parsed_uncomb_kernel_metrics') is not None:
-                <% txt.append(plotter.line(id= "parsed_uncomb_kernel_metrics", fields= [1, 19, 20, 21], var_attr=[2], header= True, row_names= True,
+                <% txt.append(plotter.line(id= "parsed_uncomb_kernel_metrics", fields= [1, 19, 20, 21], smp_attr=[2], header= True, row_names= True,
                 responsive= False,
                 height= '400px', width= '400px', x_label= 'Embedding \n Values',
                 title= "(A) Embedding values \nbefore integration",
@@ -652,7 +766,7 @@ ${collapsable_data("Density vs Size", None, "dens_size", "\n".join(txt))}
                         }))%>
 % endif
 % if plotter.hash_vars.get('parsed_comb_kernel_metrics') is not None:
-                <% txt.append(plotter.line(id= "parsed_comb_kernel_metrics", fields= [1, 19, 20, 21], var_attr= [2], header= True, row_names= True,
+                <% txt.append(plotter.line(id= "parsed_comb_kernel_metrics", fields= [1, 19, 20, 21], smp_attr= [2], header= True, row_names= True,
                 responsive= False,      
                 height= '400px', width= '400px', x_label= 'Embedding \n Values',
                 title= "(B) Embedding values \nafter integration",

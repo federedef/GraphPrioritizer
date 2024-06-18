@@ -12,28 +12,13 @@
             "string_ppi_textmining",
             "string_ppi_coexpression",
             "string_ppi_database",
-            "string_ppi_experimental"
+            "string_ppi_experimental",
+            "pathway"
         ],
         "layers2process": [
-            "disease",
-            "phenotype",
             "molecular_function",
             "biological_process",
-            "cellular_component",
-            "string_ppi_combined",
-            "hippie_ppi",
-            "string_ppi_textmining",
-            "string_ppi_database",
-            "string_ppi_experimental",
-            "string_ppi_coexpression",
-            "string_ppi_cooccurence",
-            "string_ppi_fusion",
-            "string_ppi_neighborhood",
-            "DepMap_effect_pearson",
-            "DepMap_effect_spearman",
-            "DepMap_Kim",
-            "pathway",
-            "gene_hgncGroup"
+            "cellular_component"
         ],
         "Embeddings": [
             "rf",
@@ -49,7 +34,11 @@
         ]
     },
     "biological_process": {
-        "Filter": [],
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_by_percentile' options={'percentile':75} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_PercentileFilter_1'"
+        ],
         "Format": "pair",
         "Layers": "ont,GO:;gene,HGNC:",
         "Node_list": "-",
@@ -64,7 +53,11 @@
         ]
     },
     "cellular_component": {
-        "Filter": [],
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_by_percentile' options={'percentile':75} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_PercentileFilter_1'"
+        ],
         "Format": "pair",
         "Layers": "ont,GO:;gene,HGNC:",
         "Node_list": "-",
@@ -75,7 +68,8 @@
             "get_node_attributes attr_names=['get_degree'] layers='gene' summary=True output_filename='preproc_metrics'",
             "get_similarity ['gene'] 'ont' sim_type='lin' add_to_object=True",
             "write_matrix ('semantic_sims',('gene','gene'),'lin') 'similarity_matrix_bin'",
-            "write_stats_from_matrix ('semantic_sims',('gene','gene'),'lin') 'stats_from_matrix_semLin_1'"
+            "write_stats_from_matrix ('semantic_sims',('gene','gene'),'lin') 'stats_from_matrix_semLin_1'",
+            "get_graph_attributes 'size,edge_density,transitivity,assorciativity' output_filename='graph_attributes.txt'"
         ]
     },
     "disease": {
@@ -158,7 +152,11 @@
         ]
     },
     "molecular_function": {
-        "Filter": [],
+        "Filter": [
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_by_percentile' options={'percentile':75} add_to_object=True",
+            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_PercentileFilter_1'"
+        ],
         "Format": "pair",
         "Layers": "ont,GO:;gene,HGNC:",
         "Node_list": "-",
