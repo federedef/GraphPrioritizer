@@ -35,9 +35,9 @@
     },
     "biological_process": {
         "Filter": [
-            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_by_percentile' options={'percentile':75} add_to_object=True",
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
             "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
-            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_PercentileFilter_1'"
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
         ],
         "Format": "pair",
         "Layers": "ont,GO:;gene,HGNC:",
@@ -54,9 +54,9 @@
     },
     "cellular_component": {
         "Filter": [
-            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_by_percentile' options={'percentile':75} add_to_object=True",
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.10} add_to_object=True",
             "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
-            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_PercentileFilter_1'"
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
         ],
         "Format": "pair",
         "Layers": "ont,GO:;gene,HGNC:",
@@ -153,9 +153,9 @@
     },
     "molecular_function": {
         "Filter": [
-            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_by_percentile' options={'percentile':75} add_to_object=True",
+            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.10} add_to_object=True",
             "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
-            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_PercentileFilter_1'"
+            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
         ],
         "Format": "pair",
         "Layers": "ont,GO:;gene,HGNC:",
