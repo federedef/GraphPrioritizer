@@ -4,6 +4,9 @@
         import pandas as pd
         import re
         import py_exp_calc.exp_calc as pxc
+        import sys
+        sys.path.append("./report")
+        import pyreport_helper as ph
         warnings.simplefilter(action='ignore', category=FutureWarning)
 
         # Defining variables 
@@ -42,46 +45,8 @@
                 "auc": "AUROC"
                 }
 
-        def parse_heatmap_from_flat(data,nrow,ncol,nvalue):
-                pairs = {}
-                for row in data:
-                        if not pairs.get(row[nrow]):
-                                pairs[row[nrow]] = {}
-                        pairs[row[nrow]][row[ncol]] = row[nvalue]
-                mat, row, col = pxc.to_wmatrix_rectangular(pairs)
-                table = [["-",*col]]
-                for idx,elem in enumerate(row):
-                        table.append([elem, *mat[idx,:].tolist()])
-                return table
-
-        def italic(txt):
-                return f"<i>{txt}</i>"
-
-        def collapsable_data(click_title, click_id, container_id, txt, indexable=False, hlevel=1):
-                collapsable_txt = f"""
-                {plotter.create_title(click_title, id=click_id, indexable=indexable, clickable=True, hlevel=hlevel, t_id=container_id)}\n
-                <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
-                        {plotter.create_collapsable_container(container_id, txt)}
-                </div>"""
-                return collapsable_txt
-
-        def make_title(type, id, sentence):
-                if type == "table":
-                        key = f"tab:{id}"
-                        html_title = f"<p style='text-align:center;'> <b> {type.capitalize()} {plotter.add_table(key)} </b> {sentence} </p>"
-                elif type == "figure":
-                        key = id
-                        html_title = f"<p style='text-align:center;'> <b> {type.capitalize()} {plotter.add_figure(key)} </b> {sentence} </p>"
-                return html_title
-
         # Parse tables
         ##############
-
-
-        def order_columns(name, column):
-                tab_header = plotter.hash_vars[name].pop(0)
-                plotter.hash_vars[name].sort(key=lambda x: x[column])
-                plotter.hash_vars[name].insert(0, tab_header)
 
         def get_medianrank_size(var_name, groupby = ['annot_Embedding','annot','Embedding','group_seed'], value = 'rank'):
                 df = pd.DataFrame(plotter.hash_vars[var_name][1:], columns = plotter.hash_vars[var_name][0])
@@ -99,69 +64,6 @@
                 col_names = plotter.hash_vars[var_name][0]
                 return [col_names] + len_by_attributes.values.tolist()
 
-        def parsed_string(data, blacklist = ["sim"]):
-                words = []
-                for word in data.split("_"):
-                        for blackword in blacklist:
-                                word = re.sub(blackword,"",word)
-                        word = word.capitalize()
-                        words.append(word)
-                parsed_data = " ".join(words)
-                return parsed_data
-
-        def parse_data(table, blacklist = ["sim"], column = "all"):
-                parsed_table = []
-                for i,row in enumerate(table):
-                        parsed_table.append(row)
-                        for j,data in enumerate(row):
-                                if type(data) == str and not data.startswith("HGNC:"):
-                                        if parse_name.get(data):
-                                                parsed_table[i][j] = parse_name[data]
-                                        else:
-                                                parsed_table[i][j] = parsed_string(data, blacklist)
-                                else:
-                                        continue
-                return parsed_table
-                
-        def parse_table(name, blacklist=["sim"], include_header = False):
-                if not include_header:
-                        tab_header = plotter.hash_vars[name].pop(0)
-                        plotter.hash_vars[name] = parse_data(plotter.hash_vars[name])
-                        plotter.hash_vars[name].insert(0, tab_header)
-                else:
-                        plotter.hash_vars[name] = parse_data(plotter.hash_vars[name])
-
-        def modify_by_cols(file, ncols, mod):
-                mod_file = []
-                mod_file.append(plotter.hash_vars[file][0])
-                for idx, row in enumerate(plotter.hash_vars[file][1:]):
-                        mod_row = row
-                        for col in ncols:
-                                mod_row[col] = mod(mod_row[col])     
-                        mod_file.append(mod_row)
-                return mod_file
-
-        # Parse plot
-        ############
-
-        def plot_with_facet(data, plotter_list, plot_type="", x='fpr', y='tpr', col=None, hue=None, col_wrap=4, suptitle=None, top=0.7, labels = None, x_label=None, y_label=None):
-                if plot_type == "scatterplot":
-                        g = plotter_list["sns"].FacetGrid(data, col_wrap=col_wrap, col=col, hue=hue, aspect=1).map(plotter_list["sns"].scatterplot, x, y)
-                elif plot_type == "lineplot":
-                        g = plotter_list["sns"].FacetGrid(data, col_wrap=col_wrap, col=col, hue=hue, aspect=1).map(plotter_list["sns"].lineplot, x, y)
-                elif plot_type == "ecdf":   
-                        g = plotter_list["sns"].FacetGrid(data, col_wrap=col_wrap, col=col, hue=hue, aspect=1).map(plotter_list["sns"].ecdfplot, x)
-                elif plot_type == "lmplot":
-                        g = plotter_list["sns"].lmplot(data=data, x=x, y=y, hue=hue, col=col, col_wrap=col_wrap)
-
-                if x_label: g.set_xlabels(x_label)
-                if y_label: g.set_ylabels(y_label)
-                g.add_legend()
-                g.set_titles(col_template="{col_name}")
-                if suptitle is not None:
-                        g.fig.subplots_adjust(top=top)
-                        g.fig.suptitle(suptitle,fontsize=20)     
-
 %>
 <%
         # Parsing tables
@@ -169,36 +71,28 @@
 
         for table in plotter.hash_vars.keys():
                 if table == "parsed_non_integrated_rank_summary" or table == "parsed_integrated_rank_summary":
-                        parse_table(table, include_header=True)
+                        ph.parse_table(plotter, table, parse_name, include_header=True)
                 else:
-                        parse_table(table)
+                        ph.parse_table(plotter, table, parse_name)
 
         if plotter.hash_vars.get('parsed_non_integrated_rank_summary') is not None:
-                order_columns('parsed_non_integrated_rank_summary',0)
+                ph.order_columns(plotter,'parsed_non_integrated_rank_summary',0)
 
         if plotter.hash_vars.get('parsed_integrated_rank_summary') is not None:
-                order_columns('parsed_integrated_rank_summary',0)
-
-        # if plotter.hash_vars.get('parsed_non_integrated_rank_pos_cov') is not None:
-        #         order_columns('parsed_non_integrated_rank_pos_cov',2)
-        #         order_columns('parsed_non_integrated_rank_pos_cov',1)
-   
-        # if plotter.hash_vars.get('parsed_integrated_rank_pos_cov') is not None:
-        #         order_columns('parsed_integrated_rank_pos_cov',2)
-        #         order_columns('parsed_integrated_rank_pos_cov',1)
+                ph.order_columns(plotter,'parsed_integrated_rank_summary',0)
 
         if plotter.hash_vars.get('parsed_non_integrated_rank_pos_cov') is not None:
-                order_columns('parsed_non_integrated_rank_pos_cov',0)
-                plotter.hash_vars["parsed_non_integrated_rank_pos_cov"] = modify_by_cols("parsed_non_integrated_rank_pos_cov", [3], lambda x: float(x)/number_of_positives * 100)
-                plotter.hash_vars['parsed_non_integrated_rank_pos_cov'] = parse_heatmap_from_flat(plotter.hash_vars['parsed_non_integrated_rank_pos_cov'][1:],1,2,3)
+                ph.order_columns(plotter,'parsed_non_integrated_rank_pos_cov',0)
+                plotter.hash_vars["parsed_non_integrated_rank_pos_cov"] = ph.modify_by_cols(plotter,"parsed_non_integrated_rank_pos_cov", [3], lambda x: float(x)/number_of_positives * 100)
+                plotter.hash_vars['parsed_non_integrated_rank_pos_cov'] = ph.parse_heatmap_from_flat(plotter.hash_vars['parsed_non_integrated_rank_pos_cov'][1:],1,2,3,None,None)
 
         if plotter.hash_vars.get('parsed_integrated_rank_pos_cov') is not None:
-                order_columns('parsed_integrated_rank_pos_cov',0)
-                plotter.hash_vars["parsed_integrated_rank_pos_cov"] = modify_by_cols("parsed_integrated_rank_pos_cov", [3], lambda x: float(x)/number_of_positives * 100)
-                plotter.hash_vars['parsed_integrated_rank_pos_cov'] = parse_heatmap_from_flat(plotter.hash_vars['parsed_integrated_rank_pos_cov'][1:],1,2,3)
+                ph.order_columns(plotter,'parsed_integrated_rank_pos_cov',0)
+                plotter.hash_vars["parsed_integrated_rank_pos_cov"] = ph.modify_by_cols(plotter,"parsed_integrated_rank_pos_cov", [3], lambda x: float(x)/number_of_positives * 100)
+                plotter.hash_vars['parsed_integrated_rank_pos_cov'] = ph.parse_heatmap_from_flat(plotter.hash_vars['parsed_integrated_rank_pos_cov'][1:],1,2,3,None,None)
            
         if plotter.hash_vars.get('parsed_annotation_grade_metrics') is not None:
-                order_columns('parsed_annotation_grade_metrics',0)
+                ph.order_columns(plotter,'parsed_annotation_grade_metrics',0)
 
         if plotter.hash_vars.get('non_integrated_rank_group_vs_posrank') is not None:
                 plotter.hash_vars["non_integrated_rank_group_vs_posrank"] = get_medianrank_size('non_integrated_rank_group_vs_posrank', groupby = ['annot_Embedding','annot','Embedding','group_seed'], value = 'rank')
@@ -295,7 +189,7 @@ ${plotter.create_title(txt, id='workflow_bench', hlevel=2, indexable=True, click
                 %>
                 ${plotter.mermaid_chart(graph)}
         </div>
-        ${make_title("figure", "seed_wflow", """Workflow of the benchmarking process. Seeds are obtained from Orphanet disease genes agglomeration with n &ge; 20.
+        ${ph.make_title(plotter,"figure", "seed_wflow", """Workflow of the benchmarking process. Seeds are obtained from Orphanet disease genes agglomeration with n &ge; 20.
          Then, a 10-fold CV is performed for each seed, obtaining positives and using genome background as negatives.""")}    
 % else:
         <div>
@@ -363,9 +257,10 @@ ${plotter.create_title(txt, id='workflow_bench', hlevel=2, indexable=True, click
                 %>
                 ${ plotter.mermaid_chart(graph)}
         </div>
-        ${make_title("figure", "seed_wflow", """Workflow of the benchmarking process. Seeds are obatined from OMIM disease genes agglomeration with n &ge; 30.
+        ${ph.make_title(plotter,"figure", "seed_wflow", """Workflow of the benchmarking process. Seeds are obatined from OMIM disease genes agglomeration with n &ge; 30.
          Then, leave one out is performed for each seed, obtaining positives and using genes in others seeds as negatives.""")}    
 % endif
+
 
 <% txt="Seed Size" %>
 ${plotter.create_title(txt, id='seed_size', hlevel=2, indexable=True, clickable=False)}
@@ -375,16 +270,17 @@ ${plotter.create_title(txt, id='seed_size', hlevel=2, indexable=True, clickable=
         % endif
 </div>
 
+
 <% txt="Genes Coverage" %>
 ${plotter.create_title(txt, id='pos_cov', hlevel=2, indexable=True, clickable=False)}
 
 <div style="overflow: hidden";>
         <div style="overflow: hidden";>
                 % if plotter.hash_vars.get('control_pos') is not None:
-                        <% txt = [make_title("table","table_seedgroups", "Seed groups.")] %>
+                        <% txt = [ph.make_title(plotter,"table","table_seedgroups", "Seed groups.")] %>
                         <% txt.append(plotter.table(id='control_pos', header=True,  text= True, row_names = True, fields= [0,1], styled='dt', border= 2, attrib = {
                                 'class' : "table table-striped table-dark"}))%>
-                        ${collapsable_data("Positive control", None, "positive_control_table", "\n".join(txt))}
+                        ${ph.collapsable_data(plotter,"Positive control", None, "positive_control_table", "\n".join(txt))}
                 % endif
 
         </div>
@@ -413,7 +309,7 @@ ${plotter.create_title(txt, id='pos_cov', hlevel=2, indexable=True, clickable=Fa
                 % endif
         </div>
 </div>
-${make_title("figure", "coverage_bars", """Coverage obtained in each individual (A)
+${ph.make_title(plotter,"figure", "coverage_bars", """Coverage obtained in each individual (A)
  or integrated (B) eGSM. In both plots, x axis reflects the number of positive control genes with information on the adjacency matrix, 
  with zero or minimum value on edges for the corresponding seed.""")}
 
@@ -452,10 +348,10 @@ if plotter.hash_vars.get('integrated_rank_cdf') is not None:
                         "titleFontStyle": "italic",
                         "titleScaleFontFactor": 0.7,
                         "segregateSamplesBy": "integration"}))
-txt.append(make_title("figure", "rank_boxplot", f"""Rank distributions in each individual (A)
- or integrated (B) eGSM. In both plots, y axis ({italic("Normalized ranks")}) represent the rank normalized on 0-1 range."""))
+txt.append(ph.make_title(plotter,"figure", "rank_boxplot", f"""Rank distributions in each individual (A)
+ or integrated (B) eGSM. In both plots, y axis ({ph.italic("Normalized ranks")}) represent the rank normalized on 0-1 range."""))
 %>
-${collapsable_data("Normalized Rank Boxplot", "norm_rank_click", "norm_rank_collaps","\n".join(txt))}
+${ph.collapsable_data(plotter,"Normalized Rank Boxplot", "norm_rank_click", "norm_rank_collaps","\n".join(txt))}
 
 <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
         <div style="margin-right: 10px;">
@@ -513,8 +409,8 @@ ${collapsable_data("Normalized Rank Boxplot", "norm_rank_click", "norm_rank_coll
         </div>
 </div>
 % if bench_type == "menche":
-        ${make_title("figure", "roc_boxplot", f"""Median AUROC distributions in each individual (A)
- or integrated (B) eGSM. In both plots, y axis ({italic("median AUROCs")}) represent the median of the 10-fold-CV AUROCs for each seed.""")}
+        ${ph.make_title(plotter,"figure", "roc_boxplot", f"""Median AUROC distributions in each individual (A)
+ or integrated (B) eGSM. In both plots, y axis ({ph.italic("median AUROCs")}) represent the median of the 10-fold-CV AUROCs for each seed.""")}
 % endif
 
 <% txt="Curve Distribution of Performance Metrics" %>
@@ -524,42 +420,42 @@ ${plotter.create_title(txt, id='curv_gen_per_metrics', hlevel=3, indexable=True,
 txt = []
 if plotter.hash_vars.get("non_integrated_rank_cdf") is not None: 
         txt.append(plotter.static_plot_main( id="non_integrated_rank_cdf", header=True, row_names=False, smp_attr=[0,1,2,3], fields =[4,5,6],
-                        plotting_function= lambda data, plotter_list: plot_with_facet(plot_type="ecdf",data=data, 
+                        plotting_function= lambda data, plotter_list: ph.plot_with_facet(plot_type="ecdf",data=data, 
                                 plotter_list=plotter_list, x="rank", col="annot", 
                                 hue="Embedding", col_wrap=3, 
                                 suptitle="A", x_label="Normalized Rank", y_label="TPR", top=0.9)))
 if plotter.hash_vars.get("integrated_rank_cdf") is not None: 
         txt.append(plotter.static_plot_main( id="integrated_rank_cdf", header=True, row_names=False, smp_attr=[0,1,2,3], fields =[4,5,6],
-                        plotting_function= lambda data, plotter_list: plot_with_facet(plot_type="ecdf",data=data, plotter_list=plotter_list, x="rank", 
+                        plotting_function= lambda data, plotter_list: ph.plot_with_facet(plot_type="ecdf",data=data, plotter_list=plotter_list, x="rank", 
                                 col="integration", hue="Embedding", col_wrap=2, suptitle="B", x_label="Normalized Rank", y_label="TPR", top=0.8)))
-txt.append(make_title("figure", "cdf_curve", f"""CDF curves by each individual (A)
+txt.append(ph.make_title(plotter,"figure", "cdf_curve", f"""CDF curves by each individual (A)
  or integrated (B) eGSM. In both plots, y axis represent 
- the true positive rate ({italic("TPR")}) and x axis ({italic("Normalized Rank")}) the rank normalized from 0 to 1."""))
+ the true positive rate ({ph.italic("TPR")}) and x axis ({ph.italic("Normalized Rank")}) the rank normalized from 0 to 1."""))
 txt.append("""<a href="https://academic.oup.com/bib/article/23/2/bbac019/6521702#330302198"> Xiao Yuan et al. Evaluation of
  phenotype-driven gene prioritization methods for Mendelian diseases, Briefings in Bioinformatics, Volume 23, Issue 2, March 2022, bbac019 </a>""")
 %>
-${collapsable_data("CDF Curves", "cdf_click", "cdf_collaps","\n".join(txt))}
+${ph.collapsable_data(plotter,"CDF Curves", "cdf_click", "cdf_collaps","\n".join(txt))}
 
 
 <%
 txt = []
 if plotter.hash_vars.get("non_integrated_rank_measures") is not None: 
         txt.append(plotter.static_plot_main( id="non_integrated_rank_measures", header=True, row_names=False, smp_attr=[0,1,2,3], fields =[4,5,6],
-                                plotting_function= lambda data, plotter_list: plot_with_facet(plot_type="lineplot", data=data,
+                                plotting_function= lambda data, plotter_list: ph.plot_with_facet(plot_type="lineplot", data=data,
                                         plotter_list=plotter_list, x='fpr', y='tpr', col='annot', 
                                         hue='Embedding', col_wrap=3, suptitle="A", 
                                         top=0.9, x_label="FPR", y_label="TPR")))
 
 if plotter.hash_vars.get("integrated_rank_measures") is not None: 
         txt.append(plotter.static_plot_main( id="integrated_rank_measures", header=True, row_names=False, smp_attr=[0,1,2,3], fields =[4,5,6], 
-                                plotting_function= lambda data, plotter_list: plot_with_facet(plot_type="lineplot",data=data, 
+                                plotting_function= lambda data, plotter_list: ph.plot_with_facet(plot_type="lineplot",data=data, 
                                         plotter_list=plotter_list, x='fpr', y='tpr', col='integration', 
                                         hue='Embedding', col_wrap=2, suptitle="B", 
                                         top=0.8, labels = 'Embedding', x_label="FPR", y_label="TPR")))
-txt.append(make_title("figure", "roc_curve", f"""ROC curve by each individual (A) or integrated (B) eGSM."""))
+txt.append(ph.make_title(plotter,"figure", "roc_curve", f"""ROC curve by each individual (A) or integrated (B) eGSM."""))
 %>
 % if bench_type == "menche":
-        ${collapsable_data("ROC Curves", "roc_curves_click", "roc_curves_collaps","\n".join(txt))}
+        ${ph.collapsable_data(plotter,"ROC Curves", "roc_curves_click", "roc_curves_collaps","\n".join(txt))}
 % else:
         ${"\n".join(txt)}
 % endif
@@ -598,8 +494,8 @@ txt.append(make_title("figure", "roc_curve", f"""ROC curve by each individual (A
                         "segregateSamplesBy": "Integration"
                         })) %>
 % endif
-<% txt.append(make_title("figure", "roc_ic", f"""AUROC Confidence Interval (CI) in each individual (A) or integrated (B) eGSM. CI was obtained by a 1000 iteration bootstrap.""")) %>
-${collapsable_data("AUROC Condifence Intervals", "auroc_ci_click", "auroc_ci_collaps","\n".join(txt))}
+<% txt.append(ph.make_title(plotter,"figure", "roc_ic", f"""AUROC Confidence Interval (CI) in each individual (A) or integrated (B) eGSM. CI was obtained by a 1000 iteration bootstrap.""")) %>
+${ph.collapsable_data(plotter,"AUROC Condifence Intervals", "auroc_ci_click", "auroc_ci_collaps","\n".join(txt))}
 
 
 % if plotter.hash_vars.get('non_integrated_rank_size_auc_by_group') is not None: 
@@ -633,11 +529,11 @@ ${collapsable_data("AUROC Condifence Intervals", "auroc_ci_click", "auroc_ci_col
                                         "smpLabelScaleFontFactor": 0.3,
                                         "smpTextRotate":45,
                                         "setMinX": 0})) %>
-                <% txt.append(make_title("figure",f"figure_dragon_{elem}", f"""Distributioon of AUROC obtained on 10-fold-CV by
+                <% txt.append(ph.make_title(plotter,"figure",f"figure_dragon_{elem}", f"""Distributioon of AUROC obtained on 10-fold-CV by
                  each seed and individual eGSM for {elem}")"""))%>
-                <% macro_click_txt.append(collapsable_data(f"{elem}: AUROC by seed", None, f"dragon_plot_{elem}", "\n".join(txt))) %>
+                <% macro_click_txt.append(ph.collapsable_data(plotter,f"{elem}: AUROC by seed", None, f"dragon_plot_{elem}", "\n".join(txt))) %>
         % endfor
-        ${collapsable_data("Individual eGSM", 'clickme_id'+"general", 'container'+"general","\n".join(macro_click_txt), True, hlevel=3)}
+        ${ph.collapsable_data(plotter,"Individual eGSM", 'clickme_id'+"general", 'container'+"general","\n".join(macro_click_txt), True, hlevel=3)}
 
 % endif 
 
@@ -670,11 +566,11 @@ ${collapsable_data("AUROC Condifence Intervals", "auroc_ci_click", "auroc_ci_col
                                         "smpLabelScaleFontFactor": 0.3,
                                         "smpTextRotate":45,
                                         "setMinX": 0})) %>
-                <% txt.append(make_title("figure",f"figure_dragon_{elem}", f"""Distributioon of AUROC obtained on 10-fold-CV by
+                <% txt.append(ph.make_title(plotter,"figure",f"figure_dragon_{elem}", f"""Distributioon of AUROC obtained on 10-fold-CV by
                  each seed and integrated eGSM for {elem}")"""))%>
-                <% macro_click_txt.append(collapsable_data(f"{elem}: AUROCs by seed", None, f"dragon_plot_{elem}", "\n".join(txt))) %>
+                <% macro_click_txt.append(ph.collapsable_data(plotter,f"{elem}: AUROCs by seed", None, f"dragon_plot_{elem}", "\n".join(txt))) %>
         % endfor
-        ${collapsable_data("Integrated eGSM", 'clickme_id'+"general2", 'container'+"general2","\n".join(macro_click_txt), True, hlevel=3)}
+        ${ph.collapsable_data(plotter,"Integrated eGSM", 'clickme_id'+"general2", 'container'+"general2","\n".join(macro_click_txt), True, hlevel=3)}
 % endif 
 
 <% txt="Performance by Seed Size" %>
@@ -701,10 +597,10 @@ if plotter.hash_vars.get('integrated_rank_group_vs_posrank') is not None:
                         "titleFontStyle": "italic",
                         "titleScaleFontFactor": 0.7
                         }))
-txt.append(make_title("figure", "rank_size", f"""Rank vs Size in each individual (A) or integrated (B) eGSM."""))
+txt.append(ph.make_title(plotter,"figure", "rank_size", f"""Rank vs Size in each individual (A) or integrated (B) eGSM."""))
 %>
 % if bench_type == "menche":
-        ${collapsable_data("Normalized Ranks vs Size", "norm_rank_vs_size_click", "norm_rank_vs_size_collaps","\n".join(txt))}
+        ${ph.collapsable_data(plotter,"Normalized Ranks vs Size", "norm_rank_vs_size_click", "norm_rank_vs_size_collaps","\n".join(txt))}
 % else:
         ${"\n".join(txt)}
 % endif
@@ -737,5 +633,5 @@ txt.append(make_title("figure", "rank_size", f"""Rank vs Size in each individual
                         })}
         % endif 
 </div>
-${make_title("figure", "roc_size", f"""Median AUROC vs Size in each individual (A) or integrated (B) eGSM.""")}
+${ph.make_title(plotter,"figure", "roc_size", f"""Median AUROC vs Size in each individual (A) or integrated (B) eGSM.""")}
 % endif

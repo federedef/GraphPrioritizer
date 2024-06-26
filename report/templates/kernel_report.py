@@ -1,8 +1,11 @@
 <%
         import json 
         import re
-        import itertools   
         import py_exp_calc.exp_calc as pxc
+        import sys
+        sys.path.append("./report")
+        import mermaid_parser as mp
+        import pyreport_helper as ph
 
         parse_name = {"string_ppi_combined": "STRING combined", 
                 "string_ppi_textmining":"STRING textmining",
@@ -30,378 +33,28 @@
                 "rf": "RF"
                 }
 
-        # Text
-        #######
-
-        def italic(txt):
-                return f"<i>{txt}</i>"
-
-        def bold(txt):
-                return f"<b>{txt}</b>"
-
-        def collapsable_data(click_title, click_id, container_id, txt):
-                collapsable_txt = f"""
-                {plotter.create_title(click_title, id=click_id, indexable=False, clickable=True, t_id=container_id)}\n
-                <div style="overflow: hidden; display: flex; flex-direction: row; justify-content: center;">
-                        {plotter.create_collapsable_container(container_id, txt)}
-                </div>"""
-                return collapsable_txt
-
-        def make_title(type, id, sentence):
-                if type == "table":
-                        key = f"tab:{id}"
-                        html_title = f"<p style='text-align:center;'> <b> {type.capitalize()} {plotter.add_table(key)} </b> {sentence} </p>"
-                elif type == "figure":
-                        key = id
-                        html_title = f"<p style='text-align:center;'> <b> {type.capitalize()} {plotter.add_figure(key)} </b> {sentence} </p>"
-                return html_title
-
-        def ul(lis):
-                txt = '<lu class="body_ul">'
-                for li in lis:
-                        li = li.split(":")
-                        li[0] = bold(li[0])
-                        li = ":".join(li)
-                        txt += f"<li>{li}</li>\n"
-                txt += "</lu>"
-                return  txt
-
-
-        # PARSING TABLES
-        ################
-
-        def parse_heatmap_from_flat(data,nrow,ncol,nvalue,smp_attr,scale_factor=1):
-                pairs = {}
-                sample_attributes = {}
-                for row in data:
-                        if not pairs.get(row[nrow]):
-                                pairs[row[nrow]] = {}
-                        pairs[row[nrow]][row[ncol]] = row[nvalue]
-                        if smp_attr: sample_attributes[row[nrow]] = [row[attr] for attr in smp_attr]
-                mat, row, col = pxc.to_wmatrix_rectangular(pairs)
-                mat = scale_factor*mat
-                col_attrs = []
-                if smp_attr: col_attrs = [f"smp_attr_{i}" for i in range(0,len(smp_attr))]
-                table = [["-", *col_attrs, *col]]
-                for idx,elem in enumerate(row):
-                        table.append([elem,*sample_attributes[elem], *mat[idx,:].tolist()])
-                return table
-
-        def parsed_string(data, blacklist = ["sim"]):
-                words = []
-                for word in data.split("_"):
-                        for blackword in blacklist:
-                                word = re.sub(blackword,"",word)
-                        word = word.capitalize()
-                        words.append(word)
-                parsed_data = " ".join(words)
-                return parsed_data
-
-        def parse_data(table, parse_name, blacklist = ["sim"]):
-                parsed_table = []
-                for i,row in enumerate(table):
-                        parsed_table.append(row)
-                        for j,data in enumerate(row):
-                                if type(data) == str:
-                                        if parse_name.get(data):
-                                                parsed_table[i][j] = parse_name[data]
-                                        else:
-                                                parsed_table[i][j] = parsed_string(data, blacklist)
-                                else:
-                                        continue
-                return parsed_table
-
-        def round_table(table, round_by=2):
-                rounded_table = []
-                for i,row in enumerate(table):
-                        rounded_table.append(row)
-                        for j,data in enumerate(row):
-                                if data.replace(".", "").isnumeric():
-                                        rounded_table[i][j] = str(round(float(data),round_by))
-                                else:
-                                        continue
-                return rounded_table
-                
-        def order_columns(name, column):
-                tab_header = plotter.hash_vars[name].pop(0)
-                plotter.hash_vars[name].sort(key=lambda x: x[column])
-                plotter.hash_vars[name].insert(0, tab_header)
-
-        def parse_table(name, parse_name, blacklist=["sim"]):
-                plotter.hash_vars[name] = parse_data(plotter.hash_vars[name], parse_name)
-                plotter.hash_vars[name] = round_table(plotter.hash_vars[name])
-
-
-        def parse_layer_names(table, column, get_names):
-                data = []
-                for row in table:
-                        data.append(row)
-                        data[-1][column] = get_name[data[-1][column]]
-                return table
-
         if plotter.hash_vars.get('parsed_annotations_metrics') is not None:
-                order_columns('parsed_annotations_metrics',0)
-                parse_table('parsed_annotations_metrics', parse_name)
+                ph.order_columns(plotter,'parsed_annotations_metrics',0)
+                ph.parse_table(plotter,'parsed_annotations_metrics', parse_name)
 
         if plotter.hash_vars.get('parsed_similarity_metrics') is not None:
-                order_columns('parsed_similarity_metrics',0)
-                parse_table('parsed_similarity_metrics', parse_name)
+                ph.order_columns(plotter,'parsed_similarity_metrics',0)
+                ph.parse_table(plotter,'parsed_similarity_metrics', parse_name)
 
         if plotter.hash_vars.get('parsed_filtered_similarity_metrics') is not None:
-                order_columns('parsed_filtered_similarity_metrics',0)
-                parse_table('parsed_filtered_similarity_metrics', parse_name)
+                ph.order_columns(plotter,'parsed_filtered_similarity_metrics',0)
+                ph.parse_table(plotter,'parsed_filtered_similarity_metrics', parse_name)
 
         if plotter.hash_vars.get('parsed_uncomb_kernel_metrics') is not None:
-                order_columns('parsed_uncomb_kernel_metrics',0)
-                parse_table('parsed_uncomb_kernel_metrics', parse_name)
+                ph.order_columns(plotter,'parsed_uncomb_kernel_metrics',0)
+                ph.parse_table(plotter,'parsed_uncomb_kernel_metrics', parse_name)
 
         if plotter.hash_vars.get('parsed_comb_kernel_metrics') is not None:
-                order_columns('parsed_comb_kernel_metrics',0)
-                parse_table('parsed_comb_kernel_metrics', parse_name)
-
-        # PARSIG JSONs
-        ##############
-
-        def load_json(file):
-                with open(file,"r") as f:
-                        json_file = json.load(f)
-                return json_file
-
-        def extract_argument(command_function, arg):
-                value = [el.split("=")[1] for el in command_function if arg in el]
-                if len(value) == 0:
-                        value = ""
-                else:
-                        value = re.sub("'","",value[0])
-                return value
-
-        def parse_process(processes):
-                parsed_processes = ""
-                parsed_processes = []
-                for process in processes:
-                        tokens = process.split(" ")
-                        if "get_similarity" in process:
-                                # Ontology semantic
-                                sim_type = extract_argument(tokens, "sim_type")
-                                parsed_process = f"{sim_type.capitalize()} - Semantic Similarity"
-                                parsed_processes.append(parsed_process)
-                        elif "get_association_values" in process:
-                                # Projections
-                                if tokens[3] == "'correlation'":
-                                        pvalue = extract_argument(tokens, "pvalue")
-                                        corr_type = extract_argument(tokens, "corr_type")
-                                        if corr_type == "": corr_type = "Pearson"
-
-                                        parsed_process = f"{corr_type.capitalize()} Correlation"
-                                else:
-                                        assoc = re.sub("'","",tokens[3])
-                                        parsed_process = f"{assoc.capitalize()} Projection"
-                                parsed_processes.append(parsed_process)
-                if parsed_processes == []:
-                        # Raw
-                        parsed_processes = ["raw"]
-
-                return parsed_processes
-
-        # Getting and parsing edges from json
-
-        def get_edge_non_integrated(net2json):
-                edges= []
-                embeddings = []
-                data_version = ""
-                whitelist = ""
-                normalize_adj = ""
-                integrated_layers = ""
-                annotations = ""
-                embeddings = ""
-                phase2nodeid={
-                "database": set(),
-                "layer":set(),
-                "process":set(),
-                "matrix_result": {"GSM", "eGSM"},
-                "filter":set(),
-                "normalize":set(),
-                "embedding":set()
-                }
-                # source 2 layer
-                for layer, info in net2json.items():
-                        if layer == "data_process":
-                                data_version = info["Data_version"]
-                                whitelist = info["Whitelist"]
-                                normalize_adj = info["Normalize_adj"]
-                                normalize_adj = extract_argument(normalize_adj[0].split(" "), "by")
-                                integrated_layers = info["Integrated_layers"]
-                                annotations = info["layers2process"]
-                                embeddings = info["Embeddings"]
-                                continue
-                        elif layer in annotations:
-                                # Database 2 layer
-                                database = info['Database']
-                                edges.append((database,layer))
-                                # layer 2 process
-                                processes = parse_process(info["Build_graph"])
-                                for process in processes:
-                                        edges.append((layer,process))
-                                        # process 2 filter
-                                        edges.append((process, "GSM"))
-                                        if info["Filter"] != []:
-   
-                                                filt = extract_argument(info["Filter"][0].split(" "), "operation")
-                                        else:
-                                                filt = "No filter"
-                                        edges.append(("GSM", filt))
-                                        # filter 2 normalize
-                                        edges.append((filt, normalize_adj))
-                                        # normalize 2 embedding
-                                        for embedding in embeddings:
-                                                edges.append((normalize_adj,embedding))
-                                                edges.append((embedding,"eGSM"))
-                                                phase2nodeid["embedding"].add(embedding)
-                                        phase2nodeid["database"].add(database)
-                                        phase2nodeid["layer"].add(layer)
-                                        phase2nodeid["process"].add(process)
-                                        phase2nodeid["filter"].add(filt)
-                                        phase2nodeid["normalize"].add(normalize_adj)
-                        else:
-                                continue
-                return edges, phase2nodeid
-
-        def get_edge_integrated(net2json):
-                info = net2json["data_process"]
-                integrated_layers = info["Integrated_layers"]
-                embeddings = info["Embeddings"]
-                edges = []
-                for embedding in embeddings:
-                        for layer in integrated_layers:
-                                edges.append((layer, embedding))
-                                edges.append((embedding,"Ranker"))
-                return edges
-
-        def get_phase2nodeid_integrated(net2json):
-                info = net2json["data_process"]
-                integrated_layers = info["Integrated_layers"]
-                embeddings = info["Embeddings"]
-                integration_types = info["integration_types"]
-                return {"integrated_layers": integrated_layers, "embeddings": embeddings, "integration_types": integration_types}
-
-        # Getting and parsing mermaid from edges and phase2nodeid
-
-        id_node = lambda node: re.sub("_|-|,|\(|\)|\[|\]|<br>| ","_",node)
-
-        def name_node(node, name_config="capitalize"):
-                if name_config == "capitalize":
-                        nnode = " ".join([word.capitalize() for word in node.split("_")])
-                elif name_config == "upper":
-                        nnode = " ".join([word.upper() for word in node.split("_")])
-                elif name_config == "as_is":
-                        nnode = re.sub("_","",node)
-                return nnode
-
-
-        def edges2mermaid(edges, type_edge = "-->", name_config= "capitalize"):
-                # style: color and shape.
-                mermaid_edges = ""
-                all_nodes = {}
-                edges = list(set(edges))
-                for edge in edges:
-                        mermaid_edges += edge2mermaid(edge, type_edge, None, name_config)
-                mermaid_edges = mermaid_edges.replace("'","")
-                return mermaid_edges
-
-        def edge2mermaid(edge, type_edge="-->", direction=None, name_config = "capitalize"):
-                id1 = id_node(edge[0])
-                id2 = id_node(edge[1])
-                mermaid_edge = f"  {id1} {type_edge} {id2};\n"
-                if direction:
-                        mermaid_edge = f"  subgraph {'_'.join(edge)}\n    direction {direction}\n    {mermaid_edge}  end\n"
-                return mermaid_edge
-
-        def add_style_by_phase(phase2nodeid, colours):
-                mermaid_txt = ""
-                for phase, colour in colours.items():
-                        for node in phase2nodeid[phase]:
-                                node_id = id_node(node)
-                                mermaid_txt += f"  style {node_id} fill:{colour}\n"
-                return mermaid_txt
-
-        def phases2subpgrahs(phase2nodeid, subgraphs):
-                mermaid_txt = ""
-                for phase, subgraph in subgraphs.items():
-                        mermaid_line = f"  subgraph {phase}_id[{subgraph.title()}]\n"
-                        mermaid_line += f"    direction TB\n"
-                        for node in phase2nodeid[phase]:
-                                node_id = id_node(node)
-                                mermaid_line += f"    {node_id}\n"
-                        mermaid_line += f"  end\n"
-                        mermaid_txt += mermaid_line
-                return mermaid_txt
-
-        def get_subgraphs_for_neighbor(edges, nodes):
-                mermaid_edges = ""
-                for node in nodes:
-                        edges_in_phase = [ edge for edge in edges if edge[0] == node ]
-                        mermaid_edges += f"  subgraph {node}_id[{node.upper()}]\n"
-                        for edge in edges_in_phase:
-                                id1 = id_node(edge[0])
-                                id2 = id_node(edge[1])
-                                mermaid_edges += f"    {id1} -- GR --> {id2};\n"
-                        mermaid_edges += f"  end\n"
-                return mermaid_edges
-
-        def adding_custom_edges(custom_edges, custom_colours=None, directions=None, name_config = "capitalize"):
-                mermaid_txt = ""
-                # load custom nodes
-                nodes = list(set(itertools.chain(*custom_edges)))
-                for node in nodes:
-                        mermaid_txt += f"  {id_node(node)}(\"{name_node(node, name_config)}\")\n"
-                # load edges
-                for custom_edge, edge_type in custom_edges.items():
-                        direction = None 
-                        if directions:
-                                direction = directions.get(custom_edge)
-                        mermaid_txt += edge2mermaid(custom_edge, edge_type, direction)
-
-                if custom_colours:
-                        for node, colour in custom_colours.items():
-                                node_id = id_node(node)
-                                mermaid_txt += f"  style {node_id} fill:{colour}\n"
-                return mermaid_txt
-
-        def adding_href(nodes):
-                mermaid_edges_with_href = ""
-                for node in nodes:
-                        mermaid_edges_with_href += f"  click {node} href \"#{node}\";\n"
-                return mermaid_edges_with_href
-
-        def select_edges(edges, nodes):
-                        return [edge for edge in edges if edge[0] in nodes and edge[1] in nodes]
-                
-        def select_nodes_from_classes(classes, classes2nodes):
-                nodes = []
-                for cla, nodes_cla in classes2nodes.items():
-                        if cla in classes:
-                                nodes.extend(nodes_cla)
-                return nodes
-
-        def nodes2mermaid_by_phase(phase2nodeid, config_node):
-                # config_node node_type, name_parse
-                mermaid_txt = ""
-                for phase, nodes in phase2nodeid.items():
-                        name_type = config_node[phase]["name_parse"]
-                        node_type = config_node[phase]["node_type"]
-                        for node in nodes:
-                                node_id = id_node(node)
-                                node_name = name_node(node, name_type)
-                                if node_type == "cylinder":
-                                        mermaid_txt += f"  {node_id}[(\"{node_name}\")]\n"
-                                else:
-                                        mermaid_txt += f"  {node_id}(\"{node_name}\")\n"
-                return mermaid_txt
+                ph.order_columns(plotter,'parsed_comb_kernel_metrics',0)
+                ph.parse_table(plotter,'parsed_comb_kernel_metrics', parse_name)
         
-        plotter.hash_vars["density_heatmap_uncomb"] = parse_heatmap_from_flat(plotter.hash_vars['parsed_uncomb_kernel_metrics'][1:],1,2,6,[22],100)
-        plotter.hash_vars["density_heatmap_uncomb"][0][1] = "Size"
-        plotter.hash_vars["density_heatmap_comb"] = parse_heatmap_from_flat(plotter.hash_vars['parsed_comb_kernel_metrics'][1:],1,2,6,[22],100)
-        plotter.hash_vars["density_heatmap_comb"][0][1] = "Size"
+        plotter.hash_vars["density_heatmap_uncomb"] = ph.parse_heatmap_from_flat(plotter.hash_vars['parsed_uncomb_kernel_metrics'][1:],1,2,6,{22:"Size"},None,100)
+        plotter.hash_vars["density_heatmap_comb"] = ph.parse_heatmap_from_flat(plotter.hash_vars['parsed_comb_kernel_metrics'][1:],1,2,6,{22:"Size"},None,100)
 %>
 <% plotter.set_header() %>
 
@@ -424,12 +77,12 @@ lis=[
 "Projection: Used here to reference a Bipartite Network Projection. The process of creating a Monopartite Network from a Bipartite one."
 ]
 %>
-${ul(lis)}
+${ph.ul(lis)}
 <% txt="Gene Relation Properties" %>
 ${plotter.create_title(txt, id='rel_prop', hlevel=2, indexable=True, clickable=False)}
 
 <div style="overflow: hidden";>
-        ${make_title("table", "annotation_descriptor", 
+        ${ph.make_title(plotter,"table", "annotation_descriptor", 
                 "Number of relations per gene. Showing the minimum (Min), maximum (Max), average and standard deviation from each source.")}
         <div style="overflow: hidden";>
                 % if plotter.hash_vars.get('parsed_annotations_metrics') is not None:
@@ -449,15 +102,15 @@ ${plotter.create_title(txt, id='workflow_indv_layers', hlevel=2, indexable=True,
 
 <div>
 <%      
-        net2json = load_json("./net2json")
+        net2json = mp.load_json("./net2json")
         annotations = net2json["data_process"]["layers2process"]
         subgraphs = {"normalize": "Adjacency Matrix <br> Normalization", "embedding": "Embedding", "control_embedding": "Control"}   
         custom_edges = { ("eGSM", "Ranker"):"-->",("Seeds","Ranker"):"-->"}
         custom_colours = {"Seeds": "#B7E4FF", "Ranker":"#FFA8A8"}
-        edges, phase2nodeid = get_edge_non_integrated(net2json) # Parse connections from json
+        edges, phase2nodeid = mp.get_edge_non_integrated(net2json) # Parse connections from json
         # building mermaid body
         # load nodes
-        mermaid_body = nodes2mermaid_by_phase(phase2nodeid, 
+        mermaid_body = mp.nodes2mermaid_by_phase(phase2nodeid, 
         {
         "database": {"name_parse": "upper", "node_type": "cylinder"},
         "layer":{"name_parse": "capitalize", "node_type": "round"},
@@ -467,16 +120,16 @@ ${plotter.create_title(txt, id='workflow_indv_layers', hlevel=2, indexable=True,
         "normalize":{"name_parse": "capitalize", "node_type": "round"},
         "embedding": {"name_parse": "capitalize", "node_type": "round"}
         })
-        mermaid_body += add_style_by_phase(phase2nodeid, {"process": "#BF7AE7","matrix_result": "#95B9F3"})
+        mermaid_body += mp.add_style_by_phase(phase2nodeid, {"process": "#BF7AE7","matrix_result": "#95B9F3"})
         # load edges
-        mermaid_body += edges2mermaid(select_edges(edges, select_nodes_from_classes(["layer","process","filter","matrix_result","normalize","embedding"], phase2nodeid)), "-->", "upper") 
+        mermaid_body += mp.edges2mermaid(mp.select_edges(edges, mp.select_nodes_from_classes(["layer","process","filter","matrix_result","normalize","embedding"], phase2nodeid)), "-->", "upper") 
         all_embeddings = {'el', 'node2vec', 'ka', 'rf', 'raw_sim'}
         phase2nodeid["embedding"] =  all_embeddings.intersection({'el', 'node2vec', 'ka', 'rf'})
         phase2nodeid["control_embedding"] = all_embeddings.intersection({'raw_sim'})
-        mermaid_body += get_subgraphs_for_neighbor(edges, phase2nodeid["database"]) # subgraph the neighboor
-        mermaid_body += phases2subpgrahs(phase2nodeid, subgraphs)
-        mermaid_body += adding_href(phase2nodeid["layer"])
-        #mermaid_body += adding_custom_edges(custom_edges, custom_colours, None, "as_is")
+        mermaid_body += mp.get_subgraphs_for_neighbor(edges, phase2nodeid["database"]) # subgraph the neighboor
+        mermaid_body += mp.phases2subpgrahs(phase2nodeid, subgraphs)
+        mermaid_body += mp.adding_href(phase2nodeid["layer"])
+        #mermaid_body += mp.adding_custom_edges(custom_edges, custom_colours, None, "as_is")
         mermaid_body += f"  style normalize_id text-align:center\n"
         mermaid_body = re.sub("No filter", " ", mermaid_body)
         graph=f"""---\nTitle: Flux\nconfig:\n  theme: base\n---\ngraph LR;\n{mermaid_body}"""
@@ -485,6 +138,7 @@ ${plotter.create_title(txt, id='workflow_indv_layers', hlevel=2, indexable=True,
         <p style="text-align:center;"><b> Figure ${plotter.add_figure("worflow_individual_layers")} </b> Workflow of all studied resources. ${text} </p>
 
 </div>
+
 
 <% txt="Individual Processing Graph Steps" %>
 ${plotter.create_title(txt, id="indv_process_graph_steps", hlevel=2, indexable=True, clickable=False)}
@@ -565,13 +219,13 @@ ${plotter.create_title(txt, id="indv_process_graph_steps", hlevel=2, indexable=T
                                 "titleScaleFontFactor": 0.7
                                 })%>
         <% text = f"""<p style="text-align:center;"><b> Figure {plotter.add_figure(key)} 
-        </b> {parsed_string(elem)} descriptive stats during network processing. Number of nodes (A), density (B) and summary of edge values (C) on the network. 
+        </b> {ph.parsed_string(elem)} descriptive stats during network processing. Number of nodes (A), density (B) and summary of edge values (C) on the network. 
         Labels on x axis indicate diffente stages during the network building: {adding_text} </p>""" %>
         <% click_back="""<a href="#workflow_indv_layers">Back to Workflow</a>""" %>
-        <%macro_txt = collapsable_data(f"{parsed_string(elem)}", re.sub('_sim','',elem), f"{elem}_container" ,"\n".join([f"<p id={re.sub('_sim','',elem)}></p>",figure1,figure2,figure3,text,click_back]))%>
+        <%macro_txt = ph.collapsable_data(plotter,f"{ph.parsed_string(elem)}", re.sub('_sim','',elem), f"{elem}_container" ,"\n".join([f"<p id={re.sub('_sim','',elem)}></p>",figure1,figure2,figure3,text,click_back]))%>
         <% macro_click_txt.append(macro_txt) %>
     % endfor
-    ${collapsable_data("All individual process summary", 'clickme_id'+"general", 'container'+"general","\n".join(macro_click_txt))}
+    ${ph.collapsable_data(plotter,"All individual process summary", 'clickme_id'+"general", 'container'+"general","\n".join(macro_click_txt))}
 
 
 <% txt="Selection and Integration of individual networks Workflow" %>
@@ -580,28 +234,28 @@ ${plotter.create_title(txt, id="sel_int_workflow", hlevel=2, indexable=True, cli
 <%  
 
         {"integrated_layers": integrated_layers, "embeddings": embeddings, "integration_types": integration_types}
-        phase2nodeid = get_phase2nodeid_integrated(net2json)
+        phase2nodeid = mp.get_phase2nodeid_integrated(net2json)
         custom_edges = {
         ("integration_types_id","Integrated <br> eGSM"): "-->",
         ("embeddings_id","integration_types_id"): "-->", 
         ("integrated_layers_id","embeddings_id"): "-->"}      
         custom_colours = { "Integrated <br> eGSM": "#95B9F3"}
         subgraphs = {"integrated_layers": "Selected layers","embeddings": "Embeddings", "integration_types": "Integration"}   
-        mermaid_body = nodes2mermaid_by_phase(phase2nodeid, 
+        mermaid_body = mp.nodes2mermaid_by_phase(phase2nodeid, 
         {
         "integrated_layers": {"name_parse": "capitalize", "node_type": "round"},
         "embeddings":{"name_parse": "capitalize", "node_type": "round"},
         "integration_types":{"name_parse": "capitalize", "node_type": "round"}
         })
-        mermaid_body += phases2subpgrahs(phase2nodeid, subgraphs)
-        mermaid_body += adding_custom_edges(custom_edges, custom_colours, None, "as_is")
+        mermaid_body += mp.phases2subpgrahs(phase2nodeid, subgraphs)
+        mermaid_body += mp.adding_custom_edges(custom_edges, custom_colours, None, "as_is")
         graph=f"""---\nTitle: Flux\nconfig:\n  theme: base\n---\nflowchart TB;\n{mermaid_body}"""
 %>
         ${ plotter.mermaid_chart(graph)}
         <% text=f""" Invididual raw and embedding networks were selected based on performance. Those 
         with the best predictive power were integrated all in one similarity matrix, based on 
-        different integration methods ({italic("Mean")}, {italic("Max")}, {italic("Integration Mean By Presence")}, {italic("Median")}"""%>
-        ${make_title("figure", "workflow_integration", text)}
+        different integration methods ({ph.italic("Mean")}, {ph.italic("Max")}, {ph.italic("Integration Mean By Presence")}, {ph.italic("Median")}"""%>
+        ${ph.make_title(plotter,"figure", "workflow_integration", text)}
 </div>
 
 <% txt="Embedding Process" %>
@@ -640,33 +294,33 @@ ${plotter.create_title(txt, id="emb_process", hlevel=2, indexable=True, clickabl
                 </div>
         </div>
 
-        ${make_title("figure","density_summ", f"""Summary of eGSM density (%) before (A) and after (B) integration.
-        Both plots are segreggated by {italic("individual graph source")} (A) or {italic("integration method")} (B), coloured by embedding process.""")}
+        ${ph.make_title(plotter,"figure","density_summ", f"""Summary of eGSM density (%) before (A) and after (B) integration.
+        Both plots are segreggated by {ph.italic("individual graph source")} (A) or {ph.italic("integration method")} (B), coloured by embedding process.""")}
 </div>
 
 <% txt = [] %>
 % if plotter.hash_vars.get('parsed_uncomb_kernel_metrics') is not None:
-        <% txt.append(make_title("table", "unc_emb_matrix",
+        <% txt.append(ph.make_title(plotter,"table", "unc_emb_matrix",
                 f"""Summary metrics for each eGSM obtained by every source and embedding. Showing metrics on size
-                ({italic("Matrix Dimensions")}, {italic("Matrix Elements")}) and density 
-                ({italic("Matrix Elements Non Zero")}, {italic("Matrix non zero density")}) matrix.""")) %>
+                ({ph.italic("Matrix Dimensions")}, {ph.italic("Matrix Elements")}) and density 
+                ({ph.italic("Matrix Elements Non Zero")}, {ph.italic("Matrix non zero density")}) matrix.""")) %>
         <% txt.append(plotter.table(id='parsed_uncomb_kernel_metrics', text= True, header=True, row_names = True, fields= [1,2,3,4,5,6], styled='dt', cell_align= ['left', 'left', 'center', 'center', 'center', 'center'], border= 2,attrib= {
                         'class': 'table table-striped table-hover',
                         'cellspacing' : 0,
                         'cellpadding' : 2})) %>
-        ${collapsable_data("Individual eGSM Matrix Sumary", None, "individual_egsm_matrix_summ", "\n".join(txt))}
+        ${ph.collapsable_data(plotter,"Individual eGSM Matrix Sumary", None, "individual_egsm_matrix_summ", "\n".join(txt))}
 % endif
 % if plotter.hash_vars.get('parsed_comb_kernel_metrics') is not None:
         <% txt = [] %>
-        <% txt.append(make_title("table", "c_emb_matrix",
+        <% txt.append(ph.make_title(plotter,"table", "c_emb_matrix",
                 f"""Summary metrics for each eGSM obtained after integration step. Showing metrics on size
-                ({italic("Matrix Dimensions")}, {italic("Matrix Elements")}) and density 
-                ({italic("Matrix Elements Non Zero")}, {italic("Matrix non zero density")}) matrix."""))%>
+                ({ph.italic("Matrix Dimensions")}, {ph.italic("Matrix Elements")}) and density 
+                ({ph.italic("Matrix Elements Non Zero")}, {ph.italic("Matrix non zero density")}) matrix."""))%>
         <% txt.append(plotter.table(id='parsed_comb_kernel_metrics', text= True, header=True, row_names = True, fields= [1,2,3,4,5,6], styled='dt', cell_align= ['left', 'left', 'center', 'center', 'center', 'center'], border= 2,attrib= {
                         'class': 'table table-striped',
                         'cellspacing' : 0,
                         'cellpadding' : 2})) %>
-        ${collapsable_data("Integrated eGSM Matrix Sumary", None, "integrated_egsm_matrix_summ", "\n".join(txt))}
+        ${ph.collapsable_data(plotter,"Integrated eGSM Matrix Sumary", None, "integrated_egsm_matrix_summ", "\n".join(txt))}
 % endif
 
 % if plotter.hash_vars.get("parsed_graph_attr_by_net"):
@@ -746,8 +400,8 @@ ${plotter.create_title(txt, id="emb_process", hlevel=2, indexable=True, clickabl
                 })) %>
 
 % endif
-<%txt.append(make_title("figure", "figure_sizeVSdensity", "Size vs Density on eGSM before (A) and after (B) integration step, respectively.  The plots are categorised according to the embedding methods used, with colours representing individual graphs in (A) or integration methods in (B)."))%>
-${collapsable_data("Density vs Size", None, "dens_size", "\n".join(txt))}
+<%txt.append(ph.make_title(plotter,"figure", "figure_sizeVSdensity", "Size vs Density on eGSM before (A) and after (B) integration step, respectively.  The plots are categorised according to the embedding methods used, with colours representing individual graphs in (A) or integration methods in (B)."))%>
+${ph.collapsable_data(plotter,"Density vs Size", None, "dens_size", "\n".join(txt))}
 
 
 <% txt = [] %>
@@ -780,7 +434,7 @@ ${collapsable_data("Density vs Size", None, "dens_size", "\n".join(txt))}
                         })) %>
 % endif
 
-<% txt.append(make_title("figure","summ_matrix_values", f"""Summary of eGSM values 
+<% txt.append(ph.make_title(plotter,"figure","summ_matrix_values", f"""Summary of eGSM values 
                 before (A) and after (B) integration. Both plots are segreggated by embedding type
-                 and x axis label points to {italic("individual graph source")} (A) or {italic("integration method")} (B).""")) %>
-${collapsable_data("Embedding values Summary", None, "embd_values_summ", "\n".join(txt))}
+                 and x axis label points to {ph.italic("individual graph source")} (A) or {ph.italic("integration method")} (B).""")) %>
+${ph.collapsable_data(plotter,"Embedding values Summary", None, "embd_values_summ", "\n".join(txt))}

@@ -65,7 +65,7 @@
 filter_net){
 	resources: -m '200gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_python
-	#source ~/dev_py/myvenv/bin/activate
+	source ~/dev_py/venv/bin/activate
 	echo -e "$annotation_sim" > tracker
 	net2json_parser.py --net_id "$annotation" --json_path $net2custom > net_params
 	grep -P -w '^Filter' net_params | cut -f 2 > dsl_filter
