@@ -94,7 +94,7 @@ def parse_data(table, parse_name, blacklist = ["sim"]):
                                 continue
         return parsed_table
 
-def round_table(table, round_by=2):
+def round_table(table, round_by=4):
         rounded_table = []
         for i,row in enumerate(table):
                 rounded_table.append(row)

@@ -20,7 +20,7 @@ rank_genes_with_leave_one_out){
 	desaggregate_column_data -i $control_neg -x 2 |& awk '{OFS="\t"}{print $1,$2,0}' >> tags_group
 	?
 	ranker -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst --seed_presence remove --seed_nodes seed_by_group -l --minimum_size 2
-	cp ranked_genes_all_candidates processed_ranked_genes
+	awk 'BEGIN{FS="\t";OFS="\t"}{gsub(/_iteration_[0-9]+$/,"",$6); print $0}' ranked_genes_all_candidates > processed_ranked_genes
 	ranker -k $folder_kernel_path/$input_name.npy -n $folder_kernel_path/$input_name.lst --seed_presence remove --seed_nodes seed_by_group -f filter --minimum_size 2
 	cut -f 1,2,3,4,6 ranked_genes_all_candidates >> processed_ranked_genes
 

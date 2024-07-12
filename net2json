@@ -16,9 +16,25 @@
             "pathway"
         ],
         "layers2process": [
+            "disease",
+            "phenotype",
             "molecular_function",
             "biological_process",
-            "cellular_component"
+            "cellular_component",
+            "string_ppi_combined",
+            "hippie_ppi",
+            "string_ppi_textmining",
+            "string_ppi_database",
+            "string_ppi_experimental",
+            "string_ppi_coexpression",
+            "string_ppi_cooccurence",
+            "string_ppi_fusion",
+            "string_ppi_neighborhood",
+            "DepMap_effect_pearson",
+            "DepMap_effect_spearman",
+            "DepMap_Kim",
+            "pathway",
+            "gene_hgncGroup"
         ],
         "Embeddings": [
             "rf",
@@ -34,11 +50,7 @@
         ]
     },
     "biological_process": {
-        "Filter": [
-            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.05} add_to_object=True",
-            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
-            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
-        ],
+        "Filter": [],
         "Format": "pair",
         "Layers": "ont,GO:;gene,HGNC:",
         "Node_list": "-",
@@ -53,11 +65,7 @@
         ]
     },
     "cellular_component": {
-        "Filter": [
-            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.10} add_to_object=True",
-            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
-            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
-        ],
+        "Filter": [],
         "Format": "pair",
         "Layers": "ont,GO:;gene,HGNC:",
         "Node_list": "-",
@@ -152,11 +160,7 @@
         ]
     },
     "molecular_function": {
-        "Filter": [
-            "filter_matrix mat_keys=('adjacency_matrices',('gene','gene')) operation='filter_disparity' options={'pval_threshold':0.10} add_to_object=True",
-            "write_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='similarity_matrix_bin'",
-            "write_stats_from_matrix mat_keys=('adjacency_matrices',('gene','gene')) output_filename='stats_from_matrix_DisparityFilter_1'"
-        ],
+        "Filter": [],
         "Format": "pair",
         "Layers": "ont,GO:;gene,HGNC:",
         "Node_list": "-",

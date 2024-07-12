@@ -15,12 +15,12 @@ export output_folder=$SCRATCH/executions/GraphPrioritizer
 export report_folder=$output_folder/report
 export translators=$input_path/translators
 # Custom variables.
-annotations=" disease phenotype molecular_function biological_process cellular_component"
-annotations+=" string_ppi_combined hippie_ppi"
-annotations+=" string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
-annotations+=" DepMap_effect_pearson DepMap_effect_spearman DepMap_Kim"
-annotations+=" pathway gene_hgncGroup"
-annotations="molecular_function biological_process cellular_component"
+#annotations=" disease phenotype molecular_function biological_process cellular_component"
+#annotations+=" string_ppi_combined hippie_ppi"
+#annotations+=" string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
+#annotations+=" DepMap_effect_pearson DepMap_effect_spearman DepMap_Kim"
+#annotations+=" pathway gene_hgncGroup"
+#annotations="molecular_function biological_process cellular_component"
 integrated_annotations="phenotype string_ppi_textmining string_ppi_coexpression string_ppi_database string_ppi_experimental pathway"
 kernels="rf el node2vec raw_sim"
 integration_types="mean integration_mean_by_presence median max"
@@ -59,9 +59,15 @@ elif [ "$exec_mode" == "download_translators" ] ; then
   wget https://data.omim.org/downloads/Vigwxa9YRaCz7jdsYnIfUQ/mimTitles.txt -O ./translators/mimTitles
   grep -v "#" ./translators/mimTitles | cut -f 2,3 > tmp && mv tmp ./translators/mimTitles
 
+  # Downloading ProtEnsemble_HGNC from STRING.
+  wget https://stringdb-static.org/download/protein.aliases.v11.5/9606.protein.aliases.v11.5.txt.gz -O ./translators/protein_aliases.v11.5.txt.gz
+  gzip -d translators/protein_aliases.v11.5.txt.gz
+  grep -w "Ensembl_HGNC_HGNC_ID" translators/protein_aliases.v11.5.txt | cut -f 1,2 > ./translators/ProtEnsemble_HGNC
+  rm ./translators/protein_aliases.v11.5.txt
+
 elif [ "$exec_mode" == "process_download" ] ; then
   # STAGE 1.3 PROCESS DOWNLOAD
-  $daemon_scripts/download_layers.sh
+  $daemon_scripts/process_download.sh
 
 elif [ "$exec_mode" == "dversion" ] ; then
   # STAGE 1.4 SELECTING DOWNGRADED OR UPGRADED
@@ -135,7 +141,7 @@ elif [ "$exec_mode" == "kernels" ] ; then
       process_type=`net2json_parser.py --net_id $annotation --json_path $net2custom | grep -P -w '^Process' | cut -f 2`
       echo $process_type
       net2json_parser.py --net_id $annotation --json_path $net2custom
-      echo "Performing kernels without umap $annotation"
+      echo "Performing embedding -- $annotation"
       AutoFlow -w $autoflow_scripts/sim_kern.af -V $autoflow_vars -o $output_folder/similarity_kernels/${annotation}  -L $add_opt #-A "exclude=sr133,sr014,sr030" -n bc -A "reservation:nuevos_nodos"
 
   done
@@ -282,8 +288,8 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
 elif [ "$exec_mode" == "report" ] ; then 
   save=$2
   #interested_layers="biological_process phenotype string_ppi_textmining string_ppi_coexpression pathway gene_hgncGroup"
-  #interested_layers=" string_ppi_combined string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
-  interested_layers=$annotations
+  interested_layers=" string_ppi_combined string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
+  #interested_layers=$annotations
   #interested_layers="string_ppi_combined string_ppi_textmining string_ppi_database"
 
   for html_name in "menche" "zampieri"; do
