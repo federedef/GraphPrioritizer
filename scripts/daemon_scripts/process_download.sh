@@ -17,53 +17,53 @@ tag_filter[cellular_component]='GO:0005575'
 
 # For upgraded #
 ################
-# datatime="upgraded"
-# # Ontologies
-# # ----------
-# for sample in phenotype disease function ; do
-#   zgrep ${tag_filter[$sample]} ./input/$datatime/input_raw/gene_${sample}.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
-#   aggregate_column_data -i - -x 1 -a 5 > ./input/$datatime/input_processed/$sample # | head -n 230
-# done
-# ## Creating paco files for hpo.
-# semtools -i ./input/$datatime/input_processed/phenotype -o ./input/$datatime/input_processed/filtered_phenotype -O HPO -S "," -c -T HP:0000001
-# cat ./input/$datatime/input_processed/filtered_phenotype | tr -s "|" "," > ./input/$datatime/input_processed/phenotype
-# rm ./input/$datatime/input_processed/filtered_phenotype
-# rm rejected_profs
-# ## Creating paco files for each go branch.
-# gene_ontology=( molecular_function cellular_component biological_process )
-# for branch in ${gene_ontology[@]} ; do
-#   semtools -i ./input/$datatime/input_processed/function -o ./input/$datatime/input_processed/filtered_$branch -O GO -S "," -c -T ${tag_filter[$branch]}
-#   cat ./input/$datatime/input_processed/filtered_$branch | tr -s "|" "," > ./input/$datatime/input_processed/$branch
-#   rm ./rejected_profs
-#   rm ./input/$datatime/input_processed/filtered_$branch
-# done
-# rm ./input/$datatime/input_processed/function
-# # Protein associations
-# # --------------------
-# ## STRING 11.5 
-# process_string $datatime
-# ## HIPPO current
-# process_hippie $datatime
-# # DEPMAP
-# # -----------
-# process_gen_int $datatime "effect"
-# process_gen_int $datatime "exprs"
-# # GENE-TF interaction.ls
-# # ----------------------
-# standard_name_replacer -i ./input/$datatime/input_raw/gene_TF -I ./translators/symbol_HGNC -c 1,2 -u | sed 's/HGNC:/TF:/2g' > ./input/$datatime/input_processed/gene_TF
-# # HGNC-groups
-# # -----------
-# process_hgnc_group $datatime
-# # Phenotypic Series
-# # -----------------
-# get_PS_gene_relation.py -i "/mnt/home/users/bio_267_uma/federogc/projects/GraphPrioritizer/input/downloaded_raw/phenotypic_series/series_data" -o "./input/$datatime/input_processed/PS_genes"
-# desaggregate_column_data -i ./input/$datatime/input_processed/PS_genes -x 2 > ./input/$datatime/input_processed/tmp 
-# standard_name_replacer -i ./input/$datatime/input_processed/tmp -I ./translators/symbol_HGNC -c 2 -u | awk 'BEGIN{FS="\t";OFS="\t"}{print $2,$1}' > ./input/$datatime/input_processed/gene_PS
-# rm ./input/$datatime/input_processed/PS_genes ./input/$datatime/input_processed/tmp 
-# # Reactions
-# # ---------
-# zgrep "REACT:" ./input/$datatime/input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | \
-#   cut -f 1,5 > ./input/$datatime/input_processed/pathway
+datatime="upgraded"
+# Ontologies
+# ----------
+for sample in phenotype disease function ; do
+  zgrep ${tag_filter[$sample]} ./input/$datatime/input_raw/gene_${sample}.all.tsv.gz | grep 'NCBITaxon:9606' | grep "HGNC:" | \
+  aggregate_column_data -i - -x 1 -a 5 > ./input/$datatime/input_processed/$sample # | head -n 230
+done
+## Creating paco files for hpo.
+semtools -i ./input/$datatime/input_processed/phenotype -o ./input/$datatime/input_processed/filtered_phenotype -O HPO -S "," -c -T HP:0000001
+cat ./input/$datatime/input_processed/filtered_phenotype | tr -s "|" "," > ./input/$datatime/input_processed/phenotype
+rm ./input/$datatime/input_processed/filtered_phenotype
+rm rejected_profs
+## Creating paco files for each go branch.
+gene_ontology=( molecular_function cellular_component biological_process )
+for branch in ${gene_ontology[@]} ; do
+  semtools -i ./input/$datatime/input_processed/function -o ./input/$datatime/input_processed/filtered_$branch -O GO -S "," -c -T ${tag_filter[$branch]}
+  cat ./input/$datatime/input_processed/filtered_$branch | tr -s "|" "," > ./input/$datatime/input_processed/$branch
+  rm ./rejected_profs
+  rm ./input/$datatime/input_processed/filtered_$branch
+done
+rm ./input/$datatime/input_processed/function
+# Protein associations
+# --------------------
+## STRING 11.5 
+process_string $datatime
+## HIPPO current
+process_hippie $datatime
+# DEPMAP
+# -----------
+process_gen_int $datatime "effect"
+process_gen_int $datatime "exprs"
+# GENE-TF interaction.ls
+# ----------------------
+standard_name_replacer -i ./input/$datatime/input_raw/gene_TF -I ./translators/symbol_HGNC -c 1,2 -u | sed 's/HGNC:/TF:/2g' > ./input/$datatime/input_processed/gene_TF
+# HGNC-groups
+# -----------
+process_hgnc_group $datatime
+# Phenotypic Series
+# -----------------
+get_PS_gene_relation.py -i "/mnt/home/users/bio_267_uma/federogc/projects/GraphPrioritizer/input/downloaded_raw/phenotypic_series/series_data" -o "./input/$datatime/input_processed/PS_genes"
+desaggregate_column_data -i ./input/$datatime/input_processed/PS_genes -x 2 > ./input/$datatime/input_processed/tmp 
+standard_name_replacer -i ./input/$datatime/input_processed/tmp -I ./translators/symbol_HGNC -c 2 -u | awk 'BEGIN{FS="\t";OFS="\t"}{print $2,$1}' > ./input/$datatime/input_processed/gene_PS
+rm ./input/$datatime/input_processed/PS_genes ./input/$datatime/input_processed/tmp 
+# Reactions
+# ---------
+zgrep "REACT:" ./input/$datatime/input_raw/gene_pathway.all.tsv.gz |  grep 'NCBITaxon:9606' | grep "HGNC:" | \
+  cut -f 1,5 > ./input/$datatime/input_processed/pathway
 
 # For downgraded #
 ##################

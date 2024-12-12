@@ -51,8 +51,8 @@ elif [ "$exec_mode" == "download_translators" ] ; then
   wget http://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2022-04-01.txt -O ./translators/HGNC_allids
   for translator in "${!translators2col[@]}"; do
     echo "$translator"
-    awk -v translator=${translators2col[$translator]} '{FS="\t";OFS="\t"}{print $translator,$1}' ./translators/HGNC_allids > ./translators/${translator}_HGNC
-    awk '{FS="\t";OFS="\t"}{print $2,$1}' ./translators/${translator}_HGNC > ./translators/HGNC_${translator}
+    awk -v translator=${translators2col[$translator]} 'BEGIN{FS="\t";OFS="\t"}{print $translator,$1}' ./translators/HGNC_allids > ./translators/${translator}_HGNC
+    awk 'BEGIN{FS="\t";OFS="\t"}{print $2,$1}' ./translators/${translator}_HGNC > ./translators/HGNC_${translator}
   done
 
   # omim 2 text
@@ -116,13 +116,7 @@ elif [ "$exec_mode" == "kernels" ] ; then
   #######################################################
   #STAGE 2.1 PROCESS SIMILARITY AND OBTAIN KERNELS
   mkdir -p $output_folder/similarity_kernels
-
-  # if [ ! -z $2 ] ; then
-  #   whitelist=$2
-  # fi
-
   whitelist="true"
-
   # update net2json
   embeddings=`echo $kernels | tr -s " " "," | awk '{print "["$0"]"}'`
   modify_json.py -k "data_process;Embeddings" -v "$embeddings" -jp net2json
@@ -154,7 +148,7 @@ elif [ "$exec_mode" == "plot_sims" ] ; then
 
   cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path
   ugot_path="$output_folder/similarity_kernels/ugot_path"
-  rawSim_paths=`awk '{print $0,NR}' $ugot_path | sort -k 5 -r -u | grep "raw_sim" | awk '{OFS="\t"}{print $2,$4}'`
+  rawSim_paths=`awk '{print $0,NR}' $ugot_path | sort -k 5 -r -u | grep "raw_sim" | awk 'BEGIN{OFS="\t"}{print $2,$4}'`
   filter_sims=`echo $annotations | sed 's/ /\n/g'`
   rawSim_paths=`grep -F -f <(echo "$filter_sims") <(echo "$rawSim_paths")`
   echo -e "$rawSim_paths" >  $output_folder/similarity_kernels/rawSim_paths
