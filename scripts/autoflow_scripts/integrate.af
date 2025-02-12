@@ -2,18 +2,14 @@
 integrate_kernel_[$kernels_varflow]){
 	# input: kernel matrix from every net.
 	# output: A combined binary kernel + metrics. 
-	#source ~soft_bio_267/initializes/init_netanalyzer
 	resources: -c 16 -m '240gb'
 	echo [cpu]
 	source ~soft_bio_267/initializes/init_python
 	echo -e "$integration_type_(*)\t$integration_type\t(*)" > tracker
 	folder_kernel_paths=`grep -w '\(*)' $ugot_path | awk '{ print $4 }' | tr "\n" " "`
-	echo -e "$folder_kernel_paths"
 	integrate_path=`pwd`
 	path_kernels=`echo "$folder_kernel_paths" | sed 's/ /\/kernel_matrix_bin.npy /g' | sed 's/ *$//g' | tr -s " " ";"`
-	echo -e " $path_kernels "
 	path_nodes=`echo "$folder_kernel_paths" | sed 's/ /\/kernel_matrix_bin.lst /g' | sed 's/ *$//g' | tr -s " " ";"`
-	echo -e " $path_nodes "
 	if [ -s ugot_path ] ; then
 		rm ugot_path
 	fi
@@ -25,7 +21,6 @@ integrate_kernel_[$kernels_varflow]){
 		awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{gsub(/ - /,"_",$1); gsub(/ /,"_",$0); print tracker,$1,$2}' \ 
 		  generalkernel_metrics > comb_kernel_metrics 
 		echo -e "$integration_type_(*)\t$integration_type\t(*)\t$integrate_path" > ugot_path
-		#mv general_matrix general_matrix.npy
 	else 
   		exit 1
   	fi

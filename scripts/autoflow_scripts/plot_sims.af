@@ -3,7 +3,6 @@ get_values_hist_[$annotations_varflow]){
 	source ~soft_bio_267/initializes/init_python
 	echo -e "get_node_attributes attr_names=['get_degree'] layers='gene' summary=False output_filename='degrees'" > dsl
 	raw_sim=`grep "(*)" $rawSim_paths | cut -f2`
-	echo -e "$raw_sim" > probando
 	?
 	netanalyzer -i $raw_sim/kernel_matrix_bin.npy -n $raw_sim/kernel_matrix_bin.lst -f "bin" -l "gene,HGNC:" --dsl_script dsl --both_repre_formats
 }

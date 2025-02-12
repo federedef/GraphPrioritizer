@@ -2,8 +2,6 @@ rank_genes_with_leave_one_out){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_python
-	#export PATH=/mnt/home/users/bio_267_uma/federogc/dev_py/NetAnalyzer/bin:$PATH
-	#source ~/dev_py/venv/bin/activate
 	source ~soft_bio_267/initializes/init_R
 	if [ $benchmark != "zampieri" ] ; then
 		exit 0
@@ -84,7 +82,6 @@ rank_genes_with_kfold_cv){
 	# Input: seed_gens + kernel.
 	# Output: rank genes for every gen.
 	source ~soft_bio_267/initializes/init_python
-	#source ~/dev_py/venv/bin/activate
 	source ~soft_bio_267/initializes/init_R
 	if [ $benchmark != "menche" ] ; then
 		exit 0
@@ -108,18 +105,6 @@ rank_genes_with_kfold_cv){
     	# Obtaining measures for graphs
     	number_of_types_of_labels=`cut -f7 tagged_ranks.txt | sort | uniq | wc -l`
     	if [ $number_of_types_of_labels -ge 2 ] ; then
-			# -m -> graph method (necessary?)
-			# -M all measures to obtain or summarize
-			# -e Export graph values into a plain text file
-			# -R reverse_score_order
-			# Wach out: Is too big when using the seed_presence remove, as a conesquence of the number of positives proxi to the top. too tiny threshold jumps.
-    		# ROCanalysis.R -i tagged_ranks.txt -s 3 -t 7 -S backupgenes -o "preobserved_all_genes" -m "ROC" -M "acc:tpr:fpr:prec:rec" -e -R
-			# sed '1d' preobserved_all_genes_measures |  cut -f 2- > all_genes_measures
-			# if [ -s all_genes_measures ] ; then
-			# 	awk -v tracker="`cat tracker`" 'BEGIN{FS="\t";OFS="\t"}{print tracker,$0}' all_genes_measures > $output_name_measures
-			# else 
-			#   	exit 0
-			# fi
 
 			# Obtaining summary of performance for all groups at onces
 			ROCanalysis.R -i tagged_ranks.txt -s 3 -t 7 -b 1000 -S backupgenes -o "preobserved_all_genes" -z -m "ROC" -M "acc:tpr:fpr:auc:f" -R

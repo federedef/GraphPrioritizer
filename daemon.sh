@@ -2,25 +2,25 @@
 . ~soft_bio_267/initializes/init_autoflow 
 . ~soft_bio_267/initializes/init_python
 . ~soft_bio_267/initializes/init_R
-# Input variables.
+# Input variables
 exec_mode=$1 
 add_opt=${@: -1} 
-# Used Paths.
+# Used Paths
 export input_path=`pwd`
-export PATH=/mnt/home/users/bio_267_uma/federogc/sys_bio_lab_scripts:$input_path/scripts/aux_scripts:~soft_bio_267/programs/x86_64/scripts:$PATH
+export sys_bio_lab_scripts_path=~soft_bio_267/programs/x86_64/scripts
+export PATH=$input_path/scripts/aux_scripts:$sys_bio_lab_scripts_path:$PATH
 export autoflow_scripts=$input_path/scripts/autoflow_scripts
 daemon_scripts=$input_path/scripts/daemon_scripts
 export control_genes_folder=$input_path/control_genes
 export output_folder=$SCRATCH/executions/GraphPrioritizer
 export report_folder=$output_folder/report
 export translators=$input_path/translators
-# Custom variables.
-#annotations=" disease phenotype molecular_function biological_process cellular_component"
-#annotations+=" string_ppi_combined hippie_ppi"
+# Custom variables
+annotations=" disease phenotype molecular_function biological_process cellular_component"
+annotations+=" string_ppi_combined hippie_ppi"
 #annotations+=" string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
-#annotations+=" DepMap_effect_pearson DepMap_effect_spearman DepMap_Kim"
-#annotations+=" pathway gene_hgncGroup"
-#annotations="molecular_function biological_process cellular_component"
+annotations+=" DepMap_effect_pearson DepMap_effect_spearman DepMap_Kim"
+annotations+=" pathway gene_hgncGroup"
 integrated_annotations="phenotype string_ppi_textmining string_ppi_coexpression string_ppi_database string_ppi_experimental pathway"
 kernels="rf el node2vec raw_sim"
 integration_types="mean integration_mean_by_presence median max"
@@ -29,7 +29,7 @@ control_pos=$input_path'/control_pos'
 control_neg=$input_path'/control_neg'
 production_seedgens=$input_path'/production_seedgens'
 whitelist="whitelist"
-
+# Processed input variables
 kernels_varflow=`echo $kernels | tr " " ";"`
 annotations_varflow=`echo $annotations | tr " " ";"`
 
@@ -143,7 +143,7 @@ elif [ "$exec_mode" == "kernels" ] ; then
   cp ./net2json $output_folder/similarity_kernels/net2json
 
 elif [ "$exec_mode" == "plot_sims" ] ; then
-  # Plotting the graphs in the correct manner.
+  # Plotting the graphs in the correct manner
   mkdir -p plot_sims
 
   cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path
@@ -179,7 +179,7 @@ elif [ "$exec_mode" == "ranking" ] ; then
       ugot_path="$output_folder/similarity_kernels/ugot_path"
       folder_kernel_path=`awk '{print $0,NR}' $ugot_path | sort -k 5 -r -u | grep "${annotation}_$kernel" | awk '{print $4}'`
       echo ${folder_kernel_path}
-      if [ ! -z ${folder_kernel_path} ] ; then # This kernel for this annotation is done? 
+      if [ ! -z ${folder_kernel_path} ] ; then 
 
         autoflow_vars=`echo " 
         \\$param1=$annotation,
@@ -209,11 +209,9 @@ elif [ "$exec_mode" == "integrate" ] ; then
 
   rm -r $output_folder/integrations
   mkdir -p $output_folder/integrations
-  #cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path # What I got?
   
   echo -e "$integrated_annotations" | tr -s " " "\n" > uwant
   cat  $output_folder/similarity_kernels/*/*/ugot_path > $output_folder/similarity_kernels/ugot_path
-  #filter_by_whitelist -f $output_folder/similarity_kernels/ugot_path -c "1" -t uwant -o $output_folder/similarity_kernels
   filter_by_list -f $output_folder/similarity_kernels/ugot_path -c "2" -t uwant -o $output_folder/similarity_kernels
   rm uwant
 
@@ -230,7 +228,6 @@ elif [ "$exec_mode" == "integrate" ] ; then
       \\$kernels_varflow=${kernels_varflow},
       \\$ugot_path=$ugot_path
       " | tr -d [:space:]`
-      # -n bc -A "reservation:nuevos_nodos"
       AutoFlow -w $autoflow_scripts/integrate.af -V $autoflow_vars -o $output_folder/integrations/${integration_type} -n cal -m 60gb -t 0-02:00:00 -L $add_opt 
 
   done
@@ -252,7 +249,7 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
       ugot_path="$output_folder/integrations/ugot_path"
       folder_kernel_path=`awk '{print $0,NR}' $ugot_path | sort -k 5 -r -u | grep -w "${integration_type}_$kernel" | awk '{print $4}'`
       echo ${folder_kernel_path}
-      if [ ! -z ${folder_kernel_path} ] ; then # This kernel for this integration_type is done? 
+      if [ ! -z ${folder_kernel_path} ] ; then 
 
         autoflow_vars=`echo " 
         \\$param1=$integration_type,
@@ -267,7 +264,6 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
         \\$benchmark=$benchmark,
         \\$geneseeds=$input_path/geneseeds
         " | tr -d [:space:]`
-        #-n bc -A "reservation:nuevos_nodos"
         AutoFlow -w $autoflow_scripts/ranking.af -V $autoflow_vars -n cal -o $output_folder/integrated_rankings/$benchmark/ranking_${kernel}_${integration_type} -m 30gb -t 0-03:59:59 -L $3
       fi
       sleep 1
@@ -281,12 +277,9 @@ elif [ "$exec_mode" == "integrated_ranking" ] ; then
 
 elif [ "$exec_mode" == "report" ] ; then 
   save=$2
-  #interested_layers="biological_process phenotype string_ppi_textmining string_ppi_coexpression pathway gene_hgncGroup"
-  interested_layers=" string_ppi_combined string_ppi_textmining string_ppi_database string_ppi_experimental string_ppi_coexpression string_ppi_cooccurence string_ppi_fusion string_ppi_neighborhood"
-  #interested_layers=$annotations
-  #interested_layers="string_ppi_combined string_ppi_textmining string_ppi_database"
+  interested_layers=$annotations
 
-  for html_name in "menche" "zampieri"; do
+  for html_name in "zampieri" "menche"; do
     #Setting up the report section #
     find $report_folder/$html_name -mindepth 2 -delete
     find $output_folder -maxdepth 1 -type f -delete

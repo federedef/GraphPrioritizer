@@ -3,7 +3,6 @@ get_similarity){
 	# Input: Tab file in: paco format for ontologies, pairs format for network.
 	# Output: Similarity list
 	source ~soft_bio_267/initializes/init_python
-	#source ~/dev_py/myvenv/bin/activate
 	source ~soft_bio_267/initializes/init_R
 	echo -e "$annotation_sim" > tracker
 	similarity_path=`pwd`
@@ -128,9 +127,7 @@ calc_kernel_[$kernels_varflow]){
 	resources: -c 16 -m '500gb' -t '1-00:00:00'
 	# input: Similarity binary matrix
 	# output: binary Kernel from similarity matrix + metrics
-	# source ~soft_bio_267/initializes/init_netanalyzer
 	source ~soft_bio_267/initializes/init_python
-	#source ~/dev_py/myvenv/bin/activate
 	echo -e "$annotation_(*)\t$annotation\t(*)" > tracker
 	cp normalize_adjMatrix)/similarity_matrix_bin.lst kernel_matrix_bin.lst # To pass the list of node names.
 	kern_net_path=`pwd`
@@ -162,10 +159,8 @@ calc_kernel_[$kernels_varflow]){
 stats_kernels_[$kernels_varflow]){
 	resources: -m '120gb' -t '1-00:00:00'
 	source ~soft_bio_267/initializes/init_python
-	#source ~/dev_py/myvenv/bin/activate
 	if [ -s tracker ] ; then
 		rm tracker
-		# TODO: Remove this part and check
 	fi
 	if [ -s kernel_metrics ] ; then
 		rm kernel_metrics

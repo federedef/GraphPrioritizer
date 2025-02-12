@@ -420,12 +420,14 @@ ${plotter.create_title(txt, id='curv_gen_per_metrics', hlevel=3, indexable=True,
 txt = []
 if plotter.hash_vars.get("non_integrated_rank_cdf") is not None: 
         txt.append(plotter.static_plot_main( id="non_integrated_rank_cdf", header=True, row_names=False, smp_attr=[0,1,2,3], fields =[4,5,6],
+                        width=600, height=600, matplot_width = 6, matplot_height = 6, dpi=1000, dynamic_units_calc=False,
                         plotting_function= lambda data, plotter_list: ph.plot_with_facet(plot_type="ecdf",data=data, 
                                 plotter_list=plotter_list, x="rank", col="annot", 
                                 hue="Embedding", col_wrap=3, 
                                 suptitle="A", x_label="Normalized Rank", y_label="TPR", top=0.9)))
 if plotter.hash_vars.get("integrated_rank_cdf") is not None: 
         txt.append(plotter.static_plot_main( id="integrated_rank_cdf", header=True, row_names=False, smp_attr=[0,1,2,3], fields =[4,5,6],
+                        width=600, height=600, matplot_width = 6, matplot_height = 6, dpi=1000,
                         plotting_function= lambda data, plotter_list: ph.plot_with_facet(plot_type="ecdf",data=data, plotter_list=plotter_list, x="rank", 
                                 col="integration", hue="Embedding", col_wrap=2, suptitle="B", x_label="Normalized Rank", y_label="TPR", top=0.8)))
 txt.append(ph.make_title(plotter,"figure", "cdf_curve", f"""CDF curves by each individual (A)
@@ -441,6 +443,7 @@ ${ph.collapsable_data(plotter,"CDF Curves", "cdf_click", "cdf_collaps","\n".join
 txt = []
 if plotter.hash_vars.get("non_integrated_rank_measures") is not None: 
         txt.append(plotter.static_plot_main( id="non_integrated_rank_measures", header=True, row_names=False, smp_attr=[0,1,2,3], fields =[4,5,6],
+                                width=600, height=600, matplot_width = 6, matplot_height = 6, dpi=1000,
                                 plotting_function= lambda data, plotter_list: ph.plot_with_facet(plot_type="lineplot", data=data,
                                         plotter_list=plotter_list, x='fpr', y='tpr', col='annot', 
                                         hue='Embedding', col_wrap=3, suptitle="A", 
@@ -448,6 +451,7 @@ if plotter.hash_vars.get("non_integrated_rank_measures") is not None:
 
 if plotter.hash_vars.get("integrated_rank_measures") is not None: 
         txt.append(plotter.static_plot_main( id="integrated_rank_measures", header=True, row_names=False, smp_attr=[0,1,2,3], fields =[4,5,6], 
+                                width=600, height=600, matplot_width = 6, matplot_height = 6, dpi=1000,
                                 plotting_function= lambda data, plotter_list: ph.plot_with_facet(plot_type="lineplot",data=data, 
                                         plotter_list=plotter_list, x='fpr', y='tpr', col='integration', 
                                         hue='Embedding', col_wrap=2, suptitle="B", 
