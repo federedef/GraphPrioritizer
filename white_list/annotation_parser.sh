@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
-file2parse=$1
-types2select=$2 #protein_coding;lncRNA;(...)
+types2select=$1 #protein_coding;lncRNA;(...)
+file2parse="gencode.v35.annotation.gtf"
+wget "ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_35/gencode.v35.annotation.gtf.gz"
+gzip -d gencode.v35.annotation.gtf.gz
+
 
 awk 'BEGIN{FS="\t"}{if ($3 ~ /gene/) { print $9 }}' $file2parse | awk 'BEGIN{FS=";";OFS="\t";}{print $1,$2,$3,$5}' > parsed_${file2parse}
 
@@ -19,5 +22,8 @@ for type in $types2select ; do
 done
 
 sort hgnc_white_list -o hgnc_white_list
+rm parsed_${file2parse}
+rm white_list
+rm gencode.v35.annotation.gtf.gz
 
-# Example of execution: ./annotation_parser.sh annotation.gtf protein_coding
+# Example of execution: ./annotation_parser.sh protein_coding

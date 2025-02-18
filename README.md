@@ -1,7 +1,7 @@
 # README
 
 ## Overview
-This script is a Bash automation workflow for processing and analyzing biological datasets using various computational tools, including Python and R. In particular, 
+This script is a Bash automation workflow for processing and analyzing biological datasets using various computational tools, including Python and R. In particular, this workflow focuses on using different biological networks, processing them through embedding, and using this information to prioritize causal genes related to a given disease.
 
 ## Prerequisites
 Ensure the following dependencies are installed before running the script:
