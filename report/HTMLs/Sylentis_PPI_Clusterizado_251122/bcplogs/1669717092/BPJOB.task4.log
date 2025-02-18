@@ -1,65 +1,0 @@
-############### LOG OUTPUT ###############
-Task: 4
-Node: 12
-Timestamp: 2022-11-29 11:19:22
-Success: TRUE
-
-Task duration:
-   user  system elapsed 
- 64.448   1.429  67.725 
-
-Memory used:
-           used  (Mb) gc trigger  (Mb) max used   (Mb)
-Ncells  6289610 336.0   17353986 926.9 21692482 1158.6
-Vcells 61410532 468.6   99945147 762.6 99937117  762.5
-
-Log messages:
-
-
-stderr and stdout:
-
-
-processing file: clusters_to_enrichment.Rmd
-  |                                                                              |                                                                      |   0%  |                                                                              |..............                                                        |  20%
-  ordinary text without R code
-
-  |                                                                              |............................                                          |  40%
-label: main_init (with options) 
-List of 4
- $ echo   : logi FALSE
- $ warning: logi FALSE
- $ message: logi FALSE
- $ results: chr "asis"
-
-  |                                                                              |..........................................                            |  60%
-  ordinary text without R code
-
-  |                                                                              |........................................................              |  80%
-label: render_partial (with options) 
-List of 4
- $ echo   : logi FALSE
- $ warning: logi FALSE
- $ message: logi FALSE
- $ results: chr "asis"
-
-Warning in max(nchar(as.character(get_genes(enrich_obj, showCategory = showCategory)))) :
-  ningun argumento finito para max; retornando -Inf
-Warning in max(nchar(as.character(get_genes(enrich_obj, showCategory = showCategory)))) :
-  ningun argumento finito para max; retornando -Inf
-Warning in max(nchar(as.character(get_genes(enrich_obj, showCategory = showCategory)))) :
-  ningun argumento finito para max; retornando -Inf
-Warning in max(nchar(as.character(get_genes(enrich_obj, showCategory = showCategory)))) :
-  ningun argumento finito para max; retornando -Inf
-Warning in max(nchar(as.character(get_genes(enrich_obj, showCategory = showCategory)))) :
-  ningun argumento finito para max; retornando -Inf
-  |                                                                              |......................................................................| 100%
-  ordinary text without R code
-
-
-output file: /mnt/home/users/bio_267_uma/federogc/projects/backupgenes/report/HTMLs/Sylentis_PPI_Clusterizado_251122/Final_results/Functional_analysis_from_clusters/group_G5_2_1_temp/clusters_to_enrichment.knit.md
-
-/mnt/home/soft/pandoc/programs/x86_64/2.2.1/bin/pandoc +RTS -K512m -RTS /mnt/home/users/bio_267_uma/federogc/projects/backupgenes/report/HTMLs/Sylentis_PPI_Clusterizado_251122/Final_results/Functional_analysis_from_clusters/group_G5_2_1_temp/clusters_to_enrichment.knit.md --to html4 --from markdown+autolink_bare_uris+tex_math_single_backslash --output /mnt/home/users/bio_267_uma/federogc/projects/backupgenes/report/HTMLs/Sylentis_PPI_Clusterizado_251122/Final_results/Functional_analysis_from_clusters/group_G5_2_1_func_report.html --lua-filter /mnt/home/soft/soft_bio_267/programs/x86_64/R/R_installation42/lib64/R/library/rmarkdown/rmarkdown/lua/pagebreak.lua --lua-filter /mnt/home/soft/soft_bio_267/programs/x86_64/R/R_installation42/lib64/R/library/rmarkdown/rmarkdown/lua/latex-div.lua --self-contained --variable bs3=TRUE --standalone --section-divs --table-of-contents --toc-depth 3 --variable toc_float=1 --variable toc_selectors=h1,h2,h3 --variable toc_collapsed=1 --variable toc_smooth_scroll=1 --variable toc_print=1 --template /mnt/home/soft/soft_bio_267/programs/x86_64/R/R_installation42/lib64/R/library/rmarkdown/rmd/h/default.html --no-highlight --variable highlightjs=1 --variable theme=bootstrap --mathjax --variable 'mathjax-url=https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML' --include-in-header /localscratch/users/tmp/Rtmp1uUUXi/rmarkdown-str2d9537cddaf65.html 
-
-Output created: Final_results/Functional_analysis_from_clusters/group_G5_2_1_func_report.html
-Calling clean_tmpfiles_mod()
-
