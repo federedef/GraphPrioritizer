@@ -37,7 +37,7 @@ Run daemon.sh with the desired execution mode:
 - `recover <folder>`: Recovers execution logs.
 
 ## Outputs
-The script generates several output folders:
+The `daemon.sh` generates several output folders:
 - `output_folder/similarity_kernels/` - Stores computed similarity kernels.
 - `output_folder/rankings/` - Contains computed rankings.
 - `output_folder/integrations/` - Stores kernel integrations.
@@ -52,10 +52,10 @@ The script generates several output folders:
 ```
 
 ## Notes
-- The script makes use of `AutoFlow` for various processing steps.
+- The workflow makes use of `AutoFlow` for various processing steps.
 - Data sources include STRING, OMIM, DepMap, and other biological databases.
 - Ensure network connectivity when downloading data.
 
 ## License
-This script is intended for research and educational purposes.
+This repository is intended for research and educational purposes.
 
