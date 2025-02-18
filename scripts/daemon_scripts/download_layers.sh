@@ -74,8 +74,9 @@ wget https://ndownloader.figshare.com/files/34989919 -O ./input/upgraded/input_r
 # Downgraded version menche version
 wget https://www.life-science-alliance.org/content/lsa/2/2/e201800278/DC5/embed/inline-supplementary-material-5.txt -O ./input/downgraded/input_raw/KimCoess_gene
 # Downgraded version DepMap version
+gzip -d ./input/downloaded_raw/gene_effect.csv.gz
 cp ./input/downloaded_raw/gene_effect.csv ./input/downgraded/input_raw/CRISPR_gene_effect 
-
+gzip ./input/downloaded_raw/gene_effect.csv
 # Downloading Gen-Transcriptional Factor relation.
 # https://rescued.omnipathdb.org/
 # 25-Feb-2021
